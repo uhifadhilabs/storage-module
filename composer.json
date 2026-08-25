@@ -1,0 +1,80 @@
+{
+    "name": "uhifadhilabs/storage-module",
+    "description": "Storage: the platform's file-storage machinery — named Flysystem storages, a private evidence API with a detected-MIME allowlist, thumbnails, and authenticated streaming behind a per-module permission seam.",
+    "type": "symfony-bundle",
+    "keywords": [
+        "storage",
+        "flysystem",
+        "evidence",
+        "s3",
+        "thumbnails",
+        "symfony",
+        "uhifadhi"
+    ],
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Ezekiel Mjema",
+            "homepage": "https://github.com/eemjema"
+        }
+    ],
+    "require": {
+        "league/flysystem": "^3.0",
+        "league/flysystem-bundle": "^3.4",
+        "php": ">=8.4",
+        "symfony/config": "^7.3 || ^8.0",
+        "symfony/dependency-injection": "^7.3 || ^8.0",
+        "symfony/framework-bundle": "^7.3 || ^8.0",
+        "symfony/http-foundation": "^7.3 || ^8.0",
+        "symfony/http-kernel": "^7.3 || ^8.0",
+        "symfony/mime": "^7.3 || ^8.0",
+        "symfony/routing": "^7.3 || ^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "UhifadhiLabs\\Storage\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "UhifadhiLabs\\Storage\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "league/flysystem-async-aws-s3": "^3.0",
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^13.2",
+        "symfony/browser-kit": "^7.3 || ^8.0",
+        "symfony/css-selector": "^7.3 || ^8.0",
+        "symfony/security-bundle": "^7.3 || ^8.0",
+        "symfony/security-core": "^7.3 || ^8.0",
+        "symfony/security-http": "^7.3 || ^8.0"
+    },
+    "suggest": {
+        "ext-imagick": "Preferred thumbnail engine. Decodes HEIC/HEIF where the system ImageMagick was built with libheif; GD cannot.",
+        "ext-gd": "Fallback thumbnail engine (JPEG/PNG/WebP/AVIF).",
+        "league/flysystem-async-aws-s3": "Required when a deployment selects the S3 adapter (storage.evidence.adapter: s3)."
+    },
+    "scripts": {
+        "cs:fix": "php-cs-fixer fix",
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "phpstan": "phpstan analyse --no-progress --memory-limit=1G",
+        "test": "phpunit",
+        "check": [
+            "@cs:check",
+            "@phpstan",
+            "@test"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1-dev"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
