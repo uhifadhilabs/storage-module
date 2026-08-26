@@ -37,6 +37,21 @@
    → UhifadhiLabs\Storage — EvidenceStorage, the streaming route, the thumbnailer
    ========================================================================== */
 
+/* TOKEN BRIDGE — this sheet is the byte-faithful port of the design app's
+   files.css, which speaks the design tokens (--p1, --cv, --ln…). The host
+   speaks rgb triplets (--c-p1…). Rather than rewriting every rule (and
+   drifting from the design), the design names are defined ONCE here from
+   the host's own tokens, scoped to the hub's root, so the hub flips themes
+   with the app. Fixes the transparent overlay card the user reported. */
+:root{
+  --cv:rgb(var(--c-cv)); --p1:rgb(var(--c-p1)); --p2:rgb(var(--c-p2));
+  --tx:rgb(var(--c-tx)); --fog:rgb(var(--c-fog)); --dim:rgb(var(--c-dim));
+  --acc:rgb(var(--c-acc)); --accT:rgb(var(--c-accT));
+  --ln:var(--c-ln); --ln2:var(--c-ln2); --raised:rgb(var(--c-raised));
+  --shadow:0 18px 40px rgba(0,0,0,.28);
+}
+
+
 /* A MODULE'S COLOUR, one line per module — the same rule nav.css states for the
    sidebar's identity dots: the module bundle declares its colour once and every
    host surface renders it. Permits has no module yet, so it is the quiet token
