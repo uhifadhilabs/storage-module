@@ -16,6 +16,7 @@ namespace UhifadhiLabs\Storage;
 use AsyncAws\S3\S3Client;
 use League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter;
 use League\Flysystem\Visibility;
+use Symfony\Component\AssetMapper\AssetMapperInterface;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\Config\Definition\Processor;
@@ -63,6 +64,31 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
             // No flysystem in this kernel: say so where a developer will read
             // it, rather than failing later on a missing "storage.evidence".
             throw new \LogicException('UhifadhiLabsStorageBundle needs league/flysystem-bundle. Register FlysystemBundle in config/bundles.php.');
+        }
+
+        /*
+         * The FILE PREVIEW's behaviour, shipped under an AssetMapper namespace
+         * exactly as symfony/ux-turbo does (TurboExtension::prepend).
+         *
+         * The bundle's public/ dir needs no such line — AssetMapper registers it
+         * under bundles/uhifadhilabsstorage by itself — but assets/ is a UX
+         * PACKAGE, and StimulusBundle resolves the controller named in the
+         * host's assets/controllers.json through this namespace. Without it, a
+         * host that enabled "@uhifadhilabs/storage-module": {"preview": …} gets
+         * "Could not find an asset mapper path that points to the preview
+         * controller" and a photograph that navigates instead of opening.
+         *
+         * Guarded, because AssetMapper is optional: a host running this bundle
+         * for its storage machinery alone need not have one.
+         */
+        if ($builder->hasExtension('framework') && interface_exists(AssetMapperInterface::class)) {
+            $container->extension('framework', [
+                'asset_mapper' => [
+                    'paths' => [
+                        \dirname(__DIR__).'/assets' => '@uhifadhilabs/storage-module',
+                    ],
+                ],
+            ]);
         }
 
         $evidence = $this->evidenceConfig($builder);
@@ -244,11 +270,25 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
         $screens = $wanted && $hasSecurity && $hasTwig && $hasWidgets;
         $builder->setParameter('storage.files.screens', $screens);
 
-        if ($screens) {
-            $permission = $files['settings_permission'] ?? null;
-
+        /*
+         * The formatting filters, registered wherever there is a Twig at all —
+         * NOT only where the hub's own screens are.
+         *
+         * The FILE PREVIEW (templates/overlay/_preview.html.twig) is this
+         * bundle's one shareable component: an observation's photos card opens
+         * the same overlay the hub does, and it fills the same contract, which
+         * means it says a size in the same words. A host that installed this
+         * bundle for its storage machinery alone still renders that component,
+         * so the filter it needs cannot be conditional on four screens that host
+         * never asked for.
+         */
+        if ($hasTwig) {
             $services->set('storage.twig_extension', FilesExtension::class)
                 ->tag('twig.extension');
+        }
+
+        if ($screens) {
+            $permission = $files['settings_permission'] ?? null;
 
             $services->set(FilesController::class)
                 ->args([

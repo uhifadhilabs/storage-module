@@ -1,0 +1,143 @@
+{# ═══════════════════════════════════════════════════════════════════════════
+   THE FILE PREVIEW — the one component every surface opens a file in.
+
+   ONE COMPONENT, EVERY SURFACE. A photograph must look the same and say the
+   same things wherever it is opened from: the Files hub, an observation's
+   photos card, an incident's evidence strip. So the overlay is defined ONCE,
+   here, and every surface consumes this file. The hub is consumer #1, not the
+   owner — it carries no overlay markup of its own.
+
+   THREE THINGS THIS FILE IS:
+
+     1. THE SHELL — the file's own body. Include it once per page that wants the
+        preview; it renders the dialog, empty and hidden, and carries the
+        Stimulus controller that fills it.
+        → assets/controllers/preview_controller.js
+
+     2. attrs(f) — THE DATA CONTRACT. Put it on any element that should open the
+        preview. Every fact the overlay shows travels in the attributes, so
+        opening one costs NO request; the only thing fetched is the ~400px
+        picture, and even that comes through the permission check.
+
+     3. entry(file, detailUrl) — the same contract, filled from a FileEntry, for
+        consumers that already have one.
+
+   WHAT IS DELIBERATELY NOT IN THE CONTRACT. The guard — what THIS PERSON may do
+   to this file — is the owning record's answer, and it is rendered where it is
+   authoritative: the file's own page, one click away in the overlay's header. An
+   overlay that repeated a permission it had cached would eventually repeat it
+   wrongly.
+
+   STYLES live in public/preview.css, which a consuming page loads beside its own
+   stylesheet. ICONS are inline Lucide SVGs: this bundle does not depend on the
+   host's icon component, so a module screen never renders a blank square on a
+   host that wires icons differently.
+   ═════════════════════════════════════════════════════════════════════════ #}
+
+{# THE DATA CONTRACT.
+
+   Required: name, originalUrl. Everything else is optional and the overlay draws
+   the honest absence rather than a blank — a file with no thumbUrl gets the
+   shape that says why, a file with no detailUrl gets no "what you may do" link.
+
+   Keys:
+     name         what to print — the file's own name
+     key          the storage key; shown as "its key"
+     mime         the DETECTED type, never what an uploader claimed
+     size         already humanised (byteSize|storage_bytes), not a byte count
+     thumbUrl     the ~400px picture through the serving route, or '' if none
+     originalUrl  the original through the serving route — "open the original"
+     detailUrl    the file's own page, or '' where the host ships no Files hub
+     ownerLabel   the RECORD this file belongs to, e.g. "OBS-0214"
+     ownerUrl     that record's own page, or '' where the module ships none
+     moduleSlug   the owning module, e.g. "patrols" — also keys its colour dot
+     moduleLabel  that module in the words a warden reads, e.g. "Patrols"
+     takenAt      the HANDSET's own clock, already formatted
+     arrivedAt    when it reached the platform, already formatted
+     thumbState   made | wait | failed | none
+     caption      the caption belongs to the RECORD; shown here, never edited here
+     kind         photo | track | document — the hub filters on it
+     day          the day it is filed under — the hub filters on it
+     area         the area whose file it is — the hub filters on it #}
+{% macro attrs(f) %}
+    data-f-preview
+    data-f-name="{{ f.name }}"
+    data-f-key="{{ f.key|default('') }}"
+    data-f-mime="{{ f.mime|default('') }}"
+    data-f-size="{{ f.size|default('') }}"
+    data-f-img="{{ f.thumbUrl|default('') }}"
+    data-f-original="{{ f.originalUrl|default('') }}"
+    data-f-detail="{{ f.detailUrl|default('') }}"
+    data-f-rec="{{ f.ownerLabel|default('') }}"
+    data-f-rechref="{{ f.ownerUrl|default('') }}"
+    data-f-mod="{{ f.moduleSlug|default('') }}"
+    data-f-modlabel="{{ f.moduleLabel|default('') }}"
+    data-f-taken="{{ f.takenAt|default('—') }}"
+    data-f-uploaded="{{ f.arrivedAt|default('—') }}"
+    data-f-thumb="{{ f.thumbState|default('none') }}"
+    data-f-caption="{{ f.caption|default('') }}"
+    data-f-kind="{{ f.kind|default('') }}"
+    data-f-day="{{ f.day|default('') }}"
+    data-f-area="{{ f.area|default('') }}"
+{% endmacro %}
+
+{# The same contract, filled from a FileEntry.
+
+   detailUrl is PASSED rather than generated: the file's own page exists only
+   where the host runs the Files hub (storage.files.screens), and a module page
+   that generated the route unconditionally would crash on a host that does not.
+   Consumers without a hub pass ''. #}
+{% macro entry(file, detailUrl) %}
+    {%- import _self as preview -%}
+    {{- preview.attrs({
+        name: file.name,
+        key: file.key,
+        mime: file.mimeType,
+        size: file.byteSize|storage_bytes,
+        thumbUrl: file.hasThumbnail ? path('storage_evidence_show', {key: file.thumbKey}) : '',
+        originalUrl: path('storage_evidence_show', {key: file.key}),
+        detailUrl: detailUrl,
+        ownerLabel: file.ownerLabel,
+        ownerUrl: file.ownerUrl,
+        moduleSlug: file.moduleSlug,
+        moduleLabel: file.moduleLabel,
+        takenAt: file.takenAt ? (file.takenAt|date('D j M Y')|lower ~ ' · ' ~ file.takenAt|date('H:i')) : '—',
+        arrivedAt: file.arrivedAt|date('D j M Y')|lower ~ ' · ' ~ file.arrivedAt|date('H:i'),
+        thumbState: file.thumbState.value,
+        caption: file.caption,
+        kind: file.kind.value,
+        day: file.day,
+        area: file.areaLabel,
+    }) -}}
+{% endmacro %}
+
+{# ── THE SHELL ────────────────────────────────────────────────────────────────
+   Rendered empty and hidden; the controller fills it from the trigger's own
+   attributes. It is MARKUP rather than a string inside the controller so that
+   the dialog's structure — its role, its labels, its close affordances — is
+   reviewable in a template and assertable in a functional test.
+
+   The arrows step through THE RESULT SET THE TRIGGER IS IN, which is the whole
+   argument for an overlay over a page: browsing is comparing. A page that shows
+   one file is one click away in the header, because a file must be linkable —
+   you cannot send somebody an overlay. #}
+<div class="f-ov" data-f-overlay hidden data-controller="uhifadhilabs--storage-module--preview">
+    <div class="f-ovback" data-f-close></div>
+    <div class="f-ovbox" role="dialog" aria-modal="true" aria-label="File" tabindex="-1">
+        <div class="f-ovhead">
+            <span class="t" data-f-ovname></span>
+            <span class="sp">
+                {# Hidden until a file that HAS a page of its own is shown. #}
+                <a class="tgl" data-f-ovlink href="#" hidden>Open its own page</a>
+                <button class="tb-icon" type="button" data-f-close aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+            </span>
+        </div>
+        <div class="f-ovbody">
+            <div class="f-ovstage" data-f-ovstage>
+                <button class="f-ovnav prev" type="button" data-f-step="-1" aria-label="Previous file" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+                <button class="f-ovnav next" type="button" data-f-step="1" aria-label="Next file" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+            </div>
+            <div class="f-ovside modal-scroll" data-f-ovside></div>
+        </div>
+    </div>
+</div>

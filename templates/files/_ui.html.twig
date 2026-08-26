@@ -60,24 +60,20 @@
     {%- endif -%}
 {% endmacro %}
 
-{# Every fact the overlay fills itself from, so opening one costs NO request.
-   The guard is deliberately NOT among them: what you may do to a file is a
-   per-person answer the owning record gives, and it is rendered where it is
-   authoritative — the file's own page, one click away in the overlay's header. #}
+{# Every fact the preview fills itself from, so opening one costs NO request.
+
+   THE HUB IS CONSUMER #1 OF THE PREVIEW, not its owner: the contract below is
+   stated once in the component's own partial and this macro only fills it in
+   from a FileEntry. An observation's photos card fills the same contract from an
+   ObservationPhoto, and both open the same overlay.
+   → templates/overlay/_preview.html.twig
+
+   data-f-id is the HUB's own, and stays here: it is what the filter row and the
+   shape toggle select on, and it means "a file this surface is listing" rather
+   than "a file that can be previewed". #}
 {% macro data(file) %}
-    data-f-id="{{ file.key }}" data-f-name="{{ file.name }}" data-f-mod="{{ file.moduleSlug }}"
-    data-f-modlabel="{{ file.moduleLabel }}" data-f-dot="{{ file.moduleSlug }}"
-    data-f-rec="{{ file.ownerLabel }}" data-f-rechref="{{ file.ownerUrl ?? '' }}"
-    data-f-kind="{{ file.kind.value }}"
-    data-f-img="{{ file.hasThumbnail ? path('storage_evidence_show', {key: file.thumbKey}) : '' }}"
-    data-f-original="{{ path('storage_evidence_show', {key: file.key}) }}"
-    data-f-taken="{{ file.takenAt ? (file.takenAt|date('D j M Y')|lower ~ ' · ' ~ file.takenAt|date('H:i')) : '—' }}"
-    data-f-day="{{ file.day }}"
-    data-f-uploaded="{{ file.arrivedAt|date('D j M Y')|lower ~ ' · ' ~ file.arrivedAt|date('H:i') }}"
-    data-f-size="{{ file.byteSize|storage_bytes }}" data-f-mime="{{ file.mimeType }}"
-    data-f-key="{{ file.key }}" data-f-thumb="{{ file.thumbState.value }}"
-    data-f-caption="{{ file.caption ?? '' }}" data-f-area="{{ file.areaLabel ?? '' }}"
-    data-f-detail="{{ path('storage_files_show', {key: file.key}) }}"
+    {%- import '@UhifadhiLabsStorage/overlay/_preview.html.twig' as preview -%}
+    data-f-id="{{ file.key }}" {{ preview.entry(file, path('storage_files_show', {key: file.key})) }}
 {% endmacro %}
 
 {# A file, looked at. The tile is a div with role=button so its OWNER LINK can

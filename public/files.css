@@ -51,46 +51,11 @@
   --shadow:0 18px 40px rgba(0,0,0,.28);
 }
 
-
-/* A MODULE'S COLOUR, one line per module — the same rule nav.css states for the
-   sidebar's identity dots: the module bundle declares its colour once and every
-   host surface renders it. Permits has no module yet, so it is the quiet token
-   and it is never drawn as a live colour. */
-:root, html.light {
-  --f-mod: var(--acc);
-  --f-patrol: var(--acc);
-  --f-inc: #E05B41;
-  --f-permit: var(--dim);
-}
-
-/* ── THE OWNER TAG ────────────────────────────────────────────────────────
-   THE MOST IMPORTANT COMPONENT ON THE SURFACE. Every file is shown with the
-   record it belongs to, because that is what it is — "Patrols · OBS-0214" is
-   the file's name in the only sense the product recognises. It is a LINK to
-   the owning record's own page; a file card with no owner tag would be a lie
-   about the model. */
-.f-owner{display:inline-flex;align-items:center;gap:6px;text-decoration:none;
-  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;
-  letter-spacing:.04em;color:var(--tx);border:1px solid var(--ln2);border-radius:7px;
-  padding:3px 8px 2px;white-space:nowrap;max-width:100%;overflow:hidden}
-.f-owner:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
-.f-owner{flex-wrap:nowrap;align-self:flex-start}
-.f-owner .mod{color:var(--fog);font-weight:600;flex:0 0 auto;white-space:nowrap}
-/* The separator is MARKUP, not a ::after. A generated dot on a flex item wraps
-   onto its own line the moment the item is shrink-to-fit, and a two-line owner
-   tag is the ugliest thing on the surface. One dot, one element. */
-.f-owner .sepdot{color:var(--dim);flex:none;margin:0 1px}
-/* PORTED: the dot is keyed by the MODULE SLUG the source declares, not by a
-   class written here, so a module this stylesheet never heard of still renders —
-   in the accent, until its own bundle declares a colour of its own. */
-.f-owner i,.f-fchip i,.f-dotc,.f-map .cellL i{background:var(--f-mod)}
-.f-owner i{width:7px;height:7px;border-radius:2px;flex:none;font-style:normal}
-.f-owner i.patrols,.f-fchip i.patrols,.f-dotc.patrols,.f-map .cellL i.patrols{background:var(--f-patrol)}
-.f-owner i.incidents,.f-fchip i.incidents,.f-dotc.incidents,.f-map .cellL i.incidents{background:var(--f-inc)}
-.f-owner i.permits,.f-fchip i.permits,.f-dotc.permits,.f-map .cellL i.permits{background:var(--f-permit)}
-/* An owner whose module is not built yet: named, not a link. */
-.f-owner.off{border-style:dashed;color:var(--dim);cursor:default}
-.f-owner.off:hover{border-color:var(--ln2);color:var(--dim)}
+/* THE PREVIEW'S OWN VOCABULARY IS NOT HERE. The owner tag, the storage pills,
+   the action links and the overlay moved to preview.css, which every surface
+   that opens a file loads — this sheet is one of them, not their owner. See the
+   note at the top of preview.css for why they were moved rather than copied.
+   → public/preview.css · templates/overlay/_preview.html.twig */
 
 /* ── THE THUMBNAIL TILE ───────────────────────────────────────────────────
    ONE ~400px thumbnail per file, and it is the ONLY thing ever served without
@@ -150,20 +115,6 @@
 .f-list .mininone svg{width:13px;height:13px}
 .f-list .nm{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px;color:var(--tx)}
 .f-list .num{text-align:right;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px}
-
-/* ── STORAGE PILLS — the mechanism, said plainly ──────────────────────────
-   Where the bytes are, and whether the small picture exists. These are the two
-   facts the hub knows that no module page knows. */
-.f-be,.f-th{display:inline-flex;align-items:center;gap:5px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
-  font-size:9px;font-weight:700;letter-spacing:.04em;border:1px solid var(--ln2);border-radius:6px;
-  padding:2.5px 7px 1.5px;color:var(--fog);white-space:nowrap}
-.f-be i{width:6px;height:6px;border-radius:50%;flex:none;font-style:normal;background:var(--fog)}
-.f-be.s3 i{background:var(--acc)}
-.f-be.local i{background:var(--warn)}
-.f-th.made{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 38%,transparent)}
-.f-th.wait{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 38%,transparent)}
-.f-th.failed{color:var(--fail);border-color:color-mix(in srgb,var(--fail) 38%,transparent)}
-.f-th.none{color:var(--dim);border-style:dashed}
 
 /* ── THE FILTER BAR ───────────────────────────────────────────────────────
    ONE row of controls driving the whole surface, in the same shape the
@@ -240,49 +191,6 @@
   font-size:8.5px;color:var(--fog);margin-top:9px;align-items:center}
 .f-key i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
 
-/* ── THE FILE OVERLAY ─────────────────────────────────────────────────────
-   The photograph large on the left, everything known about it on the right.
-   Same manners as the widget picker in widgets.css: Escape closes, the
-   backdrop closes, focus goes into the box on open and back to the tile on
-   close. The picture inside it is the ORIGINAL, which is the only place on the
-   platform an original is ever served — and it is served through the
-   permission check, never from a public path.
-   → GET /files/{uuid} (the record) + GET /files/{uuid}/original (the bytes) */
-.f-ov{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:3vh 22px}
-.f-ov[hidden]{display:none}
-.f-ovback{position:absolute;inset:0;background:color-mix(in srgb,var(--cv) 78%,transparent);backdrop-filter:blur(3px)}
-.f-ovbox{position:relative;width:min(1140px,100%);max-height:94vh;display:flex;flex-direction:column;
-  background:linear-gradient(180deg,var(--p1),var(--p2));border:1px solid var(--ln2);border-radius:16px;
-  box-shadow:var(--shadow);overflow:hidden}
-.f-ovhead{display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid var(--ln)}
-.f-ovhead .t{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px;color:var(--tx);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.f-ovhead .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
-.f-ovbody{display:grid;grid-template-columns:1.55fr 1fr;min-height:0;flex:1}
-.f-ovstage{background:color-mix(in srgb,var(--fog) 12%,transparent);display:grid;place-items:center;
-  padding:16px;min-height:340px;position:relative}
-.f-ovstage img{max-width:100%;max-height:min(66vh,620px);border-radius:10px;display:block;box-shadow:var(--shadow)}
-.f-ovstage .noimg{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--fog);
-  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
-.f-ovstage .noimg svg{width:38px;height:38px}
-/* Stepping through the current result set without closing — the arrows are the
-   whole reason the overlay beats a page for browsing. */
-.f-ovnav{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;
-  display:grid;place-items:center;border:1px solid rgba(234,242,236,.22);background:rgba(10,14,11,.6);
-  color:#EAF2EC;cursor:pointer;padding:0}
-.f-ovnav:hover{background:rgba(10,14,11,.85)}
-.f-ovnav svg{width:16px;height:16px}
-.f-ovnav.prev{left:12px}
-.f-ovnav.next{right:12px}
-.f-ovside{padding:14px 16px 18px;overflow-y:auto;border-left:1px solid var(--ln);min-width:0}
-.f-ovside h3{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9px;font-weight:600;
-  letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:16px 0 4px}
-.f-ovside h3:first-child{margin-top:0}
-.f-ovside .rln{font-size:11.5px}
-.f-ovside .rln .mono{font-size:10.5px}
-.f-ovside .val{max-width:58%;text-align:right;word-break:break-all}
-@media (max-width:900px){.f-ovbody{grid-template-columns:1fr}.f-ovside{border-left:0;border-top:1px solid var(--ln)}}
-
 /* ── THE TRAIL — what happened to this file ───────────────────────────────
    Uploads, thumbnailing and every time it was served. It is an audit line, not
    a story: each row is one event with a time and a name against it. */
@@ -302,15 +210,8 @@
 /* ── THE GUARD — what you may do to this file, and why ────────────────────
    A file is deleted only where its OWNING RECORD allows it. The guard states
    the rule in the record's own words instead of greying a button out, which is
-   the same manner the workflow board uses for a refused move. */
-.f-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.f-act{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-size:11.5px;font-weight:600;
-  color:var(--fog);border:1px solid var(--ln2);background:none;border-radius:8px;padding:6px 11px;cursor:pointer;
-  text-decoration:none}
-.f-act:hover{color:var(--tx);border-color:var(--fog);text-decoration:none}
-.f-act svg{width:14px;height:14px}
-.f-act.danger{color:var(--fail);border-color:color-mix(in srgb,var(--fail) 42%,transparent)}
-.f-act.danger:hover{background:color-mix(in srgb,var(--fail) 10%,transparent);color:var(--fail)}
+   the same manner the workflow board uses for a refused move. The action links
+   it sits above (.f-acts/.f-act) are the preview's, in preview.css. */
 .f-guard{display:flex;gap:9px;align-items:flex-start;border:1px dashed var(--ln2);border-radius:10px;
   padding:10px 12px;margin-top:10px;font-size:11.5px;color:var(--fog);line-height:1.5}
 .f-guard svg{width:15px;height:15px;flex:none;margin-top:2px}
@@ -383,7 +284,7 @@
    is display:flex and would otherwise stay on screen. Stated once, here,
    for every element this surface hides. */
 .f-tile[hidden],tr[hidden],.f-grid[hidden],[data-f-listwrap][hidden],
-[data-f-shapewrap][hidden],.f-empty[hidden],.f-ovnav[hidden]{display:none !important}
+[data-f-shapewrap][hidden],.f-empty[hidden]{display:none !important}
 
 /* PORTED (added): the removal form.
    REMOVE, NEVER DELETE. The file page asks for a reason before a file leaves its

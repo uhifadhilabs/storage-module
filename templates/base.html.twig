@@ -13,14 +13,20 @@
 
 {% block stylesheets %}
     {{ parent() }}
+    {# The PREVIEW's vocabulary first: it belongs to the shareable component, not
+       to the hub, and another module's page loads exactly this one file without
+       files.css. The hub is one of its consumers, so it loads it the same way. #}
+    <link rel="stylesheet" href="{{ asset('bundles/uhifadhilabsstorage/preview.css') }}">
     <link rel="stylesheet" href="{{ asset('bundles/uhifadhilabsstorage/files.css') }}">
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    {# The hub's behaviour: the filter row, the shape toggle and the file overlay.
-       Plain DOM, no framework — a module bundle must not make a host install a
-       Stimulus controller before somebody can look at a photograph. #}
+    {# The hub's OWN behaviour: the filter row, the shape toggle and the removal
+       form. Plain DOM — these run on the hub's four screens only and nothing
+       outside this bundle asks for them. The preview's behaviour is a Stimulus
+       controller instead, because other modules' pages consume it and it has to
+       arm itself wherever it is included. #}
     <script src="{{ asset('bundles/uhifadhilabsstorage/files.js') }}" defer></script>
 {% endblock %}
 
@@ -29,4 +35,6 @@
     <div class="page">
         {% block storage_page %}{% endblock %}
     </div>
+    {# The preview, once per page, for every tile and row drawn above it. #}
+    {{ include('@UhifadhiLabsStorage/overlay/_preview.html.twig') }}
 {% endblock %}

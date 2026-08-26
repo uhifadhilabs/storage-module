@@ -1,0 +1,162 @@
+/* ============================================================================
+   THE FILE PREVIEW — the vocabulary of storage-module's one shareable component.
+   ----------------------------------------------------------------------------
+   ONE COMPONENT, EVERY SURFACE. These rules were MOVED OUT of files.css, not
+   copied: the Files hub loads this sheet beside its own and is consumer #1 of
+   the component, exactly like an observation's photos card. A rule that lived in
+   two sheets would drift, and a photograph would then look like two different
+   things depending on where it was opened from.
+
+   WHAT IS HERE. Only what the preview needs: the owner tag (which is the file's
+   identity), the storage pills it repeats in the side panel, the action links,
+   and the overlay itself. Everything hub-only — the thumbnail grid, the filter
+   bar, the day rail, the usage bars, the settings cards — stayed in files.css.
+
+   It ships from the BUNDLE's own public/ directory: AssetMapper serves it as
+   bundles/uhifadhilabsstorage/preview.css, content-versioned, no assets:install.
+   → templates/overlay/_preview.html.twig · assets/controllers/preview_controller.js
+   ========================================================================== */
+
+/* TOKEN BRIDGE — these rules are the byte-faithful port of the design app's
+   files.css, which speaks the design tokens (--p1, --cv, --ln…); the host speaks
+   rgb triplets (--c-p1…). The design names are defined here from the host's own
+   tokens so the component flips themes with the app, on ANY page that loads it
+   and not only on the hub. files.css states the same bridge for the rules that
+   stayed with it; both are read off the host's tokens, so they cannot disagree.
+
+   --shadow IS DELIBERATELY NOT BRIDGED HERE. The host defines --shadow itself,
+   and other modules' plates draw with it — a page that loaded this sheet would
+   otherwise have every card on it restyled by a file preview it never opened.
+   The overlay's own depth is --f-shadow, which belongs to nobody else. */
+:root{
+  --cv:rgb(var(--c-cv)); --p1:rgb(var(--c-p1)); --p2:rgb(var(--c-p2));
+  --tx:rgb(var(--c-tx)); --fog:rgb(var(--c-fog)); --dim:rgb(var(--c-dim));
+  --acc:rgb(var(--c-acc)); --accT:rgb(var(--c-accT));
+  --ln:var(--c-ln); --ln2:var(--c-ln2); --raised:rgb(var(--c-raised));
+  --f-shadow:0 18px 40px rgba(0,0,0,.28);
+}
+
+/* A MODULE'S COLOUR, one line per module — the same rule nav.css states for the
+   sidebar's identity dots: the module bundle declares its colour once and every
+   host surface renders it. Permits has no module yet, so it is the quiet token
+   and it is never drawn as a live colour. */
+:root, html.light {
+  --f-mod: var(--acc);
+  --f-patrol: var(--acc);
+  --f-inc: #E05B41;
+  --f-permit: var(--dim);
+}
+
+/* ── THE OWNER TAG ────────────────────────────────────────────────────────
+   THE MOST IMPORTANT COMPONENT ON THE SURFACE. Every file is shown with the
+   record it belongs to, because that is what it is — "Patrols · OBS-0214" is
+   the file's name in the only sense the product recognises. It is a LINK to
+   the owning record's own page; a file card with no owner tag would be a lie
+   about the model. */
+.f-owner{display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;
+  letter-spacing:.04em;color:var(--tx);border:1px solid var(--ln2);border-radius:7px;
+  padding:3px 8px 2px;white-space:nowrap;max-width:100%;overflow:hidden}
+.f-owner:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
+.f-owner{flex-wrap:nowrap;align-self:flex-start}
+.f-owner .mod{color:var(--fog);font-weight:600;flex:0 0 auto;white-space:nowrap}
+/* The separator is MARKUP, not a ::after. A generated dot on a flex item wraps
+   onto its own line the moment the item is shrink-to-fit, and a two-line owner
+   tag is the ugliest thing on the surface. One dot, one element. */
+.f-owner .sepdot{color:var(--dim);flex:none;margin:0 1px}
+/* PORTED: the dot is keyed by the MODULE SLUG the source declares, not by a
+   class written here, so a module this stylesheet never heard of still renders —
+   in the accent, until its own bundle declares a colour of its own. */
+.f-owner i,.f-fchip i,.f-dotc,.f-map .cellL i{background:var(--f-mod)}
+.f-owner i{width:7px;height:7px;border-radius:2px;flex:none;font-style:normal}
+.f-owner i.patrols,.f-fchip i.patrols,.f-dotc.patrols,.f-map .cellL i.patrols{background:var(--f-patrol)}
+.f-owner i.incidents,.f-fchip i.incidents,.f-dotc.incidents,.f-map .cellL i.incidents{background:var(--f-inc)}
+.f-owner i.permits,.f-fchip i.permits,.f-dotc.permits,.f-map .cellL i.permits{background:var(--f-permit)}
+/* An owner whose module is not built yet: named, not a link. */
+.f-owner.off{border-style:dashed;color:var(--dim);cursor:default}
+.f-owner.off:hover{border-color:var(--ln2);color:var(--dim)}
+
+/* ── STORAGE PILLS — the mechanism, said plainly ──────────────────────────
+   Where the bytes are, and whether the small picture exists. These are the two
+   facts the hub knows that no module page knows — and the preview repeats the
+   second of them in its side panel, which is why the pill travels with it. */
+.f-be,.f-th{display:inline-flex;align-items:center;gap:5px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:9px;font-weight:700;letter-spacing:.04em;border:1px solid var(--ln2);border-radius:6px;
+  padding:2.5px 7px 1.5px;color:var(--fog);white-space:nowrap}
+.f-be i{width:6px;height:6px;border-radius:50%;flex:none;font-style:normal;background:var(--fog)}
+.f-be.s3 i{background:var(--acc)}
+.f-be.local i{background:var(--warn)}
+.f-th.made{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 38%,transparent)}
+.f-th.wait{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 38%,transparent)}
+.f-th.failed{color:var(--fail);border-color:color-mix(in srgb,var(--fail) 38%,transparent)}
+.f-th.none{color:var(--dim);border-style:dashed}
+
+/* ── THE ACTION LINKS — what you may do, stated as links and no verdict ───
+   A file is removed only where its OWNING RECORD allows it, and that answer is
+   given on the file's own page, never cached into a tile. So these are ways to
+   go and look, not buttons that promise. */
+.f-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.f-act{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-size:11.5px;font-weight:600;
+  color:var(--fog);border:1px solid var(--ln2);background:none;border-radius:8px;padding:6px 11px;cursor:pointer;
+  text-decoration:none}
+.f-act:hover{color:var(--tx);border-color:var(--fog);text-decoration:none}
+.f-act svg{width:14px;height:14px}
+.f-act.danger{color:var(--fail);border-color:color-mix(in srgb,var(--fail) 42%,transparent)}
+.f-act.danger:hover{background:color-mix(in srgb,var(--fail) 10%,transparent);color:var(--fail)}
+
+/* ── THE FILE OVERLAY ─────────────────────────────────────────────────────
+   The photograph large on the left, everything known about it on the right.
+   Same manners as the widget picker in widgets.css: Escape closes, the
+   backdrop closes, focus goes into the box on open and back to the trigger on
+   close. The picture inside it is served through the permission check, never
+   from a public path — there is no public URL for an original anywhere on this
+   platform.
+   → GET /storage/evidence/{key} */
+.f-ov{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:3vh 22px}
+.f-ov[hidden]{display:none}
+.f-ovback{position:absolute;inset:0;background:color-mix(in srgb,var(--cv) 78%,transparent);backdrop-filter:blur(3px)}
+.f-ovbox{position:relative;width:min(1140px,100%);max-height:94vh;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,var(--p1),var(--p2));border:1px solid var(--ln2);border-radius:16px;
+  box-shadow:var(--f-shadow);overflow:hidden}
+.f-ovhead{display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid var(--ln)}
+.f-ovhead .t{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px;color:var(--tx);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-ovhead .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
+.f-ovhead .sp [hidden]{display:none}
+.f-ovbody{display:grid;grid-template-columns:1.55fr 1fr;min-height:0;flex:1}
+.f-ovstage{background:color-mix(in srgb,var(--fog) 12%,transparent);display:grid;place-items:center;
+  padding:16px;min-height:340px;position:relative}
+.f-ovstage img{max-width:100%;max-height:min(66vh,620px);border-radius:10px;display:block;box-shadow:var(--f-shadow)}
+.f-ovstage .noimg{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--fog);
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.f-ovstage .noimg svg{width:38px;height:38px}
+/* Stepping through the current result set without closing — the arrows are the
+   whole reason the overlay beats a page for browsing.
+   THE FIXED COLOURS HERE ARE DELIBERATE. The arrows sit ON a photograph, and a
+   photograph does not flip with the theme — so neither may the chrome over it.
+   Same reason the tile's private mark in files.css is fixed. */
+.f-ovnav{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;border:1px solid rgba(234,242,236,.22);background:rgba(10,14,11,.6);
+  color:#EAF2EC;cursor:pointer;padding:0}
+.f-ovnav:hover{background:rgba(10,14,11,.85)}
+.f-ovnav svg{width:16px;height:16px}
+.f-ovnav.prev{left:12px}
+.f-ovnav.next{right:12px}
+.f-ovside{padding:14px 16px 18px;overflow-y:auto;border-left:1px solid var(--ln);min-width:0}
+.f-ovside h3{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9px;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:16px 0 4px}
+.f-ovside h3:first-child{margin-top:0}
+.f-ovside .rln{font-size:11.5px}
+.f-ovside .rln .mono{font-size:10.5px}
+.f-ovside .val{max-width:58%;text-align:right;word-break:break-all}
+@media (max-width:900px){.f-ovbody{grid-template-columns:1fr}.f-ovside{border-left:0;border-top:1px solid var(--ln)}}
+
+/* [hidden] must beat a display the component sets itself — an arrow on a set of
+   one is display:grid and would otherwise stay on screen. */
+.f-ovnav[hidden]{display:none !important}
+
+/* ── THE TRIGGER — anything that opens the preview ────────────────────────
+   Stated once here so a module's own tile inherits the manners rather than
+   restating them: it is pressable, and the keyboard can reach it. */
+[data-f-preview]{cursor:pointer}
+[data-f-preview]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
