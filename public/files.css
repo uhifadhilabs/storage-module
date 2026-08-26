@@ -42,7 +42,7 @@
    speaks rgb triplets (--c-p1…). Rather than rewriting every rule (and
    drifting from the design), the design names are defined ONCE here from
    the host's own tokens, scoped to the hub's root, so the hub flips themes
-   with the app. Fixes the transparent overlay card the user reported. */
+   with the app. */
 :root{
   --cv:rgb(var(--c-cv)); --p1:rgb(var(--c-p1)); --p2:rgb(var(--c-p2));
   --tx:rgb(var(--c-tx)); --fog:rgb(var(--c-fog)); --dim:rgb(var(--c-dim));
