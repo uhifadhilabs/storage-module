@@ -1,0 +1,21 @@
+{# Widget "bybackend" — where the bytes are (FL·11).
+
+   STATIC TWIN of files.widgets.js's `bybackend` entry. Rendered by BOTH the hub
+   and the widget library.
+
+   One row per NAMED STORAGE the host configured, read from configuration and
+   nowhere else. Plain language: "where the files go", never "the configured
+   adapter". #}
+<div class="c" data-w="bybackend">
+    <span class="tab"><span class="idx">FL&middot;11</span>Where the bytes are</span>
+    <div class="f-use">
+        {% for place in places %}
+            <div class="f-userow">
+                <div class="top"><span class="f-be {{ place.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ place.label }}</span><b>{{ place.what }}</b><span class="n">{{ counts.bytes|storage_bytes }}</span></div>
+                <div class="f-bar"><i style="width:100%"></i></div>
+                <div class="f-note" style="margin-top:5px">{{ counts.files|number_format(0, '.', ' ') }} files{{ place.where ? ' · ' ~ place.where : '' }}</div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="use"><b>Wherever they are, they are not inside the website.</b> Originals live outside the web root, so there is no address anybody can guess &mdash; a file is reached through a request the app answers only after it has checked that you may see the record it belongs to. <a href="{{ path('storage_files_settings') }}">Where files go &rarr;</a></div>
+</div>

@@ -14,8 +14,12 @@ declare(strict_types=1);
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use UhifadhiLabs\Storage\Model\EvidenceConstraints;
+use UhifadhiLabs\Storage\Registry\FileRegistry;
+use UhifadhiLabs\Storage\Registry\FileSourceInterface;
 use UhifadhiLabs\Storage\Security\EvidenceAccessDecider;
 use UhifadhiLabs\Storage\Service\EvidenceStorage;
+use UhifadhiLabs\Storage\Service\FilesSurface;
+use UhifadhiLabs\Storage\Service\StorageSettings;
 use UhifadhiLabs\Storage\Thumbnail\GdThumbnailer;
 use UhifadhiLabs\Storage\Thumbnail\ImagickThumbnailer;
 use UhifadhiLabs\Storage\Thumbnail\ThumbnailGenerator;
@@ -93,4 +97,38 @@ return static function (ContainerConfigurator $container): void {
     $services->set('storage.evidence_access_decider', EvidenceAccessDecider::class)
         ->args([tagged_iterator('uhifadhi.evidence_access_voter')]);
     $services->alias(EvidenceAccessDecider::class, 'storage.evidence_access_decider');
+
+    /*
+     * THE CROSS-MODULE FILE REGISTRY — the Files hub's whole supply.
+     *
+     * The same shape as the permission seam above and for the same reason: this
+     * bundle has no idea what an observation or an incident is, so the files on
+     * the hub are the ones OWNING MODULES handed over, each already carrying its
+     * owner. The iterator is empty on a host that has installed no module yet,
+     * and an empty hub is the correct reading of that rather than an error.
+     */
+    $services->set('storage.file_registry', FileRegistry::class)
+        ->args([tagged_iterator(FileSourceInterface::TAG)]);
+    $services->alias(FileRegistry::class, 'storage.file_registry');
+
+    /*
+     * "Where files go", answered from this deployment's own configuration. Every
+     * argument is a parameter set by loadExtension() from the config tree, so the
+     * settings page cannot show a fact that is not true here.
+     */
+    $services->set('storage.settings', StorageSettings::class)
+        ->args([
+            service('storage.file_registry'),
+            param('storage.evidence.adapter'),
+            param('storage.files.storage_label'),
+            param('storage.files.storage_location'),
+            param('storage.evidence.allowed_mime_types'),
+            param('storage.evidence.max_bytes'),
+            param('storage.evidence.thumbnail_long_edge'),
+        ]);
+    $services->alias(StorageSettings::class, 'storage.settings');
+
+    $services->set('storage.files_surface', FilesSurface::class)
+        ->args([service('storage.file_registry'), service('storage.settings')]);
+    $services->alias(FilesSurface::class, 'storage.files_surface');
 };

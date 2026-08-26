@@ -1,0 +1,26 @@
+{# Widget "owners" — modules holding files (FL·04).
+
+   STATIC TWIN of files.widgets.js's `owners` entry. Rendered by BOTH the hub and
+   the widget library.
+
+   One row per MODULE that attaches files. THE HUB GROWS BY MODULES, NEVER BY
+   FOLDERS: a module appears here the day it ships a file source, and not one
+   line of work on this page is needed to put it there. #}
+<div class="c" data-w="owners">
+    <span class="tab"><span class="idx">FL&middot;04</span>Modules holding files</span>
+    <table class="tbl">
+        <tr><th>module</th><th>what it attaches files to</th><th class="num">records</th><th class="num">files</th><th class="num">space</th></tr>
+        {% for module in modules %}
+            <tr>
+                <td><span style="display:flex;align-items:center;gap:8px"><i class="f-dotc {{ module.slug }}" style="width:7px;height:7px;border-radius:2px;display:inline-block"></i>{{ module.label }}</span></td>
+                <td class="f-note">{{ module.attachesTo }}</td>
+                <td class="num">{{ module.records|number_format(0, '.', ' ') }}</td>
+                <td class="num">{{ module.files|number_format(0, '.', ' ') }}</td>
+                <td class="num">{{ module.bytes|storage_bytes }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5" class="f-note">No module on this platform has put its files on the hub yet. <span class="chip idle">no module yet</span></td></tr>
+        {% endfor %}
+    </table>
+    <div class="use"><b>The hub grows by modules, never by folders.</b> A module appears in this table the day it ships a file source &mdash; its files arrive here without one line of work on this page. A module that is installed but holds nothing is still listed, because &ldquo;we have that and it is empty&rdquo; is a different fact from &ldquo;we do not have it&rdquo;.</div>
+</div>

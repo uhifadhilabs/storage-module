@@ -17,12 +17,20 @@ use League\FlysystemBundle\FlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
+use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use Uhifadhi\Service\WidgetEndpoint;
+use Uhifadhi\Service\WidgetService;
+use UhifadhiLabs\Storage\Registry\FileRegistry;
+use UhifadhiLabs\Storage\Registry\FileSourceInterface;
 use UhifadhiLabs\Storage\Service\EvidenceStorage;
 use UhifadhiLabs\Storage\Tests\Integration\Fixtures\StubEvidenceVoter;
+use UhifadhiLabs\Storage\Tests\Integration\Fixtures\StubFileSource;
 use UhifadhiLabs\Storage\UhifadhiLabsStorageBundle;
+
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 /**
  * Smallest possible host app: framework + security + flysystem + storage. No
@@ -45,6 +53,10 @@ final class TestKernel extends Kernel
     {
         yield new FrameworkBundle();
         yield new SecurityBundle();
+        // Twig, because the Files hub is four screens. The bundle registers them
+        // only where TwigBundle, SecurityBundle and the host's widget framework
+        // are all present, and this kernel is what "all present" looks like.
+        yield new TwigBundle();
         yield new FlysystemBundle();
         yield new UhifadhiLabsStorageBundle();
     }
@@ -61,13 +73,22 @@ final class TestKernel extends Kernel
             // loginUser() needs a stateful firewall, which needs a session; the
             // mock file storage is the documented choice for the test env.
             'session' => ['storage_factory_id' => 'session.storage.factory.mock_file'],
+            // The file page's removal form carries a token, so there has to be a
+            // real manager minting it.
+            'csrf_protection' => true,
         ]);
 
         // A minimal but REAL security setup: the serving route reads the user
         // from the token storage, so there has to be a genuine one to read.
         $container->extension('security', [
             'providers' => [
-                'app_users' => ['memory' => ['users' => ['ranger@example.test' => ['password' => 'x', 'roles' => ['ROLE_USER']]]]],
+                'app_users' => ['memory' => ['users' => [
+                    'ranger@example.test' => ['password' => 'x', 'roles' => ['ROLE_USER']],
+                    // "Where files go" rides on the deployment's administrator
+                    // permission, so the suite needs somebody who has it and
+                    // somebody who does not.
+                    'warden@example.test' => ['password' => 'x', 'roles' => ['ROLE_ADMIN', 'ROLE_USER']],
+                ]]],
             ],
             'firewalls' => [
                 'main' => ['lazy' => true, 'provider' => 'app_users'],
@@ -88,11 +109,44 @@ final class TestKernel extends Kernel
             ->set(StubEvidenceVoter::class)
             ->tag('uhifadhi.evidence_access_voter');
 
-        // Public alias so the round-trip tests can reach the bundle's private
-        // service. The serving route references it too, but a test needs a
-        // handle of its own.
+        // The OWNING MODULE of the hub's files, played by a fixture, and tagged by
+        // hand for the same reason the voter above is.
+        $container->services()
+            ->set(StubFileSource::class)
+            ->tag(FileSourceInterface::TAG);
+
+        /*
+         * The HOST's widget framework, played by the doubles in
+         * tests/Fixtures/Uhifadhi/Service. They are registered under their own
+         * class names because that is how the host registers them and how this
+         * bundle's controller asks for them; see the note at the top of each.
+         */
+        $container->services()
+            ->set(WidgetService::class)
+            ->set(WidgetEndpoint::class)
+            ->args([
+                service(WidgetService::class),
+                service('security.token_storage'),
+                service('security.csrf.token_manager'),
+            ]);
+
+        // The host provides layout.html.twig and widgets/_library.html.twig; the
+        // suite stubs both. See tests/Integration/Fixtures/templates.
+        $container->extension('twig', [
+            'paths' => [__DIR__.'/Fixtures/templates' => null],
+            'strict_variables' => true,
+        ]);
+
+        // Public aliases so the tests can reach the bundle's private services. The
+        // routes reference them too, but a test needs a handle of its own.
         $container->services()
             ->alias('test_public.'.EvidenceStorage::class, 'storage.evidence_storage')
+            ->public();
+        $container->services()
+            ->alias('test_public.'.FileRegistry::class, 'storage.file_registry')
+            ->public();
+        $container->services()
+            ->alias('test_public.'.StubFileSource::class, StubFileSource::class)
             ->public();
     }
 

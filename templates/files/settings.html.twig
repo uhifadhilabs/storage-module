@@ -1,0 +1,118 @@
+{# WHERE FILES GO — /files/settings.
+
+   STATIC TWIN of the settled design's files/settings.html.
+
+   READ-ONLY TRUTH FROM CONFIGURATION. Every line here is a fact about THIS
+   deployment — which places are configured, which module's files go where, what
+   is allowed in, how big one file may be. Nothing on it is a sample and nothing
+   is aspirational: a settings page that shows what a different deployment would
+   look like is worse than no settings page. It changes nothing either; where the
+   bytes live is a deployment decision, not a form. #}
+{% extends '@UhifadhiLabsStorage/base.html.twig' %}
+
+{% block title %}Where files go{% endblock %}
+
+{% block storage_page %}
+<div class="crumb"><a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / where files go</div>
+
+<div class="pghead">
+    <div>
+        <h1 class="pg">Where files go</h1>
+        <p class="pgsub">The organisation keeps its files in one or more <b>places it has named</b>. This page says which
+        places those are, which module&rsquo;s files go where, and what is allowed in. It is written for whoever
+        administers the platform &mdash; nothing on it changes what a ranger sees, only where the bytes end up.</p>
+    </div>
+    <div class="pgact w-pgact">
+        <a class="tgl w-act" href="{{ hubUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to files</a>
+    </div>
+</div>
+
+<div class="f-say"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div><b>Only an administrator opens this page.</b> Seeing where files are kept is
+seeing something about every file at once, so it rides on the same permission as installing a module.</div></div>
+
+<h2 class="zone">The places files are kept</h2>
+<div class="grid g2">
+    {% for place in places %}
+        <div class="f-store{{ place.current ? ' on' : '' }}">
+            <div class="hd"><span class="f-be {{ place.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ place.label }}</span><b>{{ place.what }}</b>{% if place.where %}<span class="where">{{ place.where }}</span>{% endif %}</div>
+            <div class="rln"><span>Holding</span><span class="mono" style="font-size:11px">{{ counts.files|number_format(0, '.', ' ') }} files &middot; {{ counts.bytes|storage_bytes }}</span></div>
+            <div class="rln"><span>What is on it</span><span class="mono" style="font-size:11px">{{ place.current ? 'everything this platform keeps' : 'nothing new goes here' }}</span></div>
+            <div class="rln"><span>Reachable without the app</span><span><span class="chip fail">never</span></span></div>
+            <div class="use" style="margin-bottom:0"><b>Nothing here is public.</b> Originals live <b>outside the web
+            root</b>, so there is no address anybody can guess or share by accident; the storage is private by
+            construction &mdash; there is no visibility setting and no public-URL setting to get wrong &mdash; and the
+            app hands each file over itself, after asking the owning module whether you may see the record.</div>
+        </div>
+    {% endfor %}
+</div>
+
+<h2 class="zone">Which module&rsquo;s files go where</h2>
+<div class="c">
+    <span class="tab"><span class="idx">FL&middot;S1</span>The map<span class="src">&middot; one line per module</span></span>
+    {# A module does not choose a storage; the HOST tells it which named place to
+       use, and the module writes there. That is the whole seam. #}
+    <div class="f-map">
+        {% for row in map %}
+            <div class="cellL"><i class="{{ row.slug }}" style="width:7px;height:7px;border-radius:2px;display:inline-block"></i> {{ row.label }} &mdash; {{ row.attachesTo }}</div>
+            <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+            <div class="cellR">{% if row.place %}<span class="f-be {{ row.place.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ row.place.label }}</span>{% else %}<span class="chip idle">nowhere yet</span>{% endif %}</div>
+        {% else %}
+            <div class="cellL"><span class="d">No module has put its files on the hub yet</span></div>
+            <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+            <div class="cellR"><span class="chip idle">no module yet</span></div>
+        {% endfor %}
+    </div>
+    <div class="use"><b>A module never names a place.</b> It asks for &ldquo;the place my files go&rdquo; and the host
+    answers. That is what lets one deployment run on a disk, another on object storage, and a third on something nobody
+    has written yet, without a single change inside the modules.</div>
+</div>
+
+<h2 class="zone">How long things are kept, and what is allowed in</h2>
+<div class="grid g2">
+    <div class="c">
+        <span class="tab"><span class="idx">FL&middot;S2</span>Keeping</span>
+        <div class="rln"><span>Evidence on any record</span><span class="mono acc" style="font-size:11px">kept, always</span></div>
+        <div class="rln"><span>Small pictures</span><span class="mono" style="font-size:11px">re-makeable at any time, never precious</span></div>
+        <div class="rln"><span>When a record is removed</span><span class="mono" style="font-size:11px">its files go with it, in the same breath</span></div>
+        <div class="rln"><span>When a file is removed</span><span class="mono" style="font-size:11px">the record keeps a line saying so</span></div>
+        <div class="rln"><span>Who decides a removal</span><span class="mono" style="font-size:11px">the owning record, never this page</span></div>
+        <div class="use" style="margin-bottom:0"><b>Nothing expires by itself.</b> There is no sweeper deleting old
+        photographs at midnight, and there will not be one until somebody writes a retention rule down and an
+        administrator switches it on. Until then, kept means kept.</div>
+    </div>
+    <div class="c">
+        <span class="tab"><span class="idx">FL&middot;S3</span>What is allowed in</span>
+        <div class="rln"><span>Photographs</span><span class="mono" style="font-size:11px">{{ allowed.photos|join(' · ') ?: '—' }}</span></div>
+        <div class="rln"><span>Documents</span><span class="mono" style="font-size:11px">{{ allowed.documents|join(' · ') ?: '—' }}</span></div>
+        <div class="rln"><span>Tracks</span><span class="mono" style="font-size:11px">{{ allowed.tracks|join(' · ') ?: '—' }}</span></div>
+        <div class="rln"><span>Anything else</span><span class="mono r" style="font-size:11px">refused at the door</span></div>
+        <div class="rln"><span>How the type is decided</span><span class="mono acc" style="font-size:11px">by reading the file, not its name</span></div>
+        <div class="rln"><span>Biggest one file</span><span class="mono" style="font-size:11px">{{ maxBytes|storage_bytes }}</span></div>
+        <div class="rln"><span>Small picture</span><span class="mono" style="font-size:11px">one, ~{{ thumbnailLongEdge }}px on the long side</span></div>
+        <div class="use" style="margin-bottom:0"><b>The name is not evidence of anything.</b> Anyone can call a program
+        &ldquo;photo.jpg&rdquo;. The platform looks at what the file actually is and refuses it if that is not on the
+        list &mdash; which is also why a HEIC is kept even though no small picture could be made from it: it really is a
+        photograph, it is simply one this machine cannot read.</div>
+    </div>
+</div>
+
+<div class="c" style="margin-top:20px">
+    <span class="tab"><span class="idx">FL&middot;S4</span>What an administrator can change here<span class="src">&middot; and what they cannot</span></span>
+    <div class="grid g2" style="margin-bottom:0">
+        <div>
+            <div class="rln"><span>Point the platform at another place</span><span class="chip acc">yes &mdash; in configuration</span></div>
+            <div class="rln"><span>Narrow what is allowed in</span><span class="chip acc">yes &mdash; in configuration</span></div>
+            <div class="rln"><span>Change how big one file may be</span><span class="chip acc">yes &mdash; in configuration</span></div>
+            <div class="rln"><span>Change the small picture&rsquo;s size</span><span class="chip acc">yes &mdash; in configuration</span></div>
+        </div>
+        <div>
+            <div class="rln"><span>Make a file public</span><span class="chip fail">never</span></div>
+            <div class="rln"><span>Remove evidence a record is holding</span><span class="chip fail">never &mdash; the record decides</span></div>
+            <div class="rln"><span>Change what a file is</span><span class="chip fail">never &mdash; an original is untouchable</span></div>
+            <div class="rln"><span>See a file whose record they cannot see</span><span class="chip fail">never</span></div>
+        </div>
+    </div>
+    <div class="use"><b>Read the right-hand column as the promise.</b> Administering where bytes live is not the same
+    as being allowed to read them, and this page never becomes a back door into evidence.</div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{# The HOST's widget-library component, stubbed down to ITS CONTRACT.
+
+   The real component is a 1200-line screen with preset strips, a picker and
+   drag-and-drop. None of that is this bundle's to test. What IS this bundle's is
+   whether it hands the component everything the component's own header says it
+   needs — so this stub renders exactly the contract-bearing part of the real
+   one's output and nothing else:
+
+     • the root, carrying all eight URLs and the CSRF token
+     • the catalogue JSON blob
+     • one <template> per widget, each rendering the real partial with the real
+       context, so a partial that reaches for something the surface did not pass
+       fails HERE rather than in a browser
+     • the .w-canvas / .w-previewbar / [data-picker] landmarks the host's own
+       WidgetLibrarySeamTest asserts
+
+   PARAMETERS — the whole contract, copied from the host component's header:
+     catalog, builtins, customPresets, active, widgets, partial, widgetContext,
+     urls, csrfToken
+
+   Every one of them is read below WITHOUT a default, so a missing key is a Twig
+   error and the bundle's seam test fails loudly. #}
+{% set dom = {
+    root: constant('Uhifadhi\\Model\\WidgetDom::ROOT'),
+    csrf: constant('Uhifadhi\\Model\\WidgetDom::CSRF_TOKEN'),
+    save: constant('Uhifadhi\\Model\\WidgetDom::SAVE_URL'),
+    reset: constant('Uhifadhi\\Model\\WidgetDom::RESET_URL'),
+    preset: constant('Uhifadhi\\Model\\WidgetDom::PRESET_URL'),
+    copy: constant('Uhifadhi\\Model\\WidgetDom::PRESET_COPY_URL'),
+    presets: constant('Uhifadhi\\Model\\WidgetDom::PRESETS_URL'),
+    apply: constant('Uhifadhi\\Model\\WidgetDom::PRESET_APPLY_URL'),
+    rename: constant('Uhifadhi\\Model\\WidgetDom::PRESET_RENAME_URL'),
+    delete: constant('Uhifadhi\\Model\\WidgetDom::PRESET_DELETE_URL'),
+    catalog: constant('Uhifadhi\\Model\\WidgetDom::CATALOG'),
+    template: constant('Uhifadhi\\Model\\WidgetDom::TEMPLATE'),
+} %}
+<div {{ dom.root }} data-surface="{{ catalog.surface }}"
+     {{ dom.csrf }}="{{ csrfToken }}"
+     {{ dom.save }}="{{ urls.save }}"
+     {{ dom.reset }}="{{ urls.reset }}"
+     {{ dom.preset }}="{{ urls.preset }}"
+     {{ dom.copy }}="{{ urls.copy }}"
+     {{ dom.presets }}="{{ urls.presets }}"
+     {{ dom.apply }}="{{ urls.apply }}"
+     {{ dom.rename }}="{{ urls.rename }}"
+     {{ dom.delete }}="{{ urls.delete }}">
+    <script type="application/json" {{ dom.catalog }}>{{ {
+        surface: catalog.surface,
+        defaultPreset: catalog.defaultPresetId,
+        placeholder: constant('Uhifadhi\\Model\\WidgetDom::ID_PLACEHOLDER'),
+        active: active,
+        groups: catalog.groups|map(g => {id: g.id, label: g.label, description: g.description}),
+        widgets: widgets,
+        builtins: builtins|map(p => {id: p.id, label: p.label}),
+        mine: customPresets|map(p => {id: p.id, label: p.label}),
+    }|json_encode|raw }}</script>
+
+    {% for preset in builtins %}
+        <div class="w-preset{{ preset.id == active.id ? ' w-preset-active' : '' }}" data-preset="{{ preset.id }}">{{ preset.label }}</div>
+    {% endfor %}
+
+    <div class="w-previewbar"></div>
+    <div class="w-body">
+        <div class="w-canvas">
+            {% for widget in widgets|filter(w => w.on) %}
+                <div class="w-cell w-span-{{ widget.cols }}" data-widget-id="{{ widget.id }}">
+                    {{ include(partial|format(widget.id), widgetContext, with_context: false) }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div data-picker>
+        {% for widget in widgets %}
+            <template {{ dom.template }}="{{ widget.id }}">{{ include(partial|format(widget.id), widgetContext, with_context: false) }}</template>
+        {% endfor %}
+    </div>
+</div>

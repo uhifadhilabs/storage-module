@@ -1,0 +1,17 @@
+{# Widget "recent" — just arrived (FL·02).
+
+   STATIC TWIN of files.widgets.js's `recent` entry. Rendered by BOTH the hub and
+   the widget library.
+
+   Ordered by ARRIVAL, which is the only ordering that answers "has the Ndutu
+   patrol synced yet". Everywhere else on this hub the ordering is the day the
+   picture was taken. #}
+{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+<div class="c" data-w="recent">
+    <span class="tab"><span class="idx">FL&middot;02</span>Just arrived<span class="src">&middot; newest first, by the time they reached us</span></span>
+    <div class="f-grid" data-f-grid>
+        {%- for file in recent -%}{{ ui.tile(file) }}{%- endfor -%}
+    </div>
+    {% if recent is empty %}<div class="f-empty"><b>Nothing has arrived yet</b>A file reaches this hub by being attached to a record, on that record&rsquo;s own page.</div>{% endif %}
+    <div class="use">Ordered by <b>when they got here</b>, which is the only ordering that answers &ldquo;did the patrol sync yet&rdquo;. Everywhere else on this hub the ordering is <b>when the picture was taken</b> &mdash; a patrol out for three days syncs on the third, and its photographs still belong to the days they were taken.</div>
+</div>

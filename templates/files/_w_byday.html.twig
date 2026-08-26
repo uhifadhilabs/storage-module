@@ -1,0 +1,20 @@
+{# Widget "byday" — day by day (FL·08).
+
+   STATIC TWIN of files.widgets.js's `byday` entry. Rendered by BOTH the hub and
+   the widget library.
+
+   Grouped by the day the HANDSET recorded, never by the day it uploaded. A
+   patrol out for three days syncs on the third; grouping by the upload would
+   pile all of it onto one day and lose the three. A document has no such clock,
+   so it sits under the day it was filed. #}
+{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+<div class="c" data-w="byday">
+    <span class="tab"><span class="idx">FL&middot;08</span>Day by day<span class="src">&middot; the day the picture was taken, not the day it uploaded</span></span>
+    {% for group in byDay|slice(0, 8) %}
+        <div class="f-day"><b>{{ group.day|date('D j M Y')|lower }}</b><span class="cnt">{{ group.files|length }} file{{ group.files|length == 1 ? '' : 's' }}</span></div>
+        <div class="f-grid dense" data-f-grid>{%- for file in group.files -%}{{ ui.tile(file) }}{%- endfor -%}</div>
+    {% else %}
+        {{ ui.empty(true) }}
+    {% endfor %}
+    <div class="use"><b>A patrol out for three days syncs on the third.</b> Grouping by the upload would pile all of it onto one day and lose the three; grouping by the handset&rsquo;s own clock keeps the field record honest. A document has no such clock, so it sits under the day it was filed and says so on its card.</div>
+</div>

@@ -10,7 +10,13 @@ $finder = (new PhpCsFixer\Finder())
     // Test FIXTURES, not source. tests/Fixtures/images/not-an-image.php exists
     // precisely to be a file that is NOT a photograph; formatting it as though
     // it were our code would be tidying up the thing under test.
-    ->exclude('Fixtures/images');
+    ->exclude('Fixtures/images')
+    // The HOST's own widget classes, copied in verbatim so this bundle's suite
+    // compiles against the contract it is written to. They keep the host's header
+    // and the host's formatting on purpose: reformatting a copy as though it were
+    // ours would be the first drift, and a stub that has drifted is worse than no
+    // stub at all.
+    ->exclude('Fixtures/Uhifadhi');
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)

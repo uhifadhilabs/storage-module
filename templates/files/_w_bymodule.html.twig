@@ -1,0 +1,28 @@
+{# Widget "bymodule" — space by module (FL·10).
+
+   STATIC TWIN of files.widgets.js's `bymodule` entry. Rendered by BOTH the hub
+   and the widget library. #}
+{% set bars = ['', 'b', 'c'] %}
+<div class="c" data-w="bymodule">
+    <span class="tab"><span class="idx">FL&middot;10</span>Space by module</span>
+    <div class="f-use">
+        {% for row in bySpace %}
+            <div class="f-userow">
+                <div class="top"><b>{{ row.label }}</b><span class="sub">{{ row.records|number_format(0, '.', ' ') }} records &middot; {{ row.files|number_format(0, '.', ' ') }} files</span><span class="n">{{ row.bytes|storage_bytes }}</span></div>
+                <div class="f-bar"><i class="{{ bars[loop.index0] ?? 'c' }}" style="width:{{ row.share }}%"></i></div>
+            </div>
+        {% else %}
+            <div class="use" style="margin-bottom:0">No module holds files yet, so nothing is costing anything.</div>
+        {% endfor %}
+    </div>
+    <h3 class="f-note" style="margin:16px 0 6px">By area</h3>
+    <div class="f-use">
+        {% for row in byArea %}
+            <div class="f-userow">
+                <div class="top"><b>{{ row.label }}</b><span class="sub">{{ row.files|number_format(0, '.', ' ') }} files</span><span class="n">{{ row.bytes|storage_bytes }}</span></div>
+                <div class="f-bar"><i style="width:{{ row.share }}%"></i></div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="use"><b>The small pictures are a rounding error.</b> One ~{{ thumbnailLongEdge }}px thumbnail per photograph costs about a hundred kilobytes; a whole area&rsquo;s worth of them costs less than one day&rsquo;s photographs. That is the whole argument for making them eagerly and never making them on demand.</div>
+</div>

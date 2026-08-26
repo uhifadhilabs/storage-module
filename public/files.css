@@ -1,0 +1,384 @@
+/* ============================================================================
+   FILES — the hub's own vocabulary.
+   ----------------------------------------------------------------------------
+   PORTED VERBATIM from the settled design's files.css (uhifadhi-web), which is
+   the static twin of this file. It ships from the BUNDLE's own public/ directory
+   — AssetMapper serves it as bundles/uhifadhilabsstorage/files.css, content
+   versioned, no assets:install — and is loaded only by this bundle's own
+   base.html.twig, so the host's stylesheet never references storage.
+
+   Two things changed on the way in, both marked PORTED where they appear: the
+   module dot is keyed by MODULE SLUG rather than by a hand-written class, so a
+   module the design never saw still renders; and the removal form the file page
+   asks a reason in was added, because the design drew removal as a promise and
+   this is where the promise is kept.
+
+   WHERE THESE RULES CAME FROM. Nothing here restates the design system: the
+   plate (.c), the tab (.tab/.idx/.src), the chips (.chip), the tables (.tbl),
+   the caption (.use), the meta line (.rln), the KPI (.kpi) and the page
+   scaffold all come from uhifadhi.css, and every dashboard rule comes from
+   widgets.css. This file adds ONLY what a file hub needs and no other surface
+   has: the thumbnail tile, the owner tag, the storage pills, the file overlay,
+   the day rail and the usage bars.
+
+   WHERE THEY BELONG WHEN PORTED. The hub is the user-facing surface of
+   uhifadhilabs/storage-module, so these rules ship in the MODULE's stylesheet
+   the same way patrols' do — not in the host's app.css. The overlay and the
+   thumbnail tile are the two pieces most likely to be wanted by a module's own
+   detail page (an incident's evidence strip already draws a tile of its own);
+   if a second module asks for them, they get HOISTED into the host, exactly as
+   the map plate was. One layer must render identically everywhere.
+
+   THE MODEL THESE RULES DRAW. A file is OWNER-BOUND: it belongs to a record in
+   a module — an observation's photo, an incident's evidence, later a permit's
+   document. There is no shared library and no folder tree, so there is no
+   folder vocabulary in this file. The owner is the identity, which is why
+   .f-owner is a first-class component and .f-name is small print.
+   → UhifadhiLabs\Storage — EvidenceStorage, the streaming route, the thumbnailer
+   ========================================================================== */
+
+/* A MODULE'S COLOUR, one line per module — the same rule nav.css states for the
+   sidebar's identity dots: the module bundle declares its colour once and every
+   host surface renders it. Permits has no module yet, so it is the quiet token
+   and it is never drawn as a live colour. */
+:root, html.light {
+  --f-mod: var(--acc);
+  --f-patrol: var(--acc);
+  --f-inc: #E05B41;
+  --f-permit: var(--dim);
+}
+
+/* ── THE OWNER TAG ────────────────────────────────────────────────────────
+   THE MOST IMPORTANT COMPONENT ON THE SURFACE. Every file is shown with the
+   record it belongs to, because that is what it is — "Patrols · OBS-0214" is
+   the file's name in the only sense the product recognises. It is a LINK to
+   the owning record's own page; a file card with no owner tag would be a lie
+   about the model. */
+.f-owner{display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;
+  letter-spacing:.04em;color:var(--tx);border:1px solid var(--ln2);border-radius:7px;
+  padding:3px 8px 2px;white-space:nowrap;max-width:100%;overflow:hidden}
+.f-owner:hover{border-color:var(--acc);color:var(--acc);text-decoration:none}
+.f-owner{flex-wrap:nowrap;align-self:flex-start}
+.f-owner .mod{color:var(--fog);font-weight:600;flex:0 0 auto;white-space:nowrap}
+/* The separator is MARKUP, not a ::after. A generated dot on a flex item wraps
+   onto its own line the moment the item is shrink-to-fit, and a two-line owner
+   tag is the ugliest thing on the surface. One dot, one element. */
+.f-owner .sepdot{color:var(--dim);flex:none;margin:0 1px}
+/* PORTED: the dot is keyed by the MODULE SLUG the source declares, not by a
+   class written here, so a module this stylesheet never heard of still renders —
+   in the accent, until its own bundle declares a colour of its own. */
+.f-owner i,.f-fchip i,.f-dotc,.f-map .cellL i{background:var(--f-mod)}
+.f-owner i{width:7px;height:7px;border-radius:2px;flex:none;font-style:normal}
+.f-owner i.patrols,.f-fchip i.patrols,.f-dotc.patrols,.f-map .cellL i.patrols{background:var(--f-patrol)}
+.f-owner i.incidents,.f-fchip i.incidents,.f-dotc.incidents,.f-map .cellL i.incidents{background:var(--f-inc)}
+.f-owner i.permits,.f-fchip i.permits,.f-dotc.permits,.f-map .cellL i.permits{background:var(--f-permit)}
+/* An owner whose module is not built yet: named, not a link. */
+.f-owner.off{border-style:dashed;color:var(--dim);cursor:default}
+.f-owner.off:hover{border-color:var(--ln2);color:var(--dim)}
+
+/* ── THE THUMBNAIL TILE ───────────────────────────────────────────────────
+   ONE ~400px thumbnail per file, and it is the ONLY thing ever served without
+   opening the original. The tile is a button: it opens the file overlay.
+   → GET /files/{uuid}/thumb — a permission check, then the bytes. */
+.f-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:14px}
+.f-grid.dense{grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:9px}
+.f-tile{display:flex;flex-direction:column;gap:7px;text-decoration:none;color:var(--tx);
+  border:1px solid var(--ln);border-radius:12px;padding:7px;background:var(--p2);cursor:pointer;
+  text-align:left;font-family:inherit;width:100%}
+.f-tile:hover{border-color:color-mix(in srgb,var(--acc) 55%,transparent);text-decoration:none}
+.f-tile:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.f-tile .sh{position:relative;aspect-ratio:4/3;border-radius:8px;overflow:hidden;
+  background:color-mix(in srgb,var(--fog) 10%,transparent);display:grid;place-items:center}
+.f-tile .sh img{width:100%;height:100%;object-fit:cover;display:block}
+/* A file with NO thumbnail is not a broken tile — it says what it is. A PDF, a
+   track export and a photograph whose thumbnail has not been made yet are three
+   different facts and they must not look alike. */
+.f-tile .sh.none{border:1px dashed var(--ln2);color:var(--fog);gap:6px;flex-direction:column;
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;background:none}
+.f-tile .sh.none svg{width:22px;height:22px}
+.f-tile .sh.wait{border:1px dashed color-mix(in srgb,var(--warn) 50%,transparent);color:var(--warn)}
+.f-tile .sh.failed{border:1px dashed color-mix(in srgb,var(--fail) 50%,transparent);color:var(--fail)}
+/* The private mark. Every original on this platform is private; the mark is on
+   the tile so nobody has to be told twice.
+   THE FIXED COLOURS HERE ARE DELIBERATE, and they are the only ones in this
+   file. The badge sits ON a photograph, and a photograph does not flip with the
+   theme — so neither may the chrome over it. Same reason the map plate's
+   controls in uhifadhi.css are fixed. The overlay's step arrows below follow
+   the same rule for the same reason. */
+.f-tile .sh .lock{position:absolute;right:5px;top:5px;width:19px;height:19px;border-radius:6px;
+  display:grid;place-items:center;background:rgba(10,14,11,.62);color:#EAF2EC}
+.f-tile .sh .lock svg{width:11px;height:11px}
+.f-tile .bd{display:flex;flex-direction:column;gap:5px;min-width:0;padding:0 2px 2px}
+.f-tile .nm{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9.5px;color:var(--fog);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-tile .mt{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:8.5px;color:var(--dim)}
+.f-grid.dense .f-tile .nm,.f-grid.dense .f-tile .mt{display:none}
+.f-grid.dense .f-tile{padding:5px;gap:5px}
+
+/* ── THE LIST ROW — the same file, read instead of looked at ──────────────
+   The grid/list toggle is one dataset in two shapes, never two queries. */
+.f-list{width:100%;border-collapse:collapse;font-size:12.5px}
+.f-list th{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--fog);text-align:left;padding:8px 9px;font-weight:600;
+  border-bottom:1px solid var(--ln2);white-space:nowrap}
+.f-list td{padding:7px 9px;border-bottom:1px dashed color-mix(in srgb,var(--fog) 16%,transparent);
+  vertical-align:middle;font-variant-numeric:tabular-nums}
+.f-list tr:last-child td{border-bottom:0}
+.f-list tbody tr{cursor:pointer}
+.f-list tbody tr:hover td{background:color-mix(in srgb,var(--acc) 5%,transparent)}
+.f-list .mini{width:44px;height:33px;border-radius:6px;object-fit:cover;display:block;border:1px solid var(--ln2)}
+.f-list .mininone{width:44px;height:33px;border-radius:6px;border:1px dashed var(--ln2);display:grid;
+  place-items:center;color:var(--dim)}
+.f-list .mininone svg{width:13px;height:13px}
+.f-list .nm{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px;color:var(--tx)}
+.f-list .num{text-align:right;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px}
+
+/* ── STORAGE PILLS — the mechanism, said plainly ──────────────────────────
+   Where the bytes are, and whether the small picture exists. These are the two
+   facts the hub knows that no module page knows. */
+.f-be,.f-th{display:inline-flex;align-items:center;gap:5px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:9px;font-weight:700;letter-spacing:.04em;border:1px solid var(--ln2);border-radius:6px;
+  padding:2.5px 7px 1.5px;color:var(--fog);white-space:nowrap}
+.f-be i{width:6px;height:6px;border-radius:50%;flex:none;font-style:normal;background:var(--fog)}
+.f-be.s3 i{background:var(--acc)}
+.f-be.local i{background:var(--warn)}
+.f-th.made{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 38%,transparent)}
+.f-th.wait{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 38%,transparent)}
+.f-th.failed{color:var(--fail);border-color:color-mix(in srgb,var(--fail) 38%,transparent)}
+.f-th.none{color:var(--dim);border-style:dashed}
+
+/* ── THE FILTER BAR ───────────────────────────────────────────────────────
+   ONE row of controls driving the whole surface, in the same shape the
+   workflow board's filter row uses — labelled runs of chips, a search field
+   and the shape toggle, with the result count on the right. Every chip is a
+   query parameter and nothing more.
+   → GET /files?module=&area=&kind=&from=&to=&thumb=&storage=&q= */
+.f-filters{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 13px;margin:0 0 14px;
+  border:1px solid var(--ln);border-radius:11px;background:color-mix(in srgb,var(--fog) 5%,transparent)}
+.f-filters .lbl{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:8.5px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-right:-3px}
+.f-filters .sep{width:1px;height:16px;background:var(--ln2);margin:0 3px}
+.f-fchip{display:inline-flex;align-items:center;gap:6px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:10px;font-weight:600;color:var(--fog);background:none;border:1px solid var(--ln2);
+  border-radius:7px;padding:4px 9px 3px;cursor:pointer;line-height:1.3}
+.f-fchip:hover{color:var(--tx);border-color:var(--fog)}
+.f-fchip.on{color:var(--accT);background:var(--acc);border-color:var(--acc)}
+/* PORTED: keyed by module slug, like the owner tag's dot above. */
+.f-fchip i{width:6px;height:6px;border-radius:2px;flex:none;font-style:normal}
+.f-fchip.on i{background:var(--accT)}
+.f-search{display:inline-flex;align-items:center;gap:7px;background:var(--raised);border:1px solid var(--ln2);
+  border-radius:8px;padding:4px 10px}
+.f-search svg{width:13px;height:13px;color:var(--fog);flex:none}
+.f-search input{border:0;background:none;font-family:inherit;font-size:11.5px;color:var(--tx);width:190px;outline:none}
+.f-search input::placeholder{color:var(--dim)}
+.f-shape{display:inline-flex;border:1px solid var(--ln2);border-radius:8px;overflow:hidden}
+.f-shape button{border:0;background:none;color:var(--fog);padding:5px 10px;cursor:pointer;display:grid;
+  place-items:center;font-family:inherit}
+.f-shape button+button{border-left:1px solid var(--ln2)}
+.f-shape button svg{width:14px;height:14px;display:block}
+.f-shape button.on{background:var(--acc);color:var(--accT)}
+.f-count{margin-left:auto;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;color:var(--dim)}
+.f-count b{color:var(--tx)}
+/* Nothing matched. A filter that finds nothing must say which filter to undo. */
+.f-empty{border:1px dashed var(--ln2);border-radius:12px;padding:30px 20px;text-align:center;color:var(--fog);
+  font-size:12.5px}
+.f-empty b{display:block;color:var(--tx);font-size:14px;margin-bottom:6px}
+
+/* ── THE DAY RAIL — direction D's grouping ────────────────────────────────
+   Grouped by the day the HANDSET took the picture, never by the day it
+   uploaded: a patrol out for three days syncs on the third, and the pictures
+   still belong to the days they were taken. */
+.f-day{display:flex;align-items:center;gap:12px;padding:8px 2px;margin:18px 0 8px}
+.f-day b{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--tx)}
+.f-day .cnt{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9px;color:var(--dim)}
+.f-day::after{content:"";flex:1;height:1px;background:var(--ln2)}
+
+/* ── OWNER-FIRST — direction B's grouping ─────────────────────────────────
+   A record and everything hanging off it. This is the shape the model itself
+   is in, which is why it is a direction and not a decoration. */
+.f-rec{border:1px solid var(--ln);border-radius:12px;padding:12px 13px;margin-bottom:12px;background:var(--p2)}
+.f-rec .hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.f-rec .hd .ttl{font-size:12.5px;color:var(--tx)}
+.f-rec .hd .n{margin-left:auto;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9.5px;
+  color:var(--dim)}
+.f-rec .strip{display:flex;gap:8px;flex-wrap:wrap}
+.f-rec .strip .f-tile{width:112px;flex:none}
+
+/* ── USAGE BARS — direction E ─────────────────────────────────────────────
+   How much space, by module, by area, by storage. One hue at varying strength;
+   a quantity is one quantity. */
+.f-use{display:flex;flex-direction:column;gap:11px;margin-top:4px}
+.f-userow .top{display:flex;align-items:baseline;gap:9px;font-size:12px;margin-bottom:5px}
+.f-userow .top b{color:var(--tx);font-weight:600}
+.f-userow .top .n{margin-left:auto;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px;
+  color:var(--tx);font-variant-numeric:tabular-nums}
+.f-userow .top .sub{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9px;color:var(--dim)}
+.f-bar{height:8px;border-radius:4px;background:var(--raised);overflow:hidden;display:flex}
+.f-bar i{display:block;height:100%;background:var(--acc)}
+.f-bar i.b{background:color-mix(in srgb,var(--acc) 45%,transparent)}
+.f-bar i.c{background:color-mix(in srgb,var(--fog) 40%,transparent)}
+.f-key{display:flex;gap:14px;flex-wrap:wrap;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:8.5px;color:var(--fog);margin-top:9px;align-items:center}
+.f-key i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
+
+/* ── THE FILE OVERLAY ─────────────────────────────────────────────────────
+   The photograph large on the left, everything known about it on the right.
+   Same manners as the widget picker in widgets.css: Escape closes, the
+   backdrop closes, focus goes into the box on open and back to the tile on
+   close. The picture inside it is the ORIGINAL, which is the only place on the
+   platform an original is ever served — and it is served through the
+   permission check, never from a public path.
+   → GET /files/{uuid} (the record) + GET /files/{uuid}/original (the bytes) */
+.f-ov{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:3vh 22px}
+.f-ov[hidden]{display:none}
+.f-ovback{position:absolute;inset:0;background:color-mix(in srgb,var(--cv) 78%,transparent);backdrop-filter:blur(3px)}
+.f-ovbox{position:relative;width:min(1140px,100%);max-height:94vh;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,var(--p1),var(--p2));border:1px solid var(--ln2);border-radius:16px;
+  box-shadow:var(--shadow);overflow:hidden}
+.f-ovhead{display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid var(--ln)}
+.f-ovhead .t{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px;color:var(--tx);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-ovhead .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
+.f-ovbody{display:grid;grid-template-columns:1.55fr 1fr;min-height:0;flex:1}
+.f-ovstage{background:color-mix(in srgb,var(--fog) 12%,transparent);display:grid;place-items:center;
+  padding:16px;min-height:340px;position:relative}
+.f-ovstage img{max-width:100%;max-height:min(66vh,620px);border-radius:10px;display:block;box-shadow:var(--shadow)}
+.f-ovstage .noimg{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--fog);
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.f-ovstage .noimg svg{width:38px;height:38px}
+/* Stepping through the current result set without closing — the arrows are the
+   whole reason the overlay beats a page for browsing. */
+.f-ovnav{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;border:1px solid rgba(234,242,236,.22);background:rgba(10,14,11,.6);
+  color:#EAF2EC;cursor:pointer;padding:0}
+.f-ovnav:hover{background:rgba(10,14,11,.85)}
+.f-ovnav svg{width:16px;height:16px}
+.f-ovnav.prev{left:12px}
+.f-ovnav.next{right:12px}
+.f-ovside{padding:14px 16px 18px;overflow-y:auto;border-left:1px solid var(--ln);min-width:0}
+.f-ovside h3{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9px;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:16px 0 4px}
+.f-ovside h3:first-child{margin-top:0}
+.f-ovside .rln{font-size:11.5px}
+.f-ovside .rln .mono{font-size:10.5px}
+.f-ovside .val{max-width:58%;text-align:right;word-break:break-all}
+@media (max-width:900px){.f-ovbody{grid-template-columns:1fr}.f-ovside{border-left:0;border-top:1px solid var(--ln)}}
+
+/* ── THE TRAIL — what happened to this file ───────────────────────────────
+   Uploads, thumbnailing and every time it was served. It is an audit line, not
+   a story: each row is one event with a time and a name against it. */
+.f-trail{display:flex;flex-direction:column;gap:0}
+.f-trailrow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;
+  border-bottom:1px dashed color-mix(in srgb,var(--fog) 15%,transparent)}
+.f-trailrow:last-child{border-bottom:0}
+.f-trailrow i{width:7px;height:7px;border-radius:2px;flex:none;margin-top:5px;font-style:normal;
+  background:color-mix(in srgb,var(--fog) 55%,transparent)}
+.f-trailrow i.acc{background:var(--acc)}
+.f-trailrow i.warn{background:var(--warn)}
+.f-trailrow .bd{flex:1;min-width:0}
+.f-trailrow .bd b{display:block;font-size:11.5px;font-weight:600;color:var(--tx)}
+.f-trailrow .bd span{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9px;color:var(--dim);
+  display:block;margin-top:3px}
+
+/* ── THE GUARD — what you may do to this file, and why ────────────────────
+   A file is deleted only where its OWNING RECORD allows it. The guard states
+   the rule in the record's own words instead of greying a button out, which is
+   the same manner the workflow board uses for a refused move. */
+.f-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.f-act{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-size:11.5px;font-weight:600;
+  color:var(--fog);border:1px solid var(--ln2);background:none;border-radius:8px;padding:6px 11px;cursor:pointer;
+  text-decoration:none}
+.f-act:hover{color:var(--tx);border-color:var(--fog);text-decoration:none}
+.f-act svg{width:14px;height:14px}
+.f-act.danger{color:var(--fail);border-color:color-mix(in srgb,var(--fail) 42%,transparent)}
+.f-act.danger:hover{background:color-mix(in srgb,var(--fail) 10%,transparent);color:var(--fail)}
+.f-guard{display:flex;gap:9px;align-items:flex-start;border:1px dashed var(--ln2);border-radius:10px;
+  padding:10px 12px;margin-top:10px;font-size:11.5px;color:var(--fog);line-height:1.5}
+.f-guard svg{width:15px;height:15px;flex:none;margin-top:2px}
+.f-guard b{color:var(--tx)}
+.f-guard.locked{border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.f-guard.locked svg{color:var(--warn)}
+.f-guard.denied{border-color:color-mix(in srgb,var(--fail) 45%,transparent)}
+.f-guard.denied svg{color:var(--fail)}
+.f-guard.allowed{border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.f-guard.allowed svg{color:var(--ok)}
+
+/* ── THE SAY — a note that explains the model, not the page ───────────────
+   Same shape the workflow gallery uses, restated here because these pages do
+   not load workflow.css. If a third surface wants it, it is hoisted. */
+.f-say{display:flex;gap:12px;align-items:flex-start;border:1px dashed color-mix(in srgb,var(--acc) 42%,transparent);
+  border-radius:12px;padding:13px 15px;margin:0 0 22px;font-size:12.5px;color:var(--fog);line-height:1.6}
+.f-say svg{flex:none;color:var(--acc);margin-top:2px;width:17px;height:17px}
+.f-say b{color:var(--tx)}
+
+/* ── THE DIRECTION NAV — gallery chrome ───────────────────────────────────  */
+.f-optnav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.f-optnav a{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;
+  letter-spacing:.08em;color:var(--fog);border:1px solid var(--ln2);border-radius:99px;padding:5px 12px 4px;
+  text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.f-optnav a:hover{color:var(--tx);border-color:var(--fog);text-decoration:none}
+.f-optnav a.on{color:var(--accT);background:var(--acc);border-color:var(--acc)}
+.f-optnav .sep{color:var(--dim);font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px}
+.f-note{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9.5px;color:var(--dim)}
+
+/* ── SETTINGS — a storage, stated as a thing with a status ────────────────
+   Plain language: "where the files go", not "the configured Flysystem adapter".
+   Each card is one named storage the host configured. */
+.f-store{border:1px solid var(--ln2);border-radius:12px;padding:14px 15px;background:var(--p2)}
+.f-store.on{border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.f-store .hd{display:flex;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+.f-store .hd b{font-family:"Archivo",system-ui,sans-serif;font-size:14.5px;font-weight:700}
+.f-store .hd .where{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9.5px;color:var(--dim);
+  margin-left:auto}
+.f-store .f-bar{margin-top:6px}
+/* the module→storage map: which module's files go where */
+.f-map{display:grid;grid-template-columns:1fr auto 1fr;gap:8px 12px;align-items:center;margin-top:6px}
+.f-map .arrow{color:var(--dim);display:grid;place-items:center}
+.f-map .arrow svg{width:15px;height:15px}
+.f-map .cellL{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:8px 0}
+.f-map .cellR{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--tx);
+  padding:8px 0}
+.f-map>*{border-bottom:1px dashed color-mix(in srgb,var(--fog) 15%,transparent)}
+.f-map>*:nth-last-child(-n+3){border-bottom:0}
+
+/* ── ARRIVALS — how much comes in, week by week ───────────────────────────
+   Bars, because the question is "is it growing", not "what exactly". */
+.f-spark{display:flex;align-items:flex-end;gap:5px;height:74px;margin:6px 0 2px}
+.f-spark .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}
+.f-spark i{display:block;width:100%;background:color-mix(in srgb,var(--acc) 42%,transparent);
+  border-radius:3px 3px 0 0;min-height:2px}
+.f-spark .col.hot i{background:var(--acc)}
+.f-spark .col em{font-style:normal;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:8px;color:var(--dim)}
+.f-sparkx{display:flex;gap:5px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:8px;color:var(--dim)}
+.f-sparkx span{flex:1;text-align:center}
+
+/* The tile is a div with role=button so its OWNER LINK can live inside it —
+   an <a> may not sit inside a <button>, and the owner has to be a real link
+   because the owner is the file's identity. The click is delegated and skips
+   anything inside an <a>; Enter and Space open it from the keyboard. */
+.f-tile[role="button"]{cursor:pointer}
+
+/* [hidden] must beat a display the component sets itself — a filtered-out tile
+   is display:flex and would otherwise stay on screen. Stated once, here,
+   for every element this surface hides. */
+.f-tile[hidden],tr[hidden],.f-grid[hidden],[data-f-listwrap][hidden],
+[data-f-shapewrap][hidden],.f-empty[hidden],.f-ovnav[hidden]{display:none !important}
+
+/* PORTED (added): the removal form.
+   REMOVE, NEVER DELETE. The file page asks for a reason before a file leaves its
+   record, and the record keeps a line saying it happened. The form is hidden
+   until the danger button is pressed, so the page's resting state is not a
+   deletion form. */
+.f-removeform{border:1px dashed color-mix(in srgb,var(--fail) 42%,transparent);border-radius:10px;
+  padding:11px 12px;margin-top:10px;display:flex;flex-direction:column;gap:7px}
+.f-removeform[hidden]{display:none}
+.f-removeform textarea{width:100%;border:1px solid var(--ln2);border-radius:8px;background:var(--raised);
+  color:var(--tx);font-family:inherit;font-size:12px;padding:7px 9px;resize:vertical;outline:none}
+.f-removeform textarea:focus{border-color:var(--acc)}
+.f-removeform .f-acts{margin-top:2px}

@@ -1,0 +1,110 @@
+{# THE FILES HUB — /files.
+
+   STATIC TWIN of the settled design's files/index.html. Same page furniture,
+   same copy; the sample area's twenty-three files become the registry's own.
+
+   The widget grid is the HOST's framework (.w-grid / .w-cell / .w-span-N), so a
+   person arranges this surface exactly as they arrange departments or team. The
+   widgets themselves live in _w_<id>.html.twig and are rendered by BOTH this
+   screen and the library, so a preview can never drift from the real thing.
+
+   THERE IS NO UPLOAD CONTROL ON THIS PAGE, and that is a rule rather than an
+   omission: a file arrives by being attached to a record, on that record's own
+   page, and it carries that record's name for the rest of its life. #}
+{% extends '@UhifadhiLabsStorage/base.html.twig' %}
+
+{% block title %}Files{% endblock %}
+
+{% block storage_page %}
+{% set widgetContext = {
+    filter: filter,
+    files: files,
+    total: total,
+    counts: counts,
+    modules: modules,
+    areas: areas,
+    days: days,
+    kinds: kinds,
+    byOwner: byOwner,
+    byDay: byDay,
+    byKind: byKind,
+    bySpace: bySpace,
+    byArea: byArea,
+    arrivals: arrivals,
+    recent: recent,
+    biggest: biggest,
+    waiting: waiting,
+    places: places,
+    thumbnailLongEdge: thumbnailLongEdge,
+    now: now,
+} %}
+
+<div class="crumb"><a href="/">uhifadhi</a> / files</div>
+
+<div class="pghead">
+    <div>
+        <h1 class="pg">Files</h1>
+        <p class="pgsub">Every photograph, document and track this organisation holds &mdash; <b>across every module and
+        every area</b>, in one place. Each one is shown with the record it belongs to, because that is what a file is
+        here: an observation&rsquo;s photograph, an incident&rsquo;s evidence, later a permit&rsquo;s document. You can
+        find it, look at it, check that its small picture was made and see where its bytes are kept. You cannot upload
+        into it &mdash; a file arrives by being attached to a record.</p>
+    </div>
+    <div class="pgact w-pgact">
+        <a class="tgl w-act" href="{{ settingsUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg> Where files go</a>
+        <a class="tgl w-act" href="{{ libraryUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg> Widget library</a>
+    </div>
+</div>
+
+<div class="f-say"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div><b>Every file here belongs to something.</b> A file is never loose on this platform: it is an observation&rsquo;s photograph, an incident&rsquo;s evidence, and one day a permit&rsquo;s document. This hub is the one place you can look across all of them at once &mdash; browse, find, check and tidy &mdash; but it is <b>not a shelf you upload onto</b>. A file arrives by being attached to a record, on that record&rsquo;s own page, and it carries that record&rsquo;s name for the rest of its life. Originals are private: they sit outside the website and are handed over only after the app has checked that you may see the record they belong to.</div></div>
+
+{# The person's own resolved layout, in their own order, with the widgets they
+   switched off simply absent. #}
+<div class="w-grid" data-surface="files">
+    {% for widget in widgets|filter(w => w.on) %}
+        <div class="w-cell w-span-{{ widget.cols }}" data-widget-id="{{ widget.id }}" data-widget-cols="{{ widget.cols }}">
+            <div class="w-inner">
+                {{ include('@UhifadhiLabsStorage/files/_w_' ~ widget.id ~ '.html.twig', widgetContext, with_context: false) }}
+            </div>
+        </div>
+    {% endfor %}
+    <a class="w-cell w-span-12 w-addtile" href="{{ libraryUrl }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add widgets &mdash; open the library</span>
+    </a>
+</div>
+
+<h2 class="zone">What the hub knows that a module page does not</h2>
+<div class="grid g2">
+    <div class="c">
+        <span class="tab"><span class="idx">FL&middot;M1</span>How a file is kept</span>
+        <p class="use" style="margin-top:2px">The bytes go to a <b>named storage</b> the organisation configured, and
+        they go <b>outside the website</b>, so there is no address anybody can guess or share by accident. Every
+        photograph also gets <b>one small picture</b>, about {{ thumbnailLongEdge }} pixels on the long side, and that
+        small picture is the only thing browsing ever fetches. The original is fetched when, and only when, somebody
+        asks for it.</p>
+        <div class="rln"><span>Where an original lives</span><span class="mono" style="font-size:11px">outside the web root, always</span></div>
+        <div class="rln"><span>How it is reached</span><span class="mono acc" style="font-size:11px">a request the app answers after a permission check</span></div>
+        <div class="rln"><span>What browsing costs</span><span class="mono" style="font-size:11px">one ~{{ thumbnailLongEdge }}px picture per file</span></div>
+        <div class="rln"><span>Small pictures per file</span><span class="mono" style="font-size:11px">exactly one &mdash; never a set of sizes</span></div>
+        <div class="rln"><span>What decides the type</span><span class="mono" style="font-size:11px">detection, never the file&rsquo;s name</span></div>
+        <div class="use" style="margin-bottom:0">A refusal is a <b>not found</b>, never a <b>not allowed</b> &mdash; being
+        told you may not see something confirms it exists, and evidence must not confirm itself to a stranger.</div>
+    </div>
+    <div class="c">
+        <span class="tab"><span class="idx">FL&middot;M2</span>Who owns what</span>
+        <p class="use" style="margin-top:2px">The hub <b>browses and manages</b>; it never overrules. Whether a file may
+        be removed is the <b>owning record&rsquo;s</b> answer: an incident that is still in progress will not let go of
+        its evidence, a patrol will not let go of its own track, and a document uploaded by another department is not
+        yours to remove. Open any file below and it tells you which of those it is, in the module&rsquo;s own words.</p>
+        {% for module in modules %}
+            <div class="rln"><span>{{ module.label }}</span><span class="f-note">{{ module.attachesTo }}</span></div>
+        {% else %}
+            <div class="rln"><span>Modules holding files</span><span class="f-note">none installed yet</span></div>
+        {% endfor %}
+        <div class="rln"><span>Who may see a file</span><span class="mono" style="font-size:11px">whoever may see its record</span></div>
+        <div class="rln"><span>Who may remove one</span><span class="mono" style="font-size:11px">whoever the record says</span></div>
+        <div class="use" style="margin-bottom:0">A module puts its files here by shipping a file source; nothing on this
+        page has to know what an observation or an incident is, and it does not.</div>
+    </div>
+</div>
+{% endblock %}

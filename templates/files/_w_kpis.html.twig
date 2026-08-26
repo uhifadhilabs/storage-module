@@ -1,0 +1,31 @@
+{# Widget "kpis" — the four counts (FL·K1–K4).
+
+   STATIC TWIN of files.widgets.js's `kpis` entry. Rendered by BOTH the hub and
+   the widget library, so the library's preview IS the widget.
+
+   Every count is a query over the file rows, never a stored counter — a file
+   that is removed stops being counted because it is gone, not because a number
+   was decremented. #}
+{% set space = counts.bytes|storage_bytes_split %}
+<div class="grid w-flush dp-kstrip" data-w="kpis">
+    <div class="c kpi">
+        <span class="tab"><span class="idx">FL&middot;K1</span>Files kept</span>
+        <b class="disp">{{ counts.files|number_format(0, '.', ' ') }}</b>
+        <span class="sub">{% for module in bySpace %}{{ module.files|number_format(0, '.', ' ') }} {{ module.label|lower }}{% if not loop.last %} &middot; {% endif %}{% else %}no module holds files yet{% endfor %}</span>
+    </div>
+    <div class="c kpi hot">
+        <span class="tab"><span class="idx">FL&middot;K2</span>Space used</span>
+        <b class="disp">{{ space[0] }}<em>{{ space[1] }}</em></b>
+        <span class="sub">{% for place in places %}{{ place.label }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</span>
+    </div>
+    <div class="c kpi">
+        <span class="tab"><span class="idx">FL&middot;K3</span>Small pictures made</span>
+        <b class="disp">{{ counts.made|number_format(0, '.', ' ') }}</b>
+        <span class="sub">{% if counts.waiting %}<span class="w">{{ counts.waiting }} still waiting</span> &middot; {% endif %}{{ counts.failed }} could not be made</span>
+    </div>
+    <div class="c kpi">
+        <span class="tab"><span class="idx">FL&middot;K4</span>Arrived<span class="src">&middot; this week</span></span>
+        <b class="disp">{{ counts.arrived|number_format(0, '.', ' ') }}</b>
+        <span class="sub">by the day they reached us, not the day they were taken</span>
+    </div>
+</div>

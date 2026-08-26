@@ -1,0 +1,366 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of the UhifadhiLabs Storage Module.
+ *
+ * (c) Ezekiel Mjema <https://github.com/eemjema>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace UhifadhiLabs\Storage\Controller;
+
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\Uid\Uuid;
+use Twig\Environment;
+use Uhifadhi\Model\WidgetDom;
+use Uhifadhi\Service\WidgetEndpoint;
+use Uhifadhi\Service\WidgetService;
+use UhifadhiLabs\Storage\Model\FileFilter;
+use UhifadhiLabs\Storage\Model\FilesWidgets;
+use UhifadhiLabs\Storage\Registry\FileRegistry;
+use UhifadhiLabs\Storage\Removal\FileRemovalInterface;
+use UhifadhiLabs\Storage\Service\FilesSurface;
+use UhifadhiLabs\Storage\Service\StorageSettings;
+
+/**
+ * The Files hub: every photograph, document and track this organisation holds,
+ * across every module and every area, in one place.
+ *
+ * WHAT THIS CONTROLLER MAY NOT DO, and the design says so on the page itself:
+ * there is NO upload action anywhere here. A file arrives by being attached to a
+ * record, on that record's own page, and it carries that record's name for the
+ * rest of its life. A hub with an upload button would be a different product.
+ *
+ * The originals are not served from here either — they come back out through
+ * EvidenceController, behind the owning module's voter, and a refusal there is a
+ * 404 rather than a 403 so that being refused never confirms a file exists.
+ *
+ * No AbstractController: a reusable bundle's controller must not depend on the
+ * host's service-subscriber container, so its collaborators are constructor
+ * arguments and it is registered explicitly (see config/services.php).
+ *
+ * Registered ONLY where SecurityBundle and the host's widget framework are both
+ * present — see UhifadhiLabsStorageBundle::loadExtension().
+ */
+final class FilesController
+{
+    /**
+     * Spelled out rather than taken from Symfony's Requirement::UUID so the
+     * placeholder the widget library substitutes — WidgetDom::ID_PLACEHOLDER, a
+     * v4 nil-ish uuid — matches the route it is written into. A stricter pattern
+     * would refuse the very URL the component is handed.
+     */
+    private const string UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+
+    public function __construct(
+        private readonly Environment $twig,
+        private readonly FileRegistry $registry,
+        private readonly FilesSurface $surface,
+        private readonly StorageSettings $settings,
+        private readonly WidgetService $widgets,
+        private readonly WidgetEndpoint $widgetEndpoint,
+        private readonly UrlGeneratorInterface $router,
+        private readonly TokenStorageInterface $tokens,
+        private readonly AuthorizationCheckerInterface $authorization,
+        private readonly CsrfTokenManagerInterface $csrf,
+        private readonly string $settingsPermission,
+    ) {
+    }
+
+    /**
+     * The hub, on the host's widget framework: the person's own resolved layout,
+     * in their own order, with the widgets they switched off simply absent.
+     */
+    #[Route('/files', name: 'storage_files', methods: ['GET'])]
+    public function index(Request $request): Response
+    {
+        $this->denyAnonymous();
+
+        $catalog = FilesWidgets::catalog();
+        $filter = FileFilter::fromQuery($request->query->all());
+
+        return $this->render('@UhifadhiLabsStorage/files/index.html.twig', [
+            ...$this->surface->context($filter),
+            'widgets' => $this->widgets->resolve($catalog, $this->userId()),
+            'libraryUrl' => $this->router->generate('storage_files_widgets'),
+            'settingsUrl' => $this->router->generate('storage_files_settings'),
+        ]);
+    }
+
+    /**
+     * The widget library — the host's ONE shared component, handed the whole
+     * contract. Nothing about it is files-specific except the catalogue, the
+     * partial format and the context every partial receives.
+     */
+    #[Route('/files/widgets', name: 'storage_files_widgets', methods: ['GET'])]
+    public function widgets(): Response
+    {
+        $this->denyAnonymous();
+
+        $catalog = FilesWidgets::catalog();
+        $userId = $this->userId();
+
+        return $this->render('@UhifadhiLabsStorage/files/widgets.html.twig', [
+            ...$this->surface->context(new FileFilter()),
+            'catalog' => $catalog,
+            'builtins' => $catalog->builtins(),
+            'customPresets' => $this->widgets->customPresets($catalog, $userId),
+            'active' => $this->widgets->activeRef($catalog, $userId),
+            'widgets' => $this->widgets->resolve($catalog, $userId),
+            'partial' => '@UhifadhiLabsStorage/files/_w_%s.html.twig',
+            'urls' => $this->widgetUrls(),
+            'csrfToken' => $this->widgetEndpoint->csrfToken($catalog),
+        ]);
+    }
+
+    #[Route('/files/widgets/save', name: 'storage_files_widgets_save', methods: ['POST'])]
+    public function saveWidgets(Request $request): Response
+    {
+        return $this->widgetEndpoint->save($request, FilesWidgets::catalog());
+    }
+
+    #[Route('/files/widgets/preset/{presetId}', name: 'storage_files_widgets_preset', requirements: ['presetId' => '[a-z0-9_-]+'], methods: ['POST'])]
+    public function applyPreset(Request $request, string $presetId): Response
+    {
+        return $this->widgetEndpoint->applyPreset($request, FilesWidgets::catalog(), $presetId);
+    }
+
+    #[Route('/files/widgets/preset/{presetId}/copy', name: 'storage_files_widgets_preset_copy', requirements: ['presetId' => '[a-z0-9_-]+'], methods: ['POST'])]
+    public function copyPreset(Request $request, string $presetId): Response
+    {
+        return $this->widgetEndpoint->copyPreset($request, FilesWidgets::catalog(), $presetId);
+    }
+
+    #[Route('/files/widgets/presets', name: 'storage_files_widgets_preset_create', methods: ['POST'])]
+    public function createPreset(Request $request): Response
+    {
+        return $this->widgetEndpoint->createCustomPreset($request, FilesWidgets::catalog());
+    }
+
+    #[Route('/files/widgets/presets/{presetUuid}/apply', name: 'storage_files_widgets_preset_apply', requirements: ['presetUuid' => self::UUID], methods: ['POST'])]
+    public function applyCustomPreset(Request $request, string $presetUuid): Response
+    {
+        return $this->widgetEndpoint->applyCustomPreset($request, FilesWidgets::catalog(), $this->uuid($presetUuid));
+    }
+
+    #[Route('/files/widgets/presets/{presetUuid}/rename', name: 'storage_files_widgets_preset_rename', requirements: ['presetUuid' => self::UUID], methods: ['POST'])]
+    public function renameCustomPreset(Request $request, string $presetUuid): Response
+    {
+        return $this->widgetEndpoint->renameCustomPreset($request, FilesWidgets::catalog(), $this->uuid($presetUuid));
+    }
+
+    #[Route('/files/widgets/presets/{presetUuid}/delete', name: 'storage_files_widgets_preset_delete', requirements: ['presetUuid' => self::UUID], methods: ['POST'])]
+    public function deleteCustomPreset(Request $request, string $presetUuid): Response
+    {
+        return $this->widgetEndpoint->deleteCustomPreset($request, FilesWidgets::catalog(), $this->uuid($presetUuid));
+    }
+
+    #[Route('/files/widgets/reset', name: 'storage_files_widgets_reset', methods: ['POST'])]
+    public function resetWidgets(Request $request): Response
+    {
+        return $this->widgetEndpoint->reset($request, FilesWidgets::catalog());
+    }
+
+    /**
+     * Where files go. Read-only truth from configuration, for whoever
+     * administers the platform — nothing on it changes what a ranger sees, only
+     * where the bytes end up.
+     */
+    #[Route('/files/settings', name: 'storage_files_settings', methods: ['GET'])]
+    public function settings(): Response
+    {
+        $this->denyAnonymous();
+
+        // Seeing where files are kept is seeing something about every file at
+        // once, so it rides on the deployment's administrator permission rather
+        // than on being signed in.
+        if (!$this->authorization->isGranted($this->settingsPermission)) {
+            throw new AccessDeniedHttpException('Only an administrator may see where files are kept.');
+        }
+
+        return $this->render('@UhifadhiLabsStorage/files/settings.html.twig', [
+            'places' => $this->settings->places(),
+            'map' => $this->settings->map(),
+            'allowed' => $this->settings->allowed(),
+            'maxBytes' => $this->settings->maxBytes(),
+            'thumbnailLongEdge' => $this->settings->thumbnailLongEdge(),
+            'counts' => $this->registry->counts(),
+            'bySpace' => $this->registry->bySpace(),
+            'hubUrl' => $this->router->generate('storage_files'),
+        ]);
+    }
+
+    /**
+     * A file's own page. It exists because a file has to be LINKABLE: you can
+     * send somebody this address, and if they may see the owning record they will
+     * see the photograph.
+     *
+     * The key is a PATH, so this route sits under /files/f/ rather than directly
+     * under /files/{key}: a `.+` placeholder at the top level would swallow
+     * /files/widgets and /files/settings whole.
+     */
+    #[Route('/files/f/{key}', name: 'storage_files_show', requirements: ['key' => '.+'], methods: ['GET'])]
+    public function show(string $key): Response
+    {
+        $this->denyAnonymous();
+
+        $file = $this->registry->find($key);
+        if (null === $file) {
+            // Not found, never "not allowed": being told you may not see
+            // something confirms it exists, and evidence must not confirm itself
+            // to a stranger.
+            throw new NotFoundHttpException('There is no such file.');
+        }
+
+        $source = $this->registry->sourceFor($key);
+
+        return $this->render('@UhifadhiLabsStorage/files/detail.html.twig', [
+            'file' => $file,
+            'siblings' => $this->registry->siblingsOf($file),
+            'guard' => $this->registry->guard($key, $this->user()),
+            // The removal control is drawn by the guard AND by whether the owning
+            // module ships the hook that writes the trail line. A module that has
+            // not written its trail line yet does not offer removal, which is the
+            // safe way round.
+            'removable' => $source instanceof FileRemovalInterface,
+            'places' => $this->settings->places(),
+            'thumbnailLongEdge' => $this->settings->thumbnailLongEdge(),
+            'hubUrl' => $this->router->generate('storage_files'),
+            'removeToken' => $this->csrf->getToken(self::removeTokenId($key))->getValue(),
+        ]);
+    }
+
+    /**
+     * REMOVE, NEVER DELETE.
+     *
+     * Storage does not decide this and does not do it: the OWNING MODULE does
+     * both, through FileRemovalInterface, because only it can write the removal
+     * onto the record's own trail — and the trail line is the whole promise. All
+     * this action does is ask the guard again (the guard is a statement about a
+     * moment, and the moment can pass between drawing the page and pressing the
+     * button), then hand the job over.
+     */
+    #[Route('/files/f/{key}/remove', name: 'storage_files_remove', requirements: ['key' => '.+'], methods: ['POST'])]
+    public function remove(Request $request, string $key): Response
+    {
+        $this->denyAnonymous();
+
+        $token = $request->request->get('_token');
+        if (!\is_string($token) || !$this->csrf->isTokenValid(new CsrfToken(self::removeTokenId($key), $token))) {
+            throw new AccessDeniedHttpException('That removal did not come from the file’s own page.');
+        }
+
+        if (null === $this->registry->find($key)) {
+            throw new NotFoundHttpException('There is no such file.');
+        }
+
+        $source = $this->registry->sourceFor($key);
+        $guard = $this->registry->guard($key, $this->user());
+
+        if (!$source instanceof FileRemovalInterface || !$guard->offersRemoval()) {
+            throw new AccessDeniedHttpException($guard->text);
+        }
+
+        $reason = $request->request->get('reason');
+        $reason = \is_string($reason) && '' !== trim($reason) ? trim($reason) : null;
+        if ($guard->needsReason() && null === $reason) {
+            throw new AccessDeniedHttpException('That record asks for a reason before a file leaves it.');
+        }
+
+        $source->remove($key, $this->user(), $reason);
+
+        return new RedirectResponse($this->router->generate('storage_files'));
+    }
+
+    /**
+     * Per-FILE token id: a token minted on one file's page must not remove
+     * another's.
+     */
+    private static function removeTokenId(string $key): string
+    {
+        return 'storage_files_remove_'.$key;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function render(string $template, array $context): Response
+    {
+        return new Response($this->twig->render($template, $context));
+    }
+
+    /**
+     * The hub is open to anyone signed in: every file is shown with its owner and
+     * every ORIGINAL is permission-checked on its way out, so the hub can show
+     * less to some people rather than being closed to them. It is not open to a
+     * stranger, because the owners themselves are the organisation's business.
+     */
+    private function denyAnonymous(): void
+    {
+        if (null === $this->user()) {
+            throw new AccessDeniedHttpException('Sign in to see the files this organisation holds.');
+        }
+    }
+
+    private function user(): ?UserInterface
+    {
+        $user = $this->tokens->getToken()?->getUser();
+
+        return $user instanceof UserInterface ? $user : null;
+    }
+
+    /**
+     * Whose layout to resolve. Every screen that asks has already passed
+     * denyAnonymous(), so the endpoint's own answer is safe to take at face
+     * value — and taking it from there rather than from the host's User entity
+     * keeps this bundle from needing to know what a user is.
+     */
+    private function userId(): int
+    {
+        return $this->widgetEndpoint->userId();
+    }
+
+    private function uuid(string $value): Uuid
+    {
+        return Uuid::fromString($value);
+    }
+
+    /**
+     * The eight URLs the library component drives itself with. The placeholder
+     * is the host's own, substituted client-side — the component builds a real
+     * URL by replacing it, so these are generated once and never per preset.
+     *
+     * @return array<string, string>
+     */
+    private function widgetUrls(): array
+    {
+        $id = WidgetDom::ID_PLACEHOLDER;
+
+        return [
+            'save' => $this->router->generate('storage_files_widgets_save'),
+            'reset' => $this->router->generate('storage_files_widgets_reset'),
+            'preset' => $this->router->generate('storage_files_widgets_preset', ['presetId' => $id]),
+            'copy' => $this->router->generate('storage_files_widgets_preset_copy', ['presetId' => $id]),
+            'presets' => $this->router->generate('storage_files_widgets_preset_create'),
+            'apply' => $this->router->generate('storage_files_widgets_preset_apply', ['presetUuid' => $id]),
+            'rename' => $this->router->generate('storage_files_widgets_preset_rename', ['presetUuid' => $id]),
+            'delete' => $this->router->generate('storage_files_widgets_preset_delete', ['presetUuid' => $id]),
+            'dashboard' => $this->router->generate('storage_files'),
+        ];
+    }
+}

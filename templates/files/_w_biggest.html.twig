@@ -1,0 +1,23 @@
+{# Widget "biggest" — the biggest files (FL·12).
+
+   STATIC TWIN of files.widgets.js's `biggest` entry. Rendered by BOTH the hub
+   and the widget library.
+
+   The first place to look when a module's share jumps. Handsets send full-size
+   JPEGs, deliberately: evidence is worth its bytes, and the small picture is
+   what makes browsing cheap. #}
+{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+<div class="c" data-w="biggest">
+    <span class="tab"><span class="idx">FL&middot;12</span>The biggest files<span class="src">&middot; largest originals first</span></span>
+    <table class="f-list">
+        <thead><tr><th>file</th><th>owner</th><th class="num">size</th><th>where the bytes are</th></tr></thead>
+        <tbody>
+            {% for file in biggest %}
+                <tr {{ ui.data(file) }} role="button" tabindex="0"><td><span class="nm" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px">{{ file.name }}</span></td><td>{{ ui.owner(file) }}</td><td class="num">{{ file.byteSize|storage_bytes }}</td><td>{{ ui.place(places) }}</td></tr>
+            {% else %}
+                <tr><td colspan="4" class="f-note">Nothing kept yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="use">Handsets send full-size JPEGs, which is deliberate: evidence is worth its bytes, and the small picture is what makes browsing cheap. <b>Nothing here is ever re-compressed</b> &mdash; an original that has been touched is not an original.</div>
+</div>

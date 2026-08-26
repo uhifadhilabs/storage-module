@@ -1,0 +1,66 @@
+{# Widget "browse" — THE HUB ITSELF (FL·01).
+
+   STATIC TWIN of files.widgets.js's `browse` entry. Rendered by BOTH the hub and
+   the widget library.
+
+   One filter row, one search, one shape toggle and ONE result set — the grid and
+   the list are the same files in two shapes, never two queries. Every chip is a
+   query parameter and nothing more:
+     → GET /files?module=&area=&kind=&day=&thumb=&q=
+
+   There is NO upload control here, and there is none anywhere else on this
+   surface either. A file arrives by being attached to a record, on that record's
+   own page. #}
+{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+<div class="c" data-w="browse">
+    <span class="tab"><span class="idx">FL&middot;01</span>Every file, across every module<span class="src">&middot; a picture is a thumbnail, never the original</span></span>
+    <div class="f-filters" data-f-filters>
+        <span class="lbl">Module</span>
+        <button type="button" class="f-fchip{{ filter.module is null ? ' on' }}" data-f-filter="mod" data-f-value="">Every module</button>
+        {% for module in modules %}
+            <button type="button" class="f-fchip{{ filter.module == module.slug ? ' on' }}" data-f-filter="mod" data-f-value="{{ module.slug }}"><i class="{{ module.slug }}"></i>{{ module.label }}</button>
+        {% endfor %}
+        {% if areas|length > 1 %}
+            <span class="sep"></span>
+            <span class="lbl">Area</span>
+            <button type="button" class="f-fchip{{ filter.area is null ? ' on' }}" data-f-filter="area" data-f-value="">Every area</button>
+            {% for area in areas %}
+                <button type="button" class="f-fchip{{ filter.area == area.slug ? ' on' }}" data-f-filter="area" data-f-value="{{ area.slug }}">{{ area.label }}</button>
+            {% endfor %}
+        {% endif %}
+        <span class="sep"></span>
+        <span class="lbl">What</span>
+        <button type="button" class="f-fchip{{ filter.kind is null ? ' on' }}" data-f-filter="kind" data-f-value="">Anything</button>
+        {% for kind in kinds %}
+            <button type="button" class="f-fchip{{ filter.kind == kind ? ' on' }}" data-f-filter="kind" data-f-value="{{ kind.value }}">{{ kind.plural }}</button>
+        {% endfor %}
+        <span class="sep"></span>
+        <span class="lbl">Taken</span>
+        <button type="button" class="f-fchip{{ filter.day is null ? ' on' }}" data-f-filter="day" data-f-value="">Any day</button>
+        {% for day in days|slice(0, 5) %}
+            <button type="button" class="f-fchip{{ filter.day == day ? ' on' }}" data-f-filter="day" data-f-value="{{ day }}">{{ day|date('j M')|lower }}</button>
+        {% endfor %}
+        <span class="sep"></span>
+        <span class="lbl">Thumbnail</span>
+        <button type="button" class="f-fchip{{ filter.thumb is null ? ' on' }}" data-f-filter="thumb" data-f-value="">Either way</button>
+        <button type="button" class="f-fchip{{ filter.thumb == 'made' ? ' on' }}" data-f-filter="thumb" data-f-value="made">Has one</button>
+        <button type="button" class="f-fchip{{ filter.thumb == '!made' ? ' on' }}" data-f-filter="thumb" data-f-value="!made">Has none</button>
+        <span class="sep"></span>
+        {# The search runs over the FILE NAME and the OWNING RECORD's id, because
+           those are the two things a person actually remembers. It does not search
+           captions; a caption is the record's, not the file's.
+           → GET /files?q= #}
+        <span class="f-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="search" placeholder="A file name, or a record" aria-label="Search files" value="{{ filter.q }}" data-f-search></span>
+        <span class="f-shape" role="group" aria-label="Grid or list">
+            <button type="button" class="on" data-f-shape="grid" title="Thumbnails" aria-label="Thumbnails"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg></button>
+            <button type="button" data-f-shape="list" title="A list" aria-label="A list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg></button>
+        </span>
+        <span class="f-count" data-f-count><b>{{ files|length }}</b> of {{ total|number_format(0, '.', ' ') }}</span>
+    </div>
+    <div data-f-shapewrap{{ files is empty ? ' hidden' : '' }}>
+        <div class="f-grid" data-f-grid>{%- for file in files -%}{{ ui.tile(file) }}{%- endfor -%}</div>
+        <div data-f-listwrap hidden><table class="f-list" data-f-list>{{ ui.listhead() }}<tbody>{%- for file in files -%}{{ ui.row(file, places) }}{%- endfor -%}</tbody></table></div>
+    </div>
+    {{ ui.empty(files is empty) }}
+    <div class="use"><b>Every tile says who owns it.</b> A file on this platform belongs to a record in a module &mdash; this is a way of looking across all of them at once, not a shelf you put things on. There is no upload button here for the same reason: a file arrives by being attached to an observation, an incident or (later) a permit, on that record&rsquo;s own page.</div>
+</div>

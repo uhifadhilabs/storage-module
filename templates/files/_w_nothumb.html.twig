@@ -1,0 +1,24 @@
+{# Widget "nothumb" — waiting for a small picture (FL·06).
+
+   STATIC TWIN of files.widgets.js's `nothumb` entry. Rendered by BOTH the hub
+   and the widget library.
+
+   A file is kept whether or not its small picture was made. The thumbnail is a
+   convenience the platform makes in the background; a photograph the thumbnailer
+   cannot read is still there, still downloadable, still evidence. That is why
+   this is a queue to watch and not an error to fear. #}
+{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+{% set queued = waiting|filter(f => f.thumbState.value == 'wait')|length %}
+{% set unmade = waiting|filter(f => f.thumbState.value == 'failed')|length %}
+<div class="c" data-w="nothumb">
+    <span class="tab"><span class="idx">FL&middot;06</span>Waiting for a small picture<span class="src">&middot; {{ queued }} in the queue &middot; {{ unmade }} could not be made</span></span>
+    {% for file in waiting|slice(0, 8) %}
+        <div class="rln">
+            <span style="display:flex;align-items:center;gap:9px">{{ ui.owner(file) }}<span class="f-note">{{ file.name }}</span></span>
+            <span style="display:flex;align-items:center;gap:8px">{{ ui.thumb(file) }}<span class="f-note">{{ file.thumbState.value == 'failed' ? 'the original is a ' ~ file.mimeType : 'arrived ' ~ file.arrivedAt|date('D j M Y')|lower }}</span></span>
+        </div>
+    {% else %}
+        <div class="use" style="margin-bottom:0">Every photograph this organisation holds has its small picture. Nothing is waiting.</div>
+    {% endfor %}
+    <div class="use"><b>A file is kept whether or not its small picture was made.</b> The thumbnail is a convenience the hub makes in the background; a photograph the thumbnailer cannot read is still there, still downloadable, still evidence. Re-making one re-reads the ORIGINAL and writes a new small copy beside it &mdash; it never touches the original.</div>
+</div>

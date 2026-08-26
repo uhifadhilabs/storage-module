@@ -22,10 +22,15 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
+use Uhifadhi\Service\WidgetEndpoint;
+use Uhifadhi\Service\WidgetService;
 use UhifadhiLabs\Storage\Controller\EvidenceController;
+use UhifadhiLabs\Storage\Controller\FilesController;
 use UhifadhiLabs\Storage\DependencyInjection\StorageConfiguration;
 use UhifadhiLabs\Storage\Model\EvidenceConstraints;
+use UhifadhiLabs\Storage\Registry\FileSourceInterface;
 use UhifadhiLabs\Storage\Security\EvidenceAccessVoterInterface;
+use UhifadhiLabs\Storage\Twig\FilesExtension;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -115,6 +120,30 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
         $longEdge = $evidence['thumbnail_long_edge'] ?? null;
         $builder->setParameter('storage.evidence.thumbnail_long_edge', \is_int($longEdge) && $longEdge > 0 ? $longEdge : 400);
 
+        $adapter = StorageConfiguration::ADAPTER_S3 === ($evidence['adapter'] ?? null)
+            ? StorageConfiguration::ADAPTER_S3
+            : StorageConfiguration::ADAPTER_LOCAL;
+        $builder->setParameter('storage.evidence.adapter', $adapter);
+
+        /*
+         * What the Files hub calls the place files go.
+         *
+         * Defaulted rather than required, and defaulted to a DESCRIPTION rather
+         * than to a vendor: "Object storage" and "This server" are true of every
+         * deployment. The one place a proper noun belongs is a name the
+         * organisation actually chose, which is what storage_label is for.
+         */
+        $files = self::stringKeyed($config['files'] ?? null);
+        $label = $files['storage_label'] ?? null;
+        $builder->setParameter(
+            'storage.files.storage_label',
+            \is_string($label) && '' !== $label
+                ? $label
+                : (StorageConfiguration::ADAPTER_S3 === $adapter ? 'Object storage' : 'This server'),
+        );
+        $location = $files['storage_location'] ?? null;
+        $builder->setParameter('storage.files.storage_location', \is_string($location) && '' !== $location ? $location : null);
+
         // Static service wiring lives in a PHP config file (see config/services.php
         // for why PHP, not YAML). loadExtension keeps only the config-DRIVEN bits.
         $container->import('../config/services.php');
@@ -189,6 +218,54 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
                 ])
                 ->public();
         }
+
+        /*
+         * THE FILES HUB — four screens, registered only where all three things
+         * they stand on are actually present.
+         *
+         * SecurityBundle, because the hub is for signed-in people and the file
+         * page's removal form needs a CSRF manager. Twig, because the screens are
+         * templates. And the HOST'S WIDGET FRAMEWORK — Uhifadhi\Service\WidgetService
+         * and its library component — because the hub is a widget dashboard on it
+         * and there is no useful half of that.
+         *
+         * The widget framework is checked with class_exists() rather than through
+         * kernel.bundles, and that is the right check HERE for the reason it is
+         * the wrong one for SecurityBundle: the widget classes are the host
+         * application's own, not a bundle's, so there is no bundle to look for —
+         * and they are not a dependency of this package either, so nothing but a
+         * host (or this bundle's own test fixtures, which stand in for one) can
+         * make them autoloadable.
+         */
+        $files = self::stringKeyed($config['files'] ?? null);
+        $wanted = false !== ($files['enabled'] ?? true);
+        $hasWidgets = class_exists(WidgetService::class) && class_exists(WidgetEndpoint::class);
+        $hasTwig = \is_array($bundles) && isset($bundles['TwigBundle']);
+        $screens = $wanted && $hasSecurity && $hasTwig && $hasWidgets;
+        $builder->setParameter('storage.files.screens', $screens);
+
+        if ($screens) {
+            $permission = $files['settings_permission'] ?? null;
+
+            $services->set('storage.twig_extension', FilesExtension::class)
+                ->tag('twig.extension');
+
+            $services->set(FilesController::class)
+                ->args([
+                    service('twig'),
+                    service('storage.file_registry'),
+                    service('storage.files_surface'),
+                    service('storage.settings'),
+                    service(WidgetService::class),
+                    service(WidgetEndpoint::class),
+                    service('router'),
+                    service('security.token_storage'),
+                    service('security.authorization_checker'),
+                    service('security.csrf.token_manager'),
+                    \is_string($permission) && '' !== $permission ? $permission : 'ROLE_ADMIN',
+                ])
+                ->public();
+        }
     }
 
     public function build(ContainerBuilder $container): void
@@ -206,6 +283,12 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
          */
         $container->registerForAutoconfiguration(EvidenceAccessVoterInterface::class)
             ->addTag('uhifadhi.evidence_access_voter');
+
+        // The same courtesy for the hub's seam, with the same caveat: a module
+        // shipped as a reusable bundle is not autoconfigured and still tags its
+        // source by hand. See FileSourceInterface.
+        $container->registerForAutoconfiguration(FileSourceInterface::class)
+            ->addTag(FileSourceInterface::TAG);
     }
 
     /**

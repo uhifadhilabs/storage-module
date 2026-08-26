@@ -19,16 +19,22 @@
         }
     ],
     "require": {
+        "php": ">=8.4",
         "league/flysystem": "^3.0",
         "league/flysystem-bundle": "^3.4",
-        "php": ">=8.4",
+        "symfony/asset": "^7.3 || ^8.0",
         "symfony/config": "^7.3 || ^8.0",
         "symfony/dependency-injection": "^7.3 || ^8.0",
         "symfony/framework-bundle": "^7.3 || ^8.0",
         "symfony/http-foundation": "^7.3 || ^8.0",
         "symfony/http-kernel": "^7.3 || ^8.0",
         "symfony/mime": "^7.3 || ^8.0",
-        "symfony/routing": "^7.3 || ^8.0"
+        "symfony/routing": "^7.3 || ^8.0",
+        "symfony/security-core": "^7.3 || ^8.0",
+        "symfony/security-csrf": "^7.3 || ^8.0",
+        "symfony/twig-bundle": "^7.3 || ^8.0",
+        "symfony/uid": "^7.3 || ^8.0",
+        "twig/twig": "^3.12"
     },
     "autoload": {
         "psr-4": {
@@ -37,7 +43,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "UhifadhiLabs\\Storage\\Tests\\": "tests/"
+            "UhifadhiLabs\\Storage\\Tests\\": "tests/",
+            "Uhifadhi\\Model\\": "tests/Fixtures/Uhifadhi/Model/",
+            "Uhifadhi\\Service\\": "tests/Fixtures/Uhifadhi/Service/"
         }
     },
     "require-dev": {
@@ -48,7 +56,6 @@
         "symfony/browser-kit": "^7.3 || ^8.0",
         "symfony/css-selector": "^7.3 || ^8.0",
         "symfony/security-bundle": "^7.3 || ^8.0",
-        "symfony/security-core": "^7.3 || ^8.0",
         "symfony/security-http": "^7.3 || ^8.0"
     },
     "suggest": {

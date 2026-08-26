@@ -1,0 +1,16 @@
+{# Widget "arrivals" — what arrives each week (FL·09).
+
+   STATIC TWIN of files.widgets.js's `arrivals` entry. Rendered by BOTH the hub
+   and the widget library.
+
+   Bars, because the question is "is it growing", not "what exactly". #}
+<div class="c" data-w="arrivals">
+    <span class="tab"><span class="idx">FL&middot;09</span>What arrives each week<span class="src">&middot; last eight weeks</span></span>
+    <div class="f-spark">
+        {% for week in arrivals %}
+            <div class="col{{ loop.last ? ' hot' }}"><em>{{ week.files }}</em><i style="height:{{ week.share }}%"></i></div>
+        {% endfor %}
+    </div>
+    <div class="f-sparkx">{% for week in arrivals %}<span>{{ week.week|date('j M')|lower }}</span>{% endfor %}</div>
+    <div class="use">Counted by the week a file <b>reached us</b>, which is the week it started costing space &mdash; the settings page turns this rate into a sentence about when the disk runs out.</div>
+</div>

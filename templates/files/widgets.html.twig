@@ -1,0 +1,80 @@
+{# FILES · WIDGET LIBRARY — /files/widgets.
+
+   STATIC TWIN of the settled design's files/widgets.html — which is deliberately
+   almost empty, because everything inside `data-widget-root` is the HOST's one
+   shared component. This page's whole job is to hand that component the ten
+   things its contract asks for and get out of the way.
+
+   The widgets previewed inside it are the same _w_<id>.html.twig partials the
+   hub renders, given the same context, so the library's preview IS the widget. #}
+{% extends '@UhifadhiLabsStorage/base.html.twig' %}
+
+{% block title %}Files · widget library{% endblock %}
+
+{% block storage_page %}
+<div class="crumb"><a href="/">uhifadhi</a> / <a href="{{ urls.dashboard }}">files</a> / widget library</div>
+
+<div class="pghead">
+    <div>
+        <h1 class="pg">Files &middot; widget library</h1>
+        <p class="pgsub">Choose the layout your hub shows, or compose your own. Every widget is the real thing at full
+        size, exactly as the page renders it &mdash; the filters here filter exactly as the filters on the page do.</p>
+    </div>
+    <div class="pgact w-pgact">
+        {# Throwing the whole layout away asks first — through the host's own
+           confirm-modal controller, never the browser's dialog. The bundle only
+           states WHAT to ask; the host owns the dialog, so every module asks the
+           same way. #}
+        <button type="button" class="tgl w-act" {{ constant('Uhifadhi\\Model\\WidgetDom::RESET') }}
+                data-controller="confirm-modal"
+                data-action="click->confirm-modal#ask"
+                data-confirm-modal-title-value="Reset your widget layout?"
+                data-confirm-modal-body-value="Your own arrangement of the files hub goes back to the one the platform ships with. Nothing happens to any file."
+                data-confirm-modal-confirm-value="Reset it"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Reset to defaults</button>
+        <a class="cta" href="{{ urls.dashboard }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to the hub</a>
+    </div>
+</div>
+
+{# THE WHOLE CONTRACT, and nothing files-specific inside it except the catalogue,
+   the partial format and the context every partial receives. #}
+{{ include('widgets/_library.html.twig', {
+    catalog: catalog,
+    builtins: builtins,
+    customPresets: customPresets,
+    active: active,
+    widgets: widgets,
+    partial: partial,
+    widgetContext: {
+        filter: filter,
+        files: files,
+        total: total,
+        counts: counts,
+        modules: modules,
+        areas: areas,
+        days: days,
+        kinds: kinds,
+        byOwner: byOwner,
+        byDay: byDay,
+        byKind: byKind,
+        bySpace: bySpace,
+        byArea: byArea,
+        arrivals: arrivals,
+        recent: recent,
+        biggest: biggest,
+        waiting: waiting,
+        places: places,
+        thumbnailLongEdge: thumbnailLongEdge,
+        now: now,
+    },
+    urls: urls,
+    csrfToken: csrfToken,
+}, with_context: false) }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="module">
+        import { initWidgetLibrary } from 'uhifadhi/widgets';
+        initWidgetLibrary();
+    </script>
+{% endblock %}

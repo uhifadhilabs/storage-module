@@ -1,0 +1,158 @@
+{# A FILE'S OWN PAGE — /files/f/{key}.
+
+   STATIC TWIN of the settled design's files/detail.html.
+
+   It exists because a file has to be LINKABLE: you can send somebody this
+   address, and if they may see the owning record they will see the photograph.
+   The overlay on the hub is for browsing; this page is for pointing at.
+
+   THE GUARD IS THE OWNING RECORD'S ANSWER, and this is where it is authoritative.
+   The design draws all four states switchable so a reviewer can see them; in the
+   product one page shows one of them — whichever the module gave for this file,
+   this person, right now. The removal control is drawn BY the guard, never greyed
+   out beside it: a control you may not press is worse than no control, because it
+   does not say why. #}
+{% extends '@UhifadhiLabsStorage/base.html.twig' %}
+
+{% block title %}{{ file.name }}{% endblock %}
+
+{% block storage_page %}
+{# Imported INSIDE the block on purpose: in a child template a macro imported
+   outside the blocks is not visible inside them. #}
+{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+<div class="crumb"><a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / {{ file.name }}</div>
+
+<div class="pghead">
+    <div>
+        <h1 class="pg">{{ file.name }}</h1>
+        <p class="pgsub">A file&rsquo;s own page. It shows exactly what the overlay on the hub shows; the overlay is for
+        browsing, this is for pointing at.</p>
+    </div>
+    <div class="pgact w-pgact">
+        <a class="tgl w-act" href="{{ hubUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to files</a>
+        {% if file.ownerUrl %}<a class="cta" href="{{ file.ownerUrl }}">Open {{ file.ownerLabel }} &rarr;</a>{% endif %}
+    </div>
+</div>
+
+<div class="grid g32">
+    <div class="c">
+        <span class="tab"><span class="idx">FL&middot;D1</span>The original<span class="src">&middot; fetched through the permission check</span></span>
+        {# The ONLY place on the platform an original is served. It is not a path
+           in the website; it is a route the app answers after asking the owning
+           module whether this person may see the record.
+           → GET /storage/evidence/{key} — 404 on refusal, never 403. #}
+        <div class="f-ovstage" style="border-radius:10px;margin-top:4px">
+            {% if file.kind.value == 'photo' %}
+                <img src="{{ path('storage_evidence_show', {key: file.key}) }}" alt="{{ file.name }}">
+            {% else %}
+                <div class="noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>{{ file.mimeType }}<br>nothing to show small</div>
+            {% endif %}
+        </div>
+        {% if file.caption %}
+            <div class="use"><b>{{ file.caption }}</b> &mdash; the caption belongs to the record, not to the file; it is written on
+            {{ file.ownerLabel }} and shown here.</div>
+        {% else %}
+            <div class="use">No caption &mdash; a caption belongs to the record, not to the file, and this one has none.</div>
+        {% endif %}
+
+        {% if siblings is not empty %}
+            <h2 class="zone" style="margin-top:26px">The rest of {{ file.ownerLabel }}&rsquo;s files</h2>
+            <div class="f-grid">{%- for sibling in siblings -%}{{ ui.tile(sibling) }}{%- endfor -%}</div>
+            <div class="use">These hang off the same record. They are its evidence, and they move with it &mdash; if the
+            record is ever merged into another, they go along.</div>
+        {% endif %}
+    </div>
+
+    <div class="c">
+        <span class="tab"><span class="idx">FL&middot;D2</span>What this file is</span>
+        <div class="rln"><span>Owner</span><span>{{ ui.owner(file) }}</span></div>
+        <div class="rln"><span>Taken</span><span class="mono" style="font-size:11px">{{ file.takenAt ? (file.takenAt|date('D j M Y')|lower ~ ' · ' ~ file.takenAt|date('H:i')) : '—' }}</span></div>
+        <div class="rln"><span>Arrived</span><span class="mono" style="font-size:11px">{{ file.arrivedAt|date('D j M Y')|lower }} &middot; {{ file.arrivedAt|date('H:i') }}</span></div>
+        {% if file.areaLabel %}<div class="rln"><span>Area</span><span class="mono" style="font-size:11px">{{ file.areaLabel }}</span></div>{% endif %}
+        <div class="rln"><span>Size</span><span class="mono" style="font-size:11px">{{ file.byteSize|storage_bytes }}</span></div>
+        <div class="rln"><span>Type</span><span class="mono" style="font-size:11px">{{ file.mimeType }}</span></div>
+        <div class="rln"><span>Where the bytes are</span><span>{{ ui.place(places) }}</span></div>
+        <div class="rln"><span>Its key</span><span class="mono" style="font-size:10.5px;word-break:break-all;max-width:58%;text-align:right">{{ file.key }}</span></div>
+        <div class="rln"><span>Small picture</span><span>{{ ui.thumb(file) }} <span class="f-note">~{{ thumbnailLongEdge }}px</span></span></div>
+        <div class="rln"><span>Who can see it</span><span class="mono" style="font-size:11px">whoever can see {{ file.ownerLabel }}</span></div>
+
+        <h3 class="f-note" style="margin:18px 0 4px">WHAT HAPPENED TO IT</h3>
+        {# The file's own trail. What the hub itself can vouch for: it arrived, its
+           type was detected, its small picture was or was not made, and it belongs
+           to a record. Anything beyond that — who fetched it, and when — is the
+           owning module's audit to keep; the hub does not invent lines it cannot
+           stand behind. #}
+        <div class="f-trail">
+            <div class="f-trailrow"><i class="acc"></i><div class="bd"><b>Arrived</b><span>{{ file.arrivedAt|date('D j M Y')|lower }} &middot; {{ file.arrivedAt|date('H:i') }} &middot; one request per file</span></div></div>
+            <div class="f-trailrow"><i></i><div class="bd"><b>Type detected: {{ file.mimeType }}</b><span>checked against the allowlist &mdash; the name is not evidence of anything</span></div></div>
+            {% if file.thumbState.value == 'made' %}
+                <div class="f-trailrow"><i></i><div class="bd"><b>Small picture made</b><span>~{{ thumbnailLongEdge }}px on the long side &middot; the original was not touched</span></div></div>
+            {% elseif file.thumbState.value == 'wait' %}
+                <div class="f-trailrow"><i class="warn"></i><div class="bd"><b>Small picture queued</b><span>still waiting for a worker &middot; the file is kept either way</span></div></div>
+            {% elseif file.thumbState.value == 'failed' %}
+                <div class="f-trailrow"><i class="warn"></i><div class="bd"><b>Small picture could not be made</b><span>nothing on this machine could read a {{ file.mimeType }} &middot; the original is untouched</span></div></div>
+            {% endif %}
+            <div class="f-trailrow"><i></i><div class="bd"><b>Attached to {{ file.ownerLabel }}</b><span>it has belonged to that record ever since</span></div></div>
+        </div>
+
+        <h3 class="f-note" style="margin:18px 0 4px">WHAT YOU MAY DO</h3>
+        <div class="f-acts">
+            {# → GET /storage/evidence/{key} — the permission check runs first; a
+                 refusal is a 404, never a 403, so a missing permission does not
+                 confirm that the file exists. #}
+            <a class="f-act" href="{{ path('storage_evidence_show', {key: file.key}) }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 10 5 5 5-5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+                Open the original</a>
+            {% if file.ownerUrl %}
+                <a class="f-act" href="{{ file.ownerUrl }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+                    Open {{ file.ownerLabel }}</a>
+            {% endif %}
+            {# REMOVE, NEVER DELETE — and only where the owning record allows it AND
+               the owning module ships the hook that writes the removal onto the
+               record's own trail. A module that has not written its trail line yet
+               does not offer removal, which is the safe way round. #}
+            {% if guard.offersRemoval and removable %}
+                <button type="button" class="f-act danger" data-f-removeopen>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    Remove this file</button>
+            {% endif %}
+        </div>
+
+        {% if guard.offersRemoval and removable %}
+            {# Asks for a reason FIRST where the record wants one, then writes the
+               removal onto {{ file.ownerLabel }}'s own trail and only then drops
+               the bytes. The record is never removed with it.
+               → POST /files/f/{key}/remove #}
+            <form method="post" action="{{ path('storage_files_remove', {key: file.key}) }}" class="f-removeform" data-f-removeform hidden>
+                <input type="hidden" name="_token" value="{{ removeToken }}">
+                <label class="f-note" for="f-reason">WHY IS IT BEING REMOVED{{ guard.needsReason ? '' : ' (OPTIONAL)' }}</label>
+                <textarea id="f-reason" name="reason" rows="2" placeholder="{{ file.ownerLabel }} keeps this line."{{ guard.needsReason ? ' required' : '' }}></textarea>
+                <div class="f-acts">
+                    <button type="submit" class="f-act danger">Remove it</button>
+                    <button type="button" class="f-act" data-f-removecancel>Keep it</button>
+                </div>
+            </form>
+        {% endif %}
+
+        {# ONE state, the one the owning module gave for this file and this person.
+           → the module's own answer, through FileSourceInterface::guard(). #}
+        <div class="f-guard {{ guard.state.cssClass }}" data-f-guardstate="{{ guard.state.value }}">
+            {% if guard.state.value == 'locked' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            {% elseif guard.state.value == 'denied' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m4.9 4.9 14.2 14.2"/></svg>
+            {% else %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            {% endif %}
+            <div><b>{{ guard.title }}.</b> {{ guard.text }}</div>
+        </div>
+
+        {% if guard.offersRemoval and not removable %}
+            <div class="use" style="margin-bottom:0">{{ file.moduleLabel }} allows this file to be removed but has not yet
+            said how it would record the removal on {{ file.ownerLabel }}. Until it does, the hub will not remove it:
+            <b>removing a file is a line on its record</b>, and a removal nobody wrote down is not one.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

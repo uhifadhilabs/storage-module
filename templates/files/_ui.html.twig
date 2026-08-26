@@ -1,0 +1,106 @@
+{# ═══════════════════════════════════════════════════════════════════════════
+   FILES — the components every widget on this surface is built from.
+
+   STATIC-TWIN DISCIPLINE. Each macro below is the twin of the corresponding
+   markup in the settled design (uhifadhi-web: files/files.widgets.js, whose
+   `html` entries are the static twins of these partials, and files.css, which
+   is the stylesheet they are drawn with). Same classes, same structure, same
+   copy — only the sample data becomes a loop. If you change a class here,
+   change it in files.css and in the design's own entry, or the library's
+   preview stops being the widget.
+
+   THE OWNER TAG IS THE MOST IMPORTANT COMPONENT ON THE SURFACE. Every file is
+   shown with the record it belongs to, because that is what it is: "Patrols ·
+   OBS-0214" is the file's name in the only sense the product recognises. It is
+   a LINK to the owning record's own page.
+
+   ICONS are inline Lucide SVGs, exactly as the design ships them — this bundle
+   does not depend on the host's icon component, so a module screen never
+   renders a blank square on a host that wires icons differently.
+   ═════════════════════════════════════════════════════════════════════════ #}
+
+{# The owner tag. `off` where the owning module ships no page for the record
+   yet: named, not a link — a dead link is worse than an honest one. #}
+{% macro owner(file) %}
+    {%- if file.ownerUrl is null -%}
+        <span class="f-owner off" title="{{ file.moduleLabel }} — no page for this record yet"><i class="{{ file.moduleSlug }}"></i><span class="mod">{{ file.moduleLabel }}</span><span class="sepdot">&middot;</span>{{ file.ownerLabel }}</span>
+    {%- else -%}
+        <a class="f-owner" href="{{ file.ownerUrl }}" title="Open {{ file.ownerLabel }}"><i class="{{ file.moduleSlug }}"></i><span class="mod">{{ file.moduleLabel }}</span><span class="sepdot">&middot;</span>{{ file.ownerLabel }}</a>
+    {%- endif -%}
+{% endmacro %}
+
+{# Where the bytes are, as a pill. #}
+{% macro place(places) %}
+    {%- set p = places|first -%}
+    {%- if p is not empty -%}<span class="f-be {{ p.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ p.label }}</span>{%- endif -%}
+{% endmacro %}
+
+{# Whether the ONE ~400px picture exists — the second fact the hub knows that no
+   module page does. #}
+{% macro thumb(file) %}<span class="f-th {{ file.thumbState.value }}">{{ file.thumbState.label }}</span>{% endmacro %}
+
+{# The shape a file with nothing to show draws instead of a broken image. A PDF,
+   a track export, a photograph still in the queue and one the thumbnailer could
+   not read are four different facts and must not look alike. #}
+{% macro shape(file) %}
+    {%- if file.thumbState.value == 'wait' -%}
+        <span class="sh none wait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>making the small one</span>
+    {%- elseif file.thumbState.value == 'failed' -%}
+        <span class="sh none failed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>no thumbnail</span>
+    {%- elseif file.kind.value == 'track' -%}
+        <span class="sh none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19c4-1 5-9 9-10s4 6 7 5"/><circle cx="4" cy="19" r="1.6"/><circle cx="20" cy="14" r="1.6"/></svg>{{ file.name|split('.')|last|lower }}</span>
+    {%- elseif not file.hasThumbnail -%}
+        <span class="sh none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>{{ file.name|split('.')|last|lower }}</span>
+    {%- else -%}
+        {# The ONLY image ever fetched while browsing: the ~400px picture, and even
+           it comes through the permission check. The original is fetched when,
+           and only when, somebody asks for it.
+           → GET /storage/evidence/{key} — a permission check, then the bytes. #}
+        <span class="sh"><img src="{{ path('storage_evidence_show', {key: file.thumbKey}) }}" alt="{{ file.name }}" loading="lazy"><span class="lock" title="Private &mdash; served only through a permission check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></span>
+    {%- endif -%}
+{% endmacro %}
+
+{# Every fact the overlay fills itself from, so opening one costs NO request.
+   The guard is deliberately NOT among them: what you may do to a file is a
+   per-person answer the owning record gives, and it is rendered where it is
+   authoritative — the file's own page, one click away in the overlay's header. #}
+{% macro data(file) %}
+    data-f-id="{{ file.key }}" data-f-name="{{ file.name }}" data-f-mod="{{ file.moduleSlug }}"
+    data-f-modlabel="{{ file.moduleLabel }}" data-f-dot="{{ file.moduleSlug }}"
+    data-f-rec="{{ file.ownerLabel }}" data-f-rechref="{{ file.ownerUrl ?? '' }}"
+    data-f-kind="{{ file.kind.value }}"
+    data-f-img="{{ file.hasThumbnail ? path('storage_evidence_show', {key: file.thumbKey}) : '' }}"
+    data-f-original="{{ path('storage_evidence_show', {key: file.key}) }}"
+    data-f-taken="{{ file.takenAt ? (file.takenAt|date('D j M Y')|lower ~ ' · ' ~ file.takenAt|date('H:i')) : '—' }}"
+    data-f-day="{{ file.day }}"
+    data-f-uploaded="{{ file.arrivedAt|date('D j M Y')|lower ~ ' · ' ~ file.arrivedAt|date('H:i') }}"
+    data-f-size="{{ file.byteSize|storage_bytes }}" data-f-mime="{{ file.mimeType }}"
+    data-f-key="{{ file.key }}" data-f-thumb="{{ file.thumbState.value }}"
+    data-f-caption="{{ file.caption ?? '' }}" data-f-area="{{ file.areaLabel ?? '' }}"
+    data-f-detail="{{ path('storage_files_show', {key: file.key}) }}"
+{% endmacro %}
+
+{# A file, looked at. The tile is a div with role=button so its OWNER LINK can
+   live inside it — an <a> may not sit inside a <button>, and the owner has to be
+   a real link because the owner is the file's identity. #}
+{% macro tile(file) %}
+    {%- import _self as ui -%}
+    <div class="f-tile" role="button" tabindex="0" {{ ui.data(file) }}>{{ ui.shape(file) }}<span class="bd">{{ ui.owner(file) }}<span class="nm" title="{{ file.name }}">{{ file.name }}</span><span class="mt"><span>{{ file.byteSize|storage_bytes }}</span><span>{{ file.thumbState.label }}</span></span></span></div>
+{% endmacro %}
+
+{# The same file, read instead of looked at. ONE result set in two shapes, never
+   two queries. #}
+{% macro row(file, places) %}
+    {%- import _self as ui -%}
+    <tr {{ ui.data(file) }} role="button" tabindex="0"><td style="width:52px">{% if file.hasThumbnail %}<img class="mini" src="{{ path('storage_evidence_show', {key: file.thumbKey}) }}" alt="" loading="lazy">{% else %}<span class="mininone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>{% endif %}</td><td><span class="nm">{{ file.name }}</span></td><td>{{ ui.owner(file) }}</td><td class="f-note">{{ file.kind.label }}</td><td class="f-note">{{ file.takenAt ? (file.takenAt|date('D j M Y')|lower ~ ' · ' ~ file.takenAt|date('H:i')) : '—' }}</td><td class="num">{{ file.byteSize|storage_bytes }}</td><td>{{ ui.thumb(file) }}</td><td>{{ ui.place(places) }}</td></tr>
+{% endmacro %}
+
+{# The table head both the ledger and the browse widget's list shape carry. #}
+{% macro listhead() %}<thead><tr><th></th><th>file</th><th>owner</th><th>what</th><th>taken</th><th class="num">size</th><th>thumbnail</th><th>where the bytes are</th></tr></thead>{% endmacro %}
+
+{# Nothing matched. A filter that finds nothing must say which filter to undo.
+   `show` is whether the result set is empty right now; the element stays in the
+   DOM either way because the filter row hides and reveals it client-side. #}
+{% macro empty(show) %}
+    <div class="f-empty" data-f-empty{{ show ? '' : ' hidden' }}><b>Nothing matches</b>No file answers to all of those at once. Undo the narrowest one &mdash; <b>Taken</b> and <b>Thumbnail</b> are usually the culprits.</div>
+{% endmacro %}

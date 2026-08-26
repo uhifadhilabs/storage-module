@@ -1,0 +1,21 @@
+{# Widget "byowner" — the records that hold files (FL·03).
+
+   STATIC TWIN of files.widgets.js's `byowner` entry. Rendered by BOTH the hub
+   and the widget library.
+
+   The model, drawn: a record and everything hanging off it. Files do not sit in
+   folders; they hang off records, which is why this is a direction and not a
+   decoration. #}
+{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+<div class="c" data-w="byowner">
+    <span class="tab"><span class="idx">FL&middot;03</span>The records that hold files<span class="src">&middot; the shape the model is actually in</span></span>
+    {% for record in byOwner %}
+        <div class="f-rec">
+            <div class="hd">{{ ui.owner(record.files|first) }}<span class="ttl">{{ record.areaLabel ? record.areaLabel ~ ' · ' : '' }}{{ record.day|date('D j M Y')|lower }}</span><span class="n">{{ record.files|length }} file{{ record.files|length == 1 ? '' : 's' }}</span></div>
+            <div class="strip">{%- for file in record.files -%}{{ ui.tile(file) }}{%- endfor -%}</div>
+        </div>
+    {% else %}
+        {{ ui.empty(true) }}
+    {% endfor %}
+    <div class="use"><b>Read this one downwards and the model reads itself.</b> Files do not sit in folders; they hang off records. Open the record and you get the file in its context &mdash; who filed it, where, and what it was evidence of.</div>
+</div>
