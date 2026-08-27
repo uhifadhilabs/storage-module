@@ -94,6 +94,69 @@ final class FileRegistry
     }
 
     /**
+     * ONE RECORD'S FILES, asked of the module that owns it.
+     *
+     * What another module needs when it is SHOWING a record it does not own — the
+     * incidents report flow drawing the photographs of the observation it is
+     * being filed from. It is answered by ASKING the matching source, never by
+     * walking {@see all()} and string-matching a uuid inside somebody else's
+     * ownerUrl: that would read every file in the deployment to answer one card,
+     * and would guess at another module's routing to do it.
+     *
+     * $source is the token the asking module was handed on the wire and it is
+     * matched against {@see FileSourceInterface::moduleSlug()}. Both spellings a
+     * seam realistically carries are accepted — the module's slug ("patrols") and
+     * the singular token the report seam sends ("patrol") — because the two
+     * bundles may not name each other's constants and a card must not go blank
+     * over a plural.
+     *
+     * Nothing found is a FACT, not an error: the storage bundle may be absent,
+     * the record may have no photographs, or the token may name a module this
+     * deployment does not have. All three answer the same way, and the caller
+     * draws nothing.
+     *
+     * @return list<FileEntry>
+     */
+    public function forRecord(string $source, string $recordUuid): array
+    {
+        if ('' === $source || '' === $recordUuid) {
+            return [];
+        }
+
+        $files = [];
+        foreach ($this->sources as $candidate) {
+            try {
+                if (!self::names($candidate->moduleSlug(), $source)) {
+                    continue;
+                }
+                foreach ($candidate->filesForRecord($source, $recordUuid) as $file) {
+                    $files[] = $file;
+                }
+            } catch (\Throwable) {
+                // One module having a bad day must not take down the page that
+                // asked — the same rule all() keeps, for the same reason.
+                continue;
+            }
+        }
+
+        usort($files, static fn (FileEntry $a, FileEntry $b): int => [$a->takenAt, $a->name] <=> [$b->takenAt, $b->name]);
+
+        return $files;
+    }
+
+    /**
+     * Whether a wire token names this module. "patrols" is the slug; "patrol" is
+     * what the report seam sends. A card must not go blank over a plural.
+     */
+    private static function names(string $slug, string $token): bool
+    {
+        $token = strtolower(trim($token));
+        $slug = strtolower($slug);
+
+        return $token === $slug || $token.'s' === $slug || $token === $slug.'s';
+    }
+
+    /**
      * The module that owns a key, found by ASKING rather than by walking every
      * file — a deployment with four thousand photographs must not read them all
      * to answer one page.

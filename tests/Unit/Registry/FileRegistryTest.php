@@ -288,6 +288,103 @@ final class FileRegistryTest extends TestCase
         self::assertSame(['quadrat/qdr-1/b.jpg'], array_map(static fn (FileEntry $f): string => $f->key, $registry->siblingsOf($file)));
     }
 
+    // ── ONE RECORD'S FILES, ASKED OF THE MODULE THAT OWNS IT ────────────────
+
+    /**
+     * THE SEAM ANOTHER MODULE SHOWS A RECORD THROUGH. The incidents report flow
+     * draws the photographs of the observation it is filed from, so the filer can
+     * see what they are filing about — and it gets them by ASKING the owning
+     * module, never by walking every file in the deployment and string-matching a
+     * uuid inside somebody else's ownerUrl.
+     */
+    public function testOneRecordsFilesComeFromTheModuleThatOwnsIt(): void
+    {
+        $files = self::recordRegistry()->forRecord('quadrat', self::RECORD);
+
+        self::assertSame(
+            ['quadrat/qdr-1/a.jpg', 'quadrat/qdr-1/b.jpg'],
+            array_map(static fn ($file) => $file->key, $files),
+        );
+    }
+
+    /**
+     * IN THE ORDER THE HANDSET TOOK THEM. A strip of photographs of one moment
+     * reads forwards, not newest-first: the second photograph is the second
+     * thing that happened.
+     */
+    public function testOneRecordsFilesReadForwardsInTime(): void
+    {
+        $files = self::recordRegistry()->forRecord('quadrat', self::RECORD);
+
+        self::assertNotNull($files[0]->takenAt);
+        self::assertNotNull($files[1]->takenAt);
+        self::assertLessThan($files[1]->takenAt, $files[0]->takenAt);
+    }
+
+    /**
+     * THE TOKEN ON THE WIRE IS NOT ALWAYS THE SLUG. A report seam sends
+     * "patrol"; the module calls itself "patrols". Two bundles may not name each
+     * other's constants, and a card must not go blank over a plural.
+     */
+    public function testTheWireTokenMayBeTheSingularOfTheModuleSlug(): void
+    {
+        $registry = new FileRegistry([
+            new StubSource('patrols', 'Patrols', [], [self::RECORD => [
+                self::file('patrols/obs-2/a.jpg', 'OBS-2', 'patrols', 1_000, '2026-08-22 08:15', '2026-08-22 18:00'),
+            ]]),
+        ]);
+
+        self::assertCount(1, $registry->forRecord('patrol', self::RECORD));
+        self::assertCount(1, $registry->forRecord('patrols', self::RECORD));
+    }
+
+    /**
+     * A SOURCE IS NEVER ASKED ABOUT ANOTHER MODULE'S RECORD, and nothing found is
+     * a FACT rather than an error — the module may be absent, the record may have
+     * no photographs, or the token may name a module this deployment does not
+     * have. All three draw nothing.
+     */
+    public function testNothingFoundIsAnEmptyAnswerRatherThanAnError(): void
+    {
+        $registry = self::recordRegistry();
+
+        self::assertSame([], $registry->forRecord('ledger', self::RECORD));
+        self::assertSame([], $registry->forRecord('quadrat', '01a00000-0000-7000-8000-000000000999'));
+        self::assertSame([], $registry->forRecord('nosuchmodule', self::RECORD));
+        self::assertSame([], $registry->forRecord('', self::RECORD));
+        self::assertSame([], $registry->forRecord('quadrat', ''));
+    }
+
+    /**
+     * A module having a bad day must not take down the page that asked — the same
+     * rule all() keeps, for the same reason.
+     */
+    public function testAModuleThatThrowsIsSkippedRatherThanFatal(): void
+    {
+        $registry = new FileRegistry([
+            new BrokenSource(),
+            new StubSource('quadrat', 'Quadrats', [], [self::RECORD => [
+                self::file('quadrat/qdr-1/a.jpg', 'QDR-1', 'quadrat', 1_000, '2026-08-21 06:14', '2026-08-21 14:00'),
+            ]]),
+        ]);
+
+        self::assertCount(1, $registry->forRecord('quadrat', self::RECORD));
+    }
+
+    /** The record every test above asks about. */
+    private const string RECORD = '01a03fe3-dc9f-797f-ad0f-8cdc5e81e32d';
+
+    private static function recordRegistry(): FileRegistry
+    {
+        return new FileRegistry([
+            new StubSource('quadrat', 'Quadrats', [], [self::RECORD => [
+                self::file('quadrat/qdr-1/a.jpg', 'QDR-1', 'quadrat', 4_000_000, '2026-08-21 06:14', '2026-08-21 14:00', 'quadrat/qdr-1/a-t.jpg'),
+                self::file('quadrat/qdr-1/b.jpg', 'QDR-1', 'quadrat', 3_000_000, '2026-08-21 06:17', '2026-08-21 14:01'),
+            ]]),
+            new StubSource('ledger', 'Ledger', []),
+        ]);
+    }
+
     private static function now(): \DateTimeImmutable
     {
         return new \DateTimeImmutable(self::NOW);
@@ -354,12 +451,14 @@ final class FileRegistryTest extends TestCase
 final class StubSource implements FileSourceInterface
 {
     /**
-     * @param list<FileEntry> $files
+     * @param list<FileEntry>                $files
+     * @param array<string, list<FileEntry>> $byRecord this module's files, under the record uuid each belongs to
      */
     public function __construct(
         private readonly string $slug,
         private readonly string $label,
         private readonly array $files,
+        private readonly array $byRecord = [],
     ) {
     }
 
@@ -391,6 +490,11 @@ final class StubSource implements FileSourceInterface
     public function guard(string $key, ?UserInterface $user): FileGuard
     {
         return new FileGuard(GuardStateEnum::Allowed, $this->slug.' says so', 'Because it does.');
+    }
+
+    public function filesForRecord(string $source, string $recordUuid): iterable
+    {
+        return $this->byRecord[$recordUuid] ?? [];
     }
 }
 
@@ -426,6 +530,11 @@ final class BrokenSource implements FileSourceInterface
     }
 
     public function guard(string $key, ?UserInterface $user): FileGuard
+    {
+        throw new \RuntimeException('down');
+    }
+
+    public function filesForRecord(string $source, string $recordUuid): iterable
     {
         throw new \RuntimeException('down');
     }

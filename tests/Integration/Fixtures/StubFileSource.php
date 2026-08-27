@@ -19,6 +19,7 @@ use UhifadhiLabs\Storage\Enum\ThumbStateEnum;
 use UhifadhiLabs\Storage\Model\FileEntry;
 use UhifadhiLabs\Storage\Model\FileGuard;
 use UhifadhiLabs\Storage\Registry\FileSourceInterface;
+use UhifadhiLabs\Storage\Registry\HoldsNoRecordFilesTrait;
 use UhifadhiLabs\Storage\Removal\FileRemovalInterface;
 
 /**
@@ -34,6 +35,10 @@ use UhifadhiLabs\Storage\Removal\FileRemovalInterface;
  */
 final class StubFileSource implements FileSourceInterface, FileRemovalInterface
 {
+    // This fixture stands for the hub's own surfaces, which address files by KEY
+    // and never by the record another module is showing.
+    use HoldsNoRecordFilesTrait;
+
     public const string SLUG = 'fieldwork';
 
     /** @var list<string> keys this fixture was asked to remove, in order */

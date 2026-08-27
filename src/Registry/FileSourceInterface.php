@@ -68,6 +68,33 @@ interface FileSourceInterface
     public function files(): iterable;
 
     /**
+     * ONE RECORD'S FILES, asked for by that record's own uuid.
+     *
+     * The seam another module needs when it is SHOWING a record it does not own —
+     * the incidents report flow drawing the photographs of the observation it is
+     * filed from, so the filer can see what they are filing about. Walking
+     * {@see FileRegistry::all()} and string-matching a uuid inside somebody
+     * else's ownerUrl would answer the same question by reading every file in the
+     * deployment and guessing at another module's routing; this asks the one
+     * module that knows.
+     *
+     * $source is the token the ASKING module was handed on the wire (the report
+     * seam's `source=patrol`), matched against {@see moduleSlug()} by
+     * {@see FileRegistry::forRecord()}; a source that is asked about a module
+     * that is not its own returns nothing.
+     *
+     * DEFAULTED TO NOTHING, deliberately: this arrived after the interface
+     * shipped, and a module that never addresses its files by record — or has no
+     * reason to expose them to another module — is complete without it. PHP
+     * interfaces carry no bodies, so that default lives in
+     * {@see HoldsNoRecordFilesTrait}: `use` it and the source is done. An empty
+     * answer is a fact ("no photographs"), never an error.
+     *
+     * @return iterable<FileEntry>
+     */
+    public function filesForRecord(string $source, string $recordUuid): iterable;
+
+    /**
      * Is this key mine? Normally a prefix test on the key the module chose when
      * it called store() — EvidenceKey::rootSegment() reads that prefix back.
      *
