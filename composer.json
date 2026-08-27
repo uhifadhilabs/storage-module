@@ -3,6 +3,7 @@
     "description": "Storage: the platform's file-storage machinery — named Flysystem storages, a private evidence API with a detected-MIME allowlist, thumbnails, and authenticated streaming behind a per-module permission seam.",
     "type": "symfony-bundle",
     "keywords": [
+        "symfony-ux",
         "storage",
         "flysystem",
         "evidence",
