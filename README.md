@@ -1,4 +1,4 @@
-# uhifadhilabs/storage-module
+# uhifadhi/storage-module
 
 The uhifadhi platform's file-storage machinery: named Flysystem storages, a
 private evidence API with a detected-MIME allowlist, thumbnails, and one
@@ -57,7 +57,7 @@ so it does not try: it asks the module that wrote the key. See
 ## Installation
 
 ```console
-composer require uhifadhilabs/storage-module
+composer require uhifadhi/storage-module
 ```
 
 Register both bundles in `config/bundles.php`:
@@ -509,7 +509,7 @@ without touching a template:
 
 ### patrol-module
 
-1. **Depend on it** — add `uhifadhilabs/storage-module` to `composer.json`, and
+1. **Depend on it** — add `uhifadhi/storage-module` to `composer.json`, and
    register both bundles in the host.
 
 2. **Rewire `PhotoSyncService`.** Drop the `$photoDir` and `$maxBytes`
@@ -588,7 +588,7 @@ without touching a template:
 Incidents has no photo entity yet — the design has not been ruled on, and the
 design drives the data model. When it is:
 
-1. Depend on `uhifadhilabs/storage-module`.
+1. Depend on `uhifadhi/storage-module`.
 2. Give the evidence entity `key` (string), `thumbKey` (**nullable** string),
    `mimeType` and `byteSize` columns. Do not store absolute paths.
 3. Call `store($file, 'incident/'.$incident->getUuid(), $photoUuid)`.
