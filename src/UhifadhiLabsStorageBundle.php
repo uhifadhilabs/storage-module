@@ -74,7 +74,7 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
          * under bundles/uhifadhilabsstorage by itself — but assets/ is a UX
          * PACKAGE, and StimulusBundle resolves the controller named in the
          * host's assets/controllers.json through this namespace. Without it, a
-         * host that enabled "@uhifadhilabs/storage-module": {"preview": …} gets
+         * host that enabled "@uhifadhi/storage-module": {"preview": …} gets
          * "Could not find an asset mapper path that points to the preview
          * controller" and a photograph that navigates instead of opening.
          *
@@ -85,7 +85,7 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
             $container->extension('framework', [
                 'asset_mapper' => [
                     'paths' => [
-                        \dirname(__DIR__).'/assets' => '@uhifadhilabs/storage-module',
+                        \dirname(__DIR__).'/assets' => '@uhifadhi/storage-module',
                     ],
                 ],
             ]);

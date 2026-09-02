@@ -41,7 +41,7 @@ final class FilePreviewComponentTest extends FilesTestCase
         $overlay = $shell->filter('.f-ov[data-f-overlay]');
         self::assertCount(1, $overlay);
         self::assertSame(
-            'uhifadhilabs--storage-module--preview',
+            'uhifadhi--storage-module--preview',
             $overlay->attr('data-controller'),
             'the component ships its own behaviour; a consumer includes the partial and gets it',
         );
@@ -166,7 +166,7 @@ final class FilePreviewComponentTest extends FilesTestCase
 
         self::assertCount(1, $crawler->filter('.f-ov[data-f-overlay]'), 'one preview per page, from the partial');
         self::assertSame(
-            'uhifadhilabs--storage-module--preview',
+            'uhifadhi--storage-module--preview',
             $crawler->filter('.f-ov')->attr('data-controller'),
         );
         self::assertCount(
