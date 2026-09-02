@@ -22,7 +22,7 @@
    the day rail and the usage bars.
 
    WHERE THEY BELONG WHEN PORTED. The hub is the user-facing surface of
-   uhifadhilabs/storage-module, so these rules ship in the MODULE's stylesheet
+   uhifadhi/storage-module, so these rules ship in the MODULE's stylesheet
    the same way patrols' do — not in the host's app.css. The overlay and the
    thumbnail tile are the two pieces most likely to be wanted by a module's own
    detail page (an incident's evidence strip already draws a tile of its own);
