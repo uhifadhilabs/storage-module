@@ -27,6 +27,7 @@ authenticated route by which any of it comes back out.
   - [incident-module](#incident-module)
 - [Service reference](#service-reference)
 - [Development](#development)
+- [License](#license)
 
 ## Charter — what belongs here and what does not
 
@@ -636,3 +637,10 @@ only be testing the mock.
 CI runs PHP 8.4 and 8.5 with **GD but deliberately without Imagick**, so the
 "a HEIC arrived and nothing here can decode it" branch is exercised on every
 run rather than only on the machines that happen to lack the extension.
+
+## License
+
+**AGPL-3.0-or-later** — see [LICENSE](LICENSE): the same license as the
+uhifadhi host this module plugs into. Use, modify and self-host freely; if you
+offer a modified version to users over a network, they are entitled to the
+source of what they're running.

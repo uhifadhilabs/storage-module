@@ -1,7 +1,7 @@
 {
     "name": "@uhifadhilabs/storage-module",
     "description": "Front-end assets of the Storage module — the file preview every surface opens a file in. Mapped into hosts via AssetMapper/StimulusBundle.",
-    "license": "proprietary",
+    "license": "AGPL-3.0-or-later",
     "symfony": {
         "controllers": {
             "preview": {
