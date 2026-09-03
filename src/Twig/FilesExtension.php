@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Twig;
+namespace Uhifadhi\Storage\Twig;
 
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
-use UhifadhiLabs\Storage\Model\Bytes;
+use Uhifadhi\Storage\Model\Bytes;
 
 /**
  * The two things the Files templates cannot say for themselves.

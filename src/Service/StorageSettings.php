@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Service;
+namespace Uhifadhi\Storage\Service;
 
-use UhifadhiLabs\Storage\DependencyInjection\StorageConfiguration;
-use UhifadhiLabs\Storage\Model\StoragePlace;
-use UhifadhiLabs\Storage\Registry\FileRegistry;
-use UhifadhiLabs\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
+use Uhifadhi\Storage\Model\StoragePlace;
+use Uhifadhi\Storage\Registry\FileRegistry;
+use Uhifadhi\Storage\Registry\FileSourceInterface;
 
 /**
  * "Where files go", answered from the host's own configuration and nothing else.

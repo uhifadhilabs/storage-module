@@ -64,7 +64,7 @@ Register both bundles in `config/bundles.php`:
 
 ```php
 League\FlysystemBundle\FlysystemBundle::class => ['all' => true],
-UhifadhiLabs\Storage\UhifadhiLabsStorageBundle::class => ['all' => true],
+Uhifadhi\Storage\UhifadhiStorageBundle::class => ['all' => true],
 ```
 
 Nothing else is required. The bundle **prepends** its own `flysystem` block, so
@@ -141,7 +141,7 @@ Notes that cost an afternoon if missed:
 ## The evidence API
 
 ```php
-use UhifadhiLabs\Storage\Service\EvidenceStorage;
+use Uhifadhi\Storage\Service\EvidenceStorage;
 
 $stored = $evidence->store($uploadedFile, 'observation/'.$uuid, $clientUuid);
 
@@ -230,10 +230,10 @@ without security gets no route at all rather than an unprotected one.
 Authorization is delegated to the owning module:
 
 ```php
-namespace UhifadhiLabs\Patrol\Security;
+namespace Uhifadhi\Patrol\Security;
 
 use Symfony\Component\Security\Core\User\UserInterface;
-use UhifadhiLabs\Storage\Security\EvidenceAccessVoterInterface;
+use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
 
 final class PatrolEvidenceVoter implements EvidenceAccessVoterInterface
 {
@@ -303,7 +303,7 @@ without one of them gets no half-working dashboard.
 ```yaml
 # config/routes/storage.yaml
 storage:
-    resource: '@UhifadhiLabsStorageBundle/src/Controller/'
+    resource: '@UhifadhiStorageBundle/src/Controller/'
     type: attribute
 ```
 
@@ -328,7 +328,7 @@ the adapter, and never invents a vendor.
 
 **3 · Nothing else.** The stylesheet and the behaviour script ship from the
 bundle's own `public/` — AssetMapper serves them as
-`bundles/uhifadhilabsstorage/files.css` and `…/files.js`, content-versioned, no
+`bundles/uhifadhistorage/files.css` and `…/files.js`, content-versioned, no
 `assets:install` — and are loaded only by this bundle's own `base.html.twig`, so
 the host's `app.css` never references storage. The widget chrome (`.w-grid`,
 `.w-cell`, `.w-span-N`) is the host's and is already there.
@@ -388,7 +388,7 @@ Two deviations from the design's own URL sketch, both deliberate:
 One interface, one tag, and **zero** knowledge of your module in this bundle:
 
 ```php
-use UhifadhiLabs\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\Registry\FileSourceInterface;
 
 final class PatrolFileSource implements FileSourceInterface
 {

@@ -11,19 +11,19 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Service;
+namespace Uhifadhi\Storage\Service;
 
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\UnableToReadFile;
 use Symfony\Component\HttpFoundation\File\File;
-use UhifadhiLabs\Storage\Exception\EvidenceNotFoundException;
-use UhifadhiLabs\Storage\Exception\EvidenceRejectedException;
-use UhifadhiLabs\Storage\Exception\EvidenceStorageFailedException;
-use UhifadhiLabs\Storage\Exception\InvalidEvidenceKeyException;
-use UhifadhiLabs\Storage\Model\EvidenceConstraints;
-use UhifadhiLabs\Storage\Model\StoredFile;
-use UhifadhiLabs\Storage\Thumbnail\ThumbnailGenerator;
+use Uhifadhi\Storage\Exception\EvidenceNotFoundException;
+use Uhifadhi\Storage\Exception\EvidenceRejectedException;
+use Uhifadhi\Storage\Exception\EvidenceStorageFailedException;
+use Uhifadhi\Storage\Exception\InvalidEvidenceKeyException;
+use Uhifadhi\Storage\Model\EvidenceConstraints;
+use Uhifadhi\Storage\Model\StoredFile;
+use Uhifadhi\Storage\Thumbnail\ThumbnailGenerator;
 
 /**
  * The evidence API every module consumes.

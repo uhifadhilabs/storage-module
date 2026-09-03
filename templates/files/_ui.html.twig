@@ -72,7 +72,7 @@
    shape toggle select on, and it means "a file this surface is listing" rather
    than "a file that can be previewed". #}
 {% macro data(file) %}
-    {%- import '@UhifadhiLabsStorage/overlay/_preview.html.twig' as preview -%}
+    {%- import '@UhifadhiStorage/overlay/_preview.html.twig' as preview -%}
     data-f-id="{{ file.key }}" {{ preview.entry(file, path('storage_files_show', {key: file.key})) }}
 {% endmacro %}
 

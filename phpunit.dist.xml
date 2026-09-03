@@ -8,7 +8,7 @@
          failOnNotice="true"
          failOnWarning="true">
     <php>
-        <env name="KERNEL_CLASS" value="UhifadhiLabs\Storage\Tests\Integration\TestKernel"/>
+        <env name="KERNEL_CLASS" value="Uhifadhi\Storage\Tests\Integration\TestKernel"/>
         <!--
             No database anywhere in this bundle: storage owns no entities. The
             per-module photo records stay in the modules that own them (README

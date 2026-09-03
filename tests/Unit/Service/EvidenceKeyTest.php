@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Unit\Service;
+namespace Uhifadhi\Storage\Tests\Unit\Service;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use UhifadhiLabs\Storage\Exception\InvalidEvidenceKeyException;
-use UhifadhiLabs\Storage\Service\EvidenceKey;
+use Uhifadhi\Storage\Exception\InvalidEvidenceKeyException;
+use Uhifadhi\Storage\Service\EvidenceKey;
 
 /**
  * Key discipline. A key is a RELATIVE path inside one storage and nothing else:

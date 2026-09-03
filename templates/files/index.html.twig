@@ -11,7 +11,7 @@
    THERE IS NO UPLOAD CONTROL ON THIS PAGE, and that is a rule rather than an
    omission: a file arrives by being attached to a record, on that record's own
    page, and it carries that record's name for the rest of its life. #}
-{% extends '@UhifadhiLabsStorage/base.html.twig' %}
+{% extends '@UhifadhiStorage/base.html.twig' %}
 
 {% block title %}Files{% endblock %}
 
@@ -64,7 +64,7 @@
     {% for widget in widgets|filter(w => w.on) %}
         <div class="w-cell w-span-{{ widget.cols }}" data-widget-id="{{ widget.id }}" data-widget-cols="{{ widget.cols }}">
             <div class="w-inner">
-                {{ include('@UhifadhiLabsStorage/files/_w_' ~ widget.id ~ '.html.twig', widgetContext, with_context: false) }}
+                {{ include('@UhifadhiStorage/files/_w_' ~ widget.id ~ '.html.twig', widgetContext, with_context: false) }}
             </div>
         </div>
     {% endfor %}

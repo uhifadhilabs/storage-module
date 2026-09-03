@@ -11,19 +11,19 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Unit\Registry;
+namespace Uhifadhi\Storage\Tests\Unit\Registry;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
-use UhifadhiLabs\Storage\Enum\FileKindEnum;
-use UhifadhiLabs\Storage\Enum\GuardStateEnum;
-use UhifadhiLabs\Storage\Enum\ThumbStateEnum;
-use UhifadhiLabs\Storage\Model\FileEntry;
-use UhifadhiLabs\Storage\Model\FileFilter;
-use UhifadhiLabs\Storage\Model\FileGuard;
-use UhifadhiLabs\Storage\Registry\FileRegistry;
-use UhifadhiLabs\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\Enum\FileKindEnum;
+use Uhifadhi\Storage\Enum\GuardStateEnum;
+use Uhifadhi\Storage\Enum\ThumbStateEnum;
+use Uhifadhi\Storage\Model\FileEntry;
+use Uhifadhi\Storage\Model\FileFilter;
+use Uhifadhi\Storage\Model\FileGuard;
+use Uhifadhi\Storage\Registry\FileRegistry;
+use Uhifadhi\Storage\Registry\FileSourceInterface;
 
 /**
  * The cross-module aggregation, on its own.

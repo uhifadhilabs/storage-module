@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Registry;
+namespace Uhifadhi\Storage\Registry;
 
-use UhifadhiLabs\Storage\Model\FileEntry;
+use Uhifadhi\Storage\Model\FileEntry;
 
 /**
  * THE DEFAULT ANSWER to {@see FileSourceInterface::filesForRecord()}: nothing.

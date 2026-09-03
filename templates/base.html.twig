@@ -8,7 +8,7 @@
    automatically have that directory added as an asset path, using the namespace:
    bundles/<BundleName>" — and under AssetMapper those assets are automatically
    content-versioned. So public/files.css is served as
-   bundles/uhifadhilabsstorage/files.css with a digest, no assets:install. #}
+   bundles/uhifadhistorage/files.css with a digest, no assets:install. #}
 {% extends 'layout.html.twig' %}
 
 {% block stylesheets %}
@@ -16,8 +16,8 @@
     {# The PREVIEW's vocabulary first: it belongs to the shareable component, not
        to the hub, and another module's page loads exactly this one file without
        files.css. The hub is one of its consumers, so it loads it the same way. #}
-    <link rel="stylesheet" href="{{ asset('bundles/uhifadhilabsstorage/preview.css') }}">
-    <link rel="stylesheet" href="{{ asset('bundles/uhifadhilabsstorage/files.css') }}">
+    <link rel="stylesheet" href="{{ asset('bundles/uhifadhistorage/preview.css') }}">
+    <link rel="stylesheet" href="{{ asset('bundles/uhifadhistorage/files.css') }}">
 {% endblock %}
 
 {% block javascripts %}
@@ -27,7 +27,7 @@
        outside this bundle asks for them. The preview's behaviour is a Stimulus
        controller instead, because other modules' pages consume it and it has to
        arm itself wherever it is included. #}
-    <script src="{{ asset('bundles/uhifadhilabsstorage/files.js') }}" defer></script>
+    <script src="{{ asset('bundles/uhifadhistorage/files.js') }}" defer></script>
 {% endblock %}
 
 {# The host layout expects each page to supply its own `.page` container. #}
@@ -36,5 +36,5 @@
         {% block storage_page %}{% endblock %}
     </div>
     {# The preview, once per page, for every tile and row drawn above it. #}
-    {{ include('@UhifadhiLabsStorage/overlay/_preview.html.twig') }}
+    {{ include('@UhifadhiStorage/overlay/_preview.html.twig') }}
 {% endblock %}

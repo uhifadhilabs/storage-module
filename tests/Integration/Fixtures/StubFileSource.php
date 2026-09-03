@@ -11,16 +11,16 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Integration\Fixtures;
+namespace Uhifadhi\Storage\Tests\Integration\Fixtures;
 
 use Symfony\Component\Security\Core\User\UserInterface;
-use UhifadhiLabs\Storage\Enum\GuardStateEnum;
-use UhifadhiLabs\Storage\Enum\ThumbStateEnum;
-use UhifadhiLabs\Storage\Model\FileEntry;
-use UhifadhiLabs\Storage\Model\FileGuard;
-use UhifadhiLabs\Storage\Registry\FileSourceInterface;
-use UhifadhiLabs\Storage\Registry\HoldsNoRecordFilesTrait;
-use UhifadhiLabs\Storage\Removal\FileRemovalInterface;
+use Uhifadhi\Storage\Enum\GuardStateEnum;
+use Uhifadhi\Storage\Enum\ThumbStateEnum;
+use Uhifadhi\Storage\Model\FileEntry;
+use Uhifadhi\Storage\Model\FileGuard;
+use Uhifadhi\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\Registry\HoldsNoRecordFilesTrait;
+use Uhifadhi\Storage\Removal\FileRemovalInterface;
 
 /**
  * An OWNING MODULE, played by a fixture.

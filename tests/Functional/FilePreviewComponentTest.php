@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Functional;
+namespace Uhifadhi\Storage\Tests\Functional;
 
 use Symfony\Component\DomCrawler\Crawler;
 use Twig\Environment;
@@ -27,7 +27,7 @@ use Twig\Environment;
  */
 final class FilePreviewComponentTest extends FilesTestCase
 {
-    private const string PARTIAL = '@UhifadhiLabsStorage/overlay/_preview.html.twig';
+    private const string PARTIAL = '@UhifadhiStorage/overlay/_preview.html.twig';
 
     /**
      * The Stimulus identifier a consuming page gets for free by including the

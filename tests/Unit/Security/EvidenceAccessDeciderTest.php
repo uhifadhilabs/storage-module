@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Unit\Security;
+namespace Uhifadhi\Storage\Tests\Unit\Security;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Core\User\UserInterface;
-use UhifadhiLabs\Storage\Security\EvidenceAccessDecider;
-use UhifadhiLabs\Storage\Security\EvidenceAccessVoterInterface;
+use Uhifadhi\Storage\Security\EvidenceAccessDecider;
+use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
 
 /**
  * The permission seam. This bundle stores bytes; it has no idea what an

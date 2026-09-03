@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Exception;
+namespace Uhifadhi\Storage\Exception;
 
 /**
  * The store itself failed — a full disk, a transient mount, an S3 endpoint

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Thumbnail;
+namespace Uhifadhi\Storage\Thumbnail;
 
 /**
  * Picks an engine and gets one preview out of it, or admits it could not.

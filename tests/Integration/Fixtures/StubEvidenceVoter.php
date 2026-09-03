@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Integration\Fixtures;
+namespace Uhifadhi\Storage\Tests\Integration\Fixtures;
 
 use Symfony\Component\Security\Core\User\UserInterface;
-use UhifadhiLabs\Storage\Security\EvidenceAccessVoterInterface;
+use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
 
 /**
  * Stands in for an OWNING MODULE (patrol, incidents) in the integration tests.

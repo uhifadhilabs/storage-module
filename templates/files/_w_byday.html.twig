@@ -7,7 +7,7 @@
    patrol out for three days syncs on the third; grouping by the upload would
    pile all of it onto one day and lose the three. A document has no such clock,
    so it sits under the day it was filed. #}
-{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+{% import '@UhifadhiStorage/files/_ui.html.twig' as ui %}
 <div class="c" data-w="byday">
     <span class="tab"><span class="idx">FL&middot;08</span>Day by day<span class="src">&middot; the day the picture was taken, not the day it uploaded</span></span>
     {% for group in byDay|slice(0, 8) %}

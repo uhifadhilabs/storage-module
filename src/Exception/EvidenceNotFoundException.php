@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Exception;
+namespace Uhifadhi\Storage\Exception;
 
 /**
  * The key is well-formed and the caller was entitled to it, but there is

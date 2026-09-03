@@ -11,14 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Registry;
+namespace Uhifadhi\Storage\Registry;
 
 use Symfony\Component\Security\Core\User\UserInterface;
-use UhifadhiLabs\Storage\Enum\FileKindEnum;
-use UhifadhiLabs\Storage\Enum\ThumbStateEnum;
-use UhifadhiLabs\Storage\Model\FileEntry;
-use UhifadhiLabs\Storage\Model\FileFilter;
-use UhifadhiLabs\Storage\Model\FileGuard;
+use Uhifadhi\Storage\Enum\FileKindEnum;
+use Uhifadhi\Storage\Enum\ThumbStateEnum;
+use Uhifadhi\Storage\Model\FileEntry;
+use Uhifadhi\Storage\Model\FileFilter;
+use Uhifadhi\Storage\Model\FileGuard;
 
 /**
  * Every file this organisation holds, across every module and every area.

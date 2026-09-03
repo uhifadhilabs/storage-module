@@ -5,7 +5,7 @@
 
    The same result set as `browse`, in its list shape, without the chrome. The
    only shape that answers the storage questions in one look. #}
-{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+{% import '@UhifadhiStorage/files/_ui.html.twig' as ui %}
 <div class="c" data-w="ledger">
     <span class="tab"><span class="idx">FL&middot;05</span>The file ledger<span class="src">&middot; every fact, none of the pictures</span></span>
     <table class="f-list" data-f-list>{{ ui.listhead() }}<tbody>{%- for file in files -%}{{ ui.row(file, places) }}{%- endfor -%}</tbody></table>

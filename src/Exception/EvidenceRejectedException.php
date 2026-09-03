@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Exception;
+namespace Uhifadhi\Storage\Exception;
 
-use UhifadhiLabs\Storage\Enum\RejectionReasonEnum;
+use Uhifadhi\Storage\Enum\RejectionReasonEnum;
 
 /**
  * The file is not acceptable evidence. Retrying it unchanged will fail again,

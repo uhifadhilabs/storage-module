@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Registry;
+namespace Uhifadhi\Storage\Registry;
 
 use Symfony\Component\Security\Core\User\UserInterface;
-use UhifadhiLabs\Storage\Model\FileEntry;
-use UhifadhiLabs\Storage\Model\FileGuard;
+use Uhifadhi\Storage\Model\FileEntry;
+use Uhifadhi\Storage\Model\FileGuard;
 
 /**
  * The seam by which an OWNING MODULE puts its files on the hub.

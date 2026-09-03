@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Unit\Model;
+namespace Uhifadhi\Storage\Tests\Unit\Model;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use UhifadhiLabs\Storage\Model\FilesWidgets;
+use Uhifadhi\Storage\Model\FilesWidgets;
 
 /**
  * The catalogue is the TWIN of the settled design's own declaration

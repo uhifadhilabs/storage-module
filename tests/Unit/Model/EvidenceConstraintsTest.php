@@ -11,14 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Unit\Model;
+namespace Uhifadhi\Storage\Tests\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use UhifadhiLabs\Storage\Enum\RejectionReasonEnum;
-use UhifadhiLabs\Storage\Exception\EvidenceRejectedException;
-use UhifadhiLabs\Storage\Model\EvidenceConstraints;
+use Uhifadhi\Storage\Enum\RejectionReasonEnum;
+use Uhifadhi\Storage\Exception\EvidenceRejectedException;
+use Uhifadhi\Storage\Model\EvidenceConstraints;
 
 /**
  * The guard patrol-module already applies, lifted out so every module applies

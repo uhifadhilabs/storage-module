@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Controller;
+namespace Uhifadhi\Storage\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -21,11 +21,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use UhifadhiLabs\Storage\Exception\EvidenceNotFoundException;
-use UhifadhiLabs\Storage\Exception\InvalidEvidenceKeyException;
-use UhifadhiLabs\Storage\Security\EvidenceAccessDecider;
-use UhifadhiLabs\Storage\Service\EvidenceKey;
-use UhifadhiLabs\Storage\Service\EvidenceStorage;
+use Uhifadhi\Storage\Exception\EvidenceNotFoundException;
+use Uhifadhi\Storage\Exception\InvalidEvidenceKeyException;
+use Uhifadhi\Storage\Security\EvidenceAccessDecider;
+use Uhifadhi\Storage\Service\EvidenceKey;
+use Uhifadhi\Storage\Service\EvidenceStorage;
 
 /**
  * The ONE way stored evidence comes back out.
@@ -40,7 +40,7 @@ use UhifadhiLabs\Storage\Service\EvidenceStorage;
  * arguments and it is registered explicitly (see config/services.php).
  *
  * Registered ONLY when SecurityBundle is in the kernel — see
- * UhifadhiLabsStorageBundle::loadExtension() for why a host without security
+ * UhifadhiStorageBundle::loadExtension() for why a host without security
  * gets no route at all rather than an unprotected one.
  */
 final class EvidenceController

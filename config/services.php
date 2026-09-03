@@ -13,23 +13,23 @@ declare(strict_types=1);
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-use UhifadhiLabs\Storage\Model\EvidenceConstraints;
-use UhifadhiLabs\Storage\Registry\FileRegistry;
-use UhifadhiLabs\Storage\Registry\FileSourceInterface;
-use UhifadhiLabs\Storage\Security\EvidenceAccessDecider;
-use UhifadhiLabs\Storage\Service\EvidenceStorage;
-use UhifadhiLabs\Storage\Service\FilesSurface;
-use UhifadhiLabs\Storage\Service\StorageSettings;
-use UhifadhiLabs\Storage\Thumbnail\GdThumbnailer;
-use UhifadhiLabs\Storage\Thumbnail\ImagickThumbnailer;
-use UhifadhiLabs\Storage\Thumbnail\ThumbnailGenerator;
+use Uhifadhi\Storage\Model\EvidenceConstraints;
+use Uhifadhi\Storage\Registry\FileRegistry;
+use Uhifadhi\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\Security\EvidenceAccessDecider;
+use Uhifadhi\Storage\Service\EvidenceStorage;
+use Uhifadhi\Storage\Service\FilesSurface;
+use Uhifadhi\Storage\Service\StorageSettings;
+use Uhifadhi\Storage\Thumbnail\GdThumbnailer;
+use Uhifadhi\Storage\Thumbnail\ImagickThumbnailer;
+use Uhifadhi\Storage\Thumbnail\ThumbnailGenerator;
 
 /*
  * The bundle's static service wiring.
  *
  * PHP (not YAML) on purpose: a reusable bundle must not force symfony/yaml onto
  * hosts, and FQCN references stay refactor-safe and phpstan-checked. Imported by
- * UhifadhiLabsStorageBundle::loadExtension(), which keeps only the config-DRIVEN
+ * UhifadhiStorageBundle::loadExtension(), which keeps only the config-DRIVEN
  * definitions (the S3 client, and the controller behind its security guard).
  *
  * Everything here is defined EXPLICITLY — no autowire(), no autoconfigure(), and

@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\DependencyInjection;
+namespace Uhifadhi\Storage\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
-use UhifadhiLabs\Storage\Model\EvidenceConstraints;
+use Uhifadhi\Storage\Model\EvidenceConstraints;
 
 /**
  * How a host configures the platform's storage, in config/packages/storage.yaml:

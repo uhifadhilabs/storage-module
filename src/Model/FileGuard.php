@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Model;
+namespace Uhifadhi\Storage\Model;
 
-use UhifadhiLabs\Storage\Enum\GuardStateEnum;
+use Uhifadhi\Storage\Enum\GuardStateEnum;
 
 /**
  * The owning record's answer about one file, IN THE MODULE'S OWN WORDS.

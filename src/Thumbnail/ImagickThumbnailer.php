@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Thumbnail;
+namespace Uhifadhi\Storage\Thumbnail;
 
 /**
  * The preferred engine: it resamples better than GD and, where the system

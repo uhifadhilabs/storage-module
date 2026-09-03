@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Functional;
+namespace Uhifadhi\Storage\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Uhifadhi\Model\WidgetDom;
-use UhifadhiLabs\Storage\Model\FilesWidgets;
+use Uhifadhi\Storage\Model\FilesWidgets;
 
 /**
  * /files/widgets hands the HOST's library component the whole contract.

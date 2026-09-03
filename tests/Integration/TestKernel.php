@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Integration;
+namespace Uhifadhi\Storage\Tests\Integration;
 
 use League\FlysystemBundle\FlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -23,12 +23,12 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Uhifadhi\Service\WidgetEndpoint;
 use Uhifadhi\Service\WidgetService;
-use UhifadhiLabs\Storage\Registry\FileRegistry;
-use UhifadhiLabs\Storage\Registry\FileSourceInterface;
-use UhifadhiLabs\Storage\Service\EvidenceStorage;
-use UhifadhiLabs\Storage\Tests\Integration\Fixtures\StubEvidenceVoter;
-use UhifadhiLabs\Storage\Tests\Integration\Fixtures\StubFileSource;
-use UhifadhiLabs\Storage\UhifadhiLabsStorageBundle;
+use Uhifadhi\Storage\Registry\FileRegistry;
+use Uhifadhi\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\Service\EvidenceStorage;
+use Uhifadhi\Storage\Tests\Integration\Fixtures\StubEvidenceVoter;
+use Uhifadhi\Storage\Tests\Integration\Fixtures\StubFileSource;
+use Uhifadhi\Storage\UhifadhiStorageBundle;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -58,7 +58,7 @@ final class TestKernel extends Kernel
         // are all present, and this kernel is what "all present" looks like.
         yield new TwigBundle();
         yield new FlysystemBundle();
-        yield new UhifadhiLabsStorageBundle();
+        yield new UhifadhiStorageBundle();
     }
 
     protected function configureContainer(ContainerConfigurator $container): void

@@ -11,14 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Integration;
+namespace Uhifadhi\Storage\Tests\Integration;
 
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\User\InMemoryUser;
-use UhifadhiLabs\Storage\Service\EvidenceStorage;
+use Uhifadhi\Storage\Service\EvidenceStorage;
 
 /**
  * Authenticated serving. Field photographs are evidence — a snare, a carcass,

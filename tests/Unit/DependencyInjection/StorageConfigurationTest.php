@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Unit\DependencyInjection;
+namespace Uhifadhi\Storage\Tests\Unit\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
-use UhifadhiLabs\Storage\DependencyInjection\StorageConfiguration;
+use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 
 final class StorageConfigurationTest extends TestCase
 {

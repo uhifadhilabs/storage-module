@@ -7,7 +7,7 @@
    convenience the platform makes in the background; a photograph the thumbnailer
    cannot read is still there, still downloadable, still evidence. That is why
    this is a queue to watch and not an error to fear. #}
-{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+{% import '@UhifadhiStorage/files/_ui.html.twig' as ui %}
 {% set queued = waiting|filter(f => f.thumbState.value == 'wait')|length %}
 {% set unmade = waiting|filter(f => f.thumbState.value == 'failed')|length %}
 <div class="c" data-w="nothumb">

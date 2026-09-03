@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Model;
+namespace Uhifadhi\Storage\Model;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use UhifadhiLabs\Storage\Exception\EvidenceRejectedException;
+use Uhifadhi\Storage\Exception\EvidenceRejectedException;
 
 /**
  * What this deployment accepts as evidence — and the guard that enforces it.

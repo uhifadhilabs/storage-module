@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Functional;
+namespace Uhifadhi\Storage\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use UhifadhiLabs\Storage\Tests\Integration\Fixtures\StubFileSource;
+use Uhifadhi\Storage\Tests\Integration\Fixtures\StubFileSource;
 
 /**
  * A file's own page — /files/f/{key}.

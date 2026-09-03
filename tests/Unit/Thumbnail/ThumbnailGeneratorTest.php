@@ -11,14 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Unit\Thumbnail;
+namespace Uhifadhi\Storage\Tests\Unit\Thumbnail;
 
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
-use UhifadhiLabs\Storage\Thumbnail\GdThumbnailer;
-use UhifadhiLabs\Storage\Thumbnail\ImagickThumbnailer;
-use UhifadhiLabs\Storage\Thumbnail\ThumbnailerInterface;
-use UhifadhiLabs\Storage\Thumbnail\ThumbnailGenerator;
+use Uhifadhi\Storage\Thumbnail\GdThumbnailer;
+use Uhifadhi\Storage\Thumbnail\ImagickThumbnailer;
+use Uhifadhi\Storage\Thumbnail\ThumbnailerInterface;
+use Uhifadhi\Storage\Thumbnail\ThumbnailGenerator;
 
 /**
  * Thumbnails are a CONVENIENCE, and the whole design follows from that: a

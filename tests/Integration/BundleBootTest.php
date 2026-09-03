@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Integration;
+namespace Uhifadhi\Storage\Tests\Integration;
 
 use League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter;
 use League\Flysystem\FilesystemOperator;
@@ -23,7 +23,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Reference;
-use UhifadhiLabs\Storage\UhifadhiLabsStorageBundle;
+use Uhifadhi\Storage\UhifadhiStorageBundle;
 
 /**
  * The smoke test: registering the bundle in a real kernel compiles a real
@@ -35,10 +35,10 @@ final class BundleBootTest extends KernelTestCase
     {
         $kernel = self::bootKernel();
 
-        self::assertArrayHasKey('UhifadhiLabsStorageBundle', $kernel->getBundles());
+        self::assertArrayHasKey('UhifadhiStorageBundle', $kernel->getBundles());
         self::assertInstanceOf(
-            UhifadhiLabsStorageBundle::class,
-            $kernel->getBundle('UhifadhiLabsStorageBundle'),
+            UhifadhiStorageBundle::class,
+            $kernel->getBundle('UhifadhiStorageBundle'),
         );
     }
 
@@ -50,7 +50,7 @@ final class BundleBootTest extends KernelTestCase
     {
         $kernel = self::bootKernel();
 
-        self::assertSame('storage', $kernel->getBundle('UhifadhiLabsStorageBundle')
+        self::assertSame('storage', $kernel->getBundle('UhifadhiStorageBundle')
             ->getContainerExtension()?->getAlias());
     }
 
@@ -167,7 +167,7 @@ final class BundleBootTest extends KernelTestCase
         $builder->setParameter('kernel.bundles', ['FrameworkBundle' => FrameworkBundle::class]);
 
         $flysystem = new FlysystemBundle();
-        $storage = new UhifadhiLabsStorageBundle();
+        $storage = new UhifadhiStorageBundle();
         foreach ([$flysystem, $storage] as $bundle) {
             if (null !== $extension = $bundle->getContainerExtension()) {
                 $builder->registerExtension($extension);

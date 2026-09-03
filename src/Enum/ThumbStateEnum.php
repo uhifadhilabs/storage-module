@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Enum;
+namespace Uhifadhi\Storage\Enum;
 
 /**
  * Whether the ONE ~400px picture exists — and, when it does not, why not.

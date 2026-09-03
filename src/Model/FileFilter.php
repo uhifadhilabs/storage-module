@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Model;
+namespace Uhifadhi\Storage\Model;
 
-use UhifadhiLabs\Storage\Enum\FileKindEnum;
+use Uhifadhi\Storage\Enum\FileKindEnum;
 
 /**
  * The filter row, as a value.

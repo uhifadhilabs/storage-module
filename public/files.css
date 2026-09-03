@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------------
    PORTED VERBATIM from the settled design's files.css (uhifadhi-web), which is
    the static twin of this file. It ships from the BUNDLE's own public/ directory
-   — AssetMapper serves it as bundles/uhifadhilabsstorage/files.css, content
+   — AssetMapper serves it as bundles/uhifadhistorage/files.css, content
    versioned, no assets:install — and is loaded only by this bundle's own
    base.html.twig, so the host's stylesheet never references storage.
 
@@ -34,7 +34,7 @@
    document. There is no shared library and no folder tree, so there is no
    folder vocabulary in this file. The owner is the identity, which is why
    .f-owner is a first-class component and .f-name is small print.
-   → UhifadhiLabs\Storage — EvidenceStorage, the streaming route, the thumbnailer
+   → Uhifadhi\Storage — EvidenceStorage, the streaming route, the thumbnailer
    ========================================================================== */
 
 /* TOKEN BRIDGE — this sheet is the byte-faithful port of the design app's

@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Controller;
+namespace Uhifadhi\Storage\Controller;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,12 +30,12 @@ use Twig\Environment;
 use Uhifadhi\Model\WidgetDom;
 use Uhifadhi\Service\WidgetEndpoint;
 use Uhifadhi\Service\WidgetService;
-use UhifadhiLabs\Storage\Model\FileFilter;
-use UhifadhiLabs\Storage\Model\FilesWidgets;
-use UhifadhiLabs\Storage\Registry\FileRegistry;
-use UhifadhiLabs\Storage\Removal\FileRemovalInterface;
-use UhifadhiLabs\Storage\Service\FilesSurface;
-use UhifadhiLabs\Storage\Service\StorageSettings;
+use Uhifadhi\Storage\Model\FileFilter;
+use Uhifadhi\Storage\Model\FilesWidgets;
+use Uhifadhi\Storage\Registry\FileRegistry;
+use Uhifadhi\Storage\Removal\FileRemovalInterface;
+use Uhifadhi\Storage\Service\FilesSurface;
+use Uhifadhi\Storage\Service\StorageSettings;
 
 /**
  * The Files hub: every photograph, document and track this organisation holds,
@@ -55,7 +55,7 @@ use UhifadhiLabs\Storage\Service\StorageSettings;
  * arguments and it is registered explicitly (see config/services.php).
  *
  * Registered ONLY where SecurityBundle and the host's widget framework are both
- * present — see UhifadhiLabsStorageBundle::loadExtension().
+ * present — see UhifadhiStorageBundle::loadExtension().
  */
 final class FilesController
 {
@@ -94,7 +94,7 @@ final class FilesController
         $catalog = FilesWidgets::catalog();
         $filter = FileFilter::fromQuery($request->query->all());
 
-        return $this->render('@UhifadhiLabsStorage/files/index.html.twig', [
+        return $this->render('@UhifadhiStorage/files/index.html.twig', [
             ...$this->surface->context($filter),
             'widgets' => $this->widgets->resolve($catalog, $this->userId()),
             'libraryUrl' => $this->router->generate('storage_files_widgets'),
@@ -115,14 +115,14 @@ final class FilesController
         $catalog = FilesWidgets::catalog();
         $userId = $this->userId();
 
-        return $this->render('@UhifadhiLabsStorage/files/widgets.html.twig', [
+        return $this->render('@UhifadhiStorage/files/widgets.html.twig', [
             ...$this->surface->context(new FileFilter()),
             'catalog' => $catalog,
             'builtins' => $catalog->builtins(),
             'customPresets' => $this->widgets->customPresets($catalog, $userId),
             'active' => $this->widgets->activeRef($catalog, $userId),
             'widgets' => $this->widgets->resolve($catalog, $userId),
-            'partial' => '@UhifadhiLabsStorage/files/_w_%s.html.twig',
+            'partial' => '@UhifadhiStorage/files/_w_%s.html.twig',
             'urls' => $this->widgetUrls(),
             'csrfToken' => $this->widgetEndpoint->csrfToken($catalog),
         ]);
@@ -193,7 +193,7 @@ final class FilesController
             throw new AccessDeniedHttpException('Only an administrator may see where files are kept.');
         }
 
-        return $this->render('@UhifadhiLabsStorage/files/settings.html.twig', [
+        return $this->render('@UhifadhiStorage/files/settings.html.twig', [
             'places' => $this->settings->places(),
             'map' => $this->settings->map(),
             'allowed' => $this->settings->allowed(),
@@ -229,7 +229,7 @@ final class FilesController
 
         $source = $this->registry->sourceFor($key);
 
-        return $this->render('@UhifadhiLabsStorage/files/detail.html.twig', [
+        return $this->render('@UhifadhiStorage/files/detail.html.twig', [
             'file' => $file,
             'siblings' => $this->registry->siblingsOf($file),
             'guard' => $this->registry->guard($key, $this->user()),

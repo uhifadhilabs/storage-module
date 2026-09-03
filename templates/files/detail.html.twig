@@ -12,14 +12,14 @@
    this person, right now. The removal control is drawn BY the guard, never greyed
    out beside it: a control you may not press is worse than no control, because it
    does not say why. #}
-{% extends '@UhifadhiLabsStorage/base.html.twig' %}
+{% extends '@UhifadhiStorage/base.html.twig' %}
 
 {% block title %}{{ file.name }}{% endblock %}
 
 {% block storage_page %}
 {# Imported INSIDE the block on purpose: in a child template a macro imported
    outside the blocks is not visible inside them. #}
-{% import '@UhifadhiLabsStorage/files/_ui.html.twig' as ui %}
+{% import '@UhifadhiStorage/files/_ui.html.twig' as ui %}
 <div class="crumb"><a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / {{ file.name }}</div>
 
 <div class="pghead">

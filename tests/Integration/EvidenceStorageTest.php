@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Integration;
+namespace Uhifadhi\Storage\Tests\Integration;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use UhifadhiLabs\Storage\Exception\EvidenceRejectedException;
-use UhifadhiLabs\Storage\Service\EvidenceStorage;
+use Uhifadhi\Storage\Exception\EvidenceRejectedException;
+use Uhifadhi\Storage\Service\EvidenceStorage;
 
 /**
  * The API modules consume, against a REAL local adapter writing REAL bytes
@@ -209,28 +209,28 @@ final class EvidenceStorageTest extends KernelTestCase
      */
     public function testItRefusesToStoreUnderATraversingPrefix(): void
     {
-        $this->expectException(\UhifadhiLabs\Storage\Exception\InvalidEvidenceKeyException::class);
+        $this->expectException(\Uhifadhi\Storage\Exception\InvalidEvidenceKeyException::class);
 
         $this->storage->store($this->upload('landscape-800x600.jpg'), '../../../etc', 'passwd');
     }
 
     public function testItRefusesToStreamATraversingKey(): void
     {
-        $this->expectException(\UhifadhiLabs\Storage\Exception\InvalidEvidenceKeyException::class);
+        $this->expectException(\Uhifadhi\Storage\Exception\InvalidEvidenceKeyException::class);
 
         $this->storage->stream('../../../etc/passwd');
     }
 
     public function testItRefusesToDeleteATraversingKey(): void
     {
-        $this->expectException(\UhifadhiLabs\Storage\Exception\InvalidEvidenceKeyException::class);
+        $this->expectException(\Uhifadhi\Storage\Exception\InvalidEvidenceKeyException::class);
 
         $this->storage->delete('../../../etc/passwd');
     }
 
     public function testStreamingAKeyThatIsNotThereIsAMissingFileNotACrash(): void
     {
-        $this->expectException(\UhifadhiLabs\Storage\Exception\EvidenceNotFoundException::class);
+        $this->expectException(\Uhifadhi\Storage\Exception\EvidenceNotFoundException::class);
 
         $this->storage->stream('granted/obs-7/absent.jpg');
     }

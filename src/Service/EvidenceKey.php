@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Service;
+namespace Uhifadhi\Storage\Service;
 
-use UhifadhiLabs\Storage\Exception\InvalidEvidenceKeyException;
+use Uhifadhi\Storage\Exception\InvalidEvidenceKeyException;
 
 /**
  * Key discipline, in one place.

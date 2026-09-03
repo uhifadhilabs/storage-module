@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Enum;
+namespace Uhifadhi\Storage\Enum;
 
 /**
  * What a file IS, in the words the hub uses.

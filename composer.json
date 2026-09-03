@@ -39,12 +39,12 @@
     },
     "autoload": {
         "psr-4": {
-            "UhifadhiLabs\\Storage\\": "src/"
+            "Uhifadhi\\Storage\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "UhifadhiLabs\\Storage\\Tests\\": "tests/",
+            "Uhifadhi\\Storage\\Tests\\": "tests/",
             "Uhifadhi\\Model\\": "tests/Fixtures/Uhifadhi/Model/",
             "Uhifadhi\\Service\\": "tests/Fixtures/Uhifadhi/Service/"
         }

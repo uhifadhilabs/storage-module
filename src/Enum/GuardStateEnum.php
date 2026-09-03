@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Enum;
+namespace Uhifadhi\Storage\Enum;
 
 /**
  * What may be done to a file — the OWNING RECORD's answer, never storage's.

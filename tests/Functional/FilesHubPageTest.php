@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Tests\Functional;
+namespace Uhifadhi\Storage\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 

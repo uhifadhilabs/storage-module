@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage;
+namespace Uhifadhi\Storage;
 
 use AsyncAws\S3\S3Client;
 use League\Flysystem\AsyncAwsS3\AsyncAwsS3Adapter;
@@ -25,13 +25,13 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Uhifadhi\Service\WidgetEndpoint;
 use Uhifadhi\Service\WidgetService;
-use UhifadhiLabs\Storage\Controller\EvidenceController;
-use UhifadhiLabs\Storage\Controller\FilesController;
-use UhifadhiLabs\Storage\DependencyInjection\StorageConfiguration;
-use UhifadhiLabs\Storage\Model\EvidenceConstraints;
-use UhifadhiLabs\Storage\Registry\FileSourceInterface;
-use UhifadhiLabs\Storage\Security\EvidenceAccessVoterInterface;
-use UhifadhiLabs\Storage\Twig\FilesExtension;
+use Uhifadhi\Storage\Controller\EvidenceController;
+use Uhifadhi\Storage\Controller\FilesController;
+use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
+use Uhifadhi\Storage\Model\EvidenceConstraints;
+use Uhifadhi\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
+use Uhifadhi\Storage\Twig\FilesExtension;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -48,7 +48,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
  * Zero-config: registering the bundle declares the private "storage.evidence"
  * storage, so no host writes a flysystem.yaml to get one.
  */
-final class UhifadhiLabsStorageBundle extends AbstractBundle
+final class UhifadhiStorageBundle extends AbstractBundle
 {
     /** Config lives under "storage:", not the class-derived "uhifadhi_labs_storage:". */
     protected string $extensionAlias = 'storage';
@@ -63,7 +63,7 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
         if (!$builder->hasExtension('flysystem')) {
             // No flysystem in this kernel: say so where a developer will read
             // it, rather than failing later on a missing "storage.evidence".
-            throw new \LogicException('UhifadhiLabsStorageBundle needs league/flysystem-bundle. Register FlysystemBundle in config/bundles.php.');
+            throw new \LogicException('UhifadhiStorageBundle needs league/flysystem-bundle. Register FlysystemBundle in config/bundles.php.');
         }
 
         /*
@@ -71,7 +71,7 @@ final class UhifadhiLabsStorageBundle extends AbstractBundle
          * exactly as symfony/ux-turbo does (TurboExtension::prepend).
          *
          * The bundle's public/ dir needs no such line — AssetMapper registers it
-         * under bundles/uhifadhilabsstorage by itself — but assets/ is a UX
+         * under bundles/uhifadhistorage by itself — but assets/ is a UX
          * PACKAGE, and StimulusBundle resolves the controller named in the
          * host's assets/controllers.json through this namespace. Without it, a
          * host that enabled "@uhifadhi/storage-module": {"preview": …} gets

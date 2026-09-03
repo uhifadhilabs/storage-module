@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Model;
+namespace Uhifadhi\Storage\Model;
 
 /**
  * A named place the organisation keeps its files.

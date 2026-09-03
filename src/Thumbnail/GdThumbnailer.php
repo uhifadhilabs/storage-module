@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Thumbnail;
+namespace Uhifadhi\Storage\Thumbnail;
 
 /**
  * The fallback engine. GD ships with almost every PHP build, which is exactly

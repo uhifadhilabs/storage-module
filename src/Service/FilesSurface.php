@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace UhifadhiLabs\Storage\Service;
+namespace Uhifadhi\Storage\Service;
 
-use UhifadhiLabs\Storage\Enum\FileKindEnum;
-use UhifadhiLabs\Storage\Model\FileFilter;
-use UhifadhiLabs\Storage\Registry\FileRegistry;
+use Uhifadhi\Storage\Enum\FileKindEnum;
+use Uhifadhi\Storage\Model\FileFilter;
+use Uhifadhi\Storage\Registry\FileRegistry;
 
 /**
  * Everything the thirteen widget partials read, gathered ONCE.
@@ -42,23 +42,23 @@ final readonly class FilesSurface
     /**
      * @return array{
      *     filter: FileFilter,
-     *     files: list<\UhifadhiLabs\Storage\Model\FileEntry>,
+     *     files: list<\Uhifadhi\Storage\Model\FileEntry>,
      *     total: int,
      *     counts: array{files: int, bytes: int, made: int, waiting: int, failed: int, arrived: int},
      *     modules: list<array{slug: string, label: string, attachesTo: string, records: int, files: int, bytes: int}>,
      *     areas: list<array{slug: string, label: string}>,
      *     days: list<string>,
      *     kinds: list<FileKindEnum>,
-     *     byOwner: list<array{ref: string, label: string, url: string|null, moduleSlug: string, moduleLabel: string, areaLabel: string|null, day: string, files: list<\UhifadhiLabs\Storage\Model\FileEntry>}>,
-     *     byDay: list<array{day: string, files: list<\UhifadhiLabs\Storage\Model\FileEntry>}>,
+     *     byOwner: list<array{ref: string, label: string, url: string|null, moduleSlug: string, moduleLabel: string, areaLabel: string|null, day: string, files: list<\Uhifadhi\Storage\Model\FileEntry>}>,
+     *     byDay: list<array{day: string, files: list<\Uhifadhi\Storage\Model\FileEntry>}>,
      *     byKind: list<array{kind: FileKindEnum, files: int, bytes: int, share: float}>,
      *     bySpace: list<array{slug: string, label: string, records: int, files: int, bytes: int, share: float}>,
      *     byArea: list<array{slug: string|null, label: string, files: int, bytes: int, share: float}>,
      *     arrivals: list<array{week: \DateTimeImmutable, files: int, bytes: int, share: float}>,
-     *     recent: list<\UhifadhiLabs\Storage\Model\FileEntry>,
-     *     biggest: list<\UhifadhiLabs\Storage\Model\FileEntry>,
-     *     waiting: list<\UhifadhiLabs\Storage\Model\FileEntry>,
-     *     places: list<\UhifadhiLabs\Storage\Model\StoragePlace>,
+     *     recent: list<\Uhifadhi\Storage\Model\FileEntry>,
+     *     biggest: list<\Uhifadhi\Storage\Model\FileEntry>,
+     *     waiting: list<\Uhifadhi\Storage\Model\FileEntry>,
+     *     places: list<\Uhifadhi\Storage\Model\StoragePlace>,
      *     thumbnailLongEdge: int,
      *     now: \DateTimeImmutable
      * }
