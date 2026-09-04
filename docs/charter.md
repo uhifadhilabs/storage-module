@@ -2,11 +2,17 @@
 
 **This bundle is mechanism only.**
 
-It owns **no entities**, no migrations and no screens. The per-module photo
-records — `ObservationPhoto` in patrol, whatever incidents grows — stay in the
-modules that own them, because only those modules know what a photograph is
+It owns **no entities**, no migrations and no screens of a module's own. The
+per-module photo records — `ObservationPhoto` in patrol, whatever incidents
+grows — stay in the modules that own them, because only those modules know what a photograph is
 attached to, who may see it, and what should happen when the parent record is
 deleted.
+
+It does ship **one cross-module screen**, the Files hub at `/files`, and that is
+not an exception to the rule above: the hub owns no record either. It is a
+reading of what the installed modules handed over through `FileSourceInterface`,
+laid out on `uhifadhi/widget-module`. Turn every module off and the hub is empty
+rather than wrong.
 
 What lives here is the part every module would otherwise re-implement, slightly
 differently each time:

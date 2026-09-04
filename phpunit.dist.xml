@@ -10,11 +10,16 @@
     <php>
         <env name="KERNEL_CLASS" value="Uhifadhi\Storage\Tests\Integration\TestKernel"/>
         <!--
-            No database anywhere in this bundle: storage owns no entities. The
-            per-module photo records stay in the modules that own them (README
-            §Charter), so the integration suite needs only a kernel and a temp
-            directory.
+            A REAL database (fundi test cluster), and the charter is intact:
+            storage still owns no entities. The per-module photo records stay in
+            the modules that own them, and nothing under src/ maps a table. The
+            database arrived with uhifadhi/widget-module — the Files hub IS a
+            widget dashboard, one person's arrangement of one is a stored row,
+            and the bundle that owns the row owns its schema. Doubling it is
+            exactly what joining the fleet removed.
         -->
+        <env name="STORAGE_TEST_DATABASE_URL"
+             value="postgresql://app:app@127.0.0.1:5434/storage_bundle_test?serverVersion=17&amp;charset=utf8"/>
     </php>
     <testsuites>
         <testsuite name="default">

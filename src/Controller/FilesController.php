@@ -27,15 +27,16 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Uid\Uuid;
 use Twig\Environment;
-use Uhifadhi\Model\WidgetDom;
-use Uhifadhi\Service\WidgetEndpoint;
-use Uhifadhi\Service\WidgetService;
+use Uhifadhi\ModuleContracts\Entity\UserInterface as Person;
 use Uhifadhi\Storage\Model\FileFilter;
-use Uhifadhi\Storage\Model\FilesWidgets;
 use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Removal\FileRemovalInterface;
 use Uhifadhi\Storage\Service\FilesSurface;
 use Uhifadhi\Storage\Service\StorageSettings;
+use Uhifadhi\Storage\Widget\FilesWidgets;
+use Uhifadhi\Widget\Model\WidgetDom;
+use Uhifadhi\Widget\Service\WidgetEndpoint;
+use Uhifadhi\Widget\Service\WidgetService;
 
 /**
  * The Files hub: every photograph, document and track this organisation holds,
@@ -54,8 +55,8 @@ use Uhifadhi\Storage\Service\StorageSettings;
  * host's service-subscriber container, so its collaborators are constructor
  * arguments and it is registered explicitly (see config/services.php).
  *
- * Registered ONLY where SecurityBundle and the host's widget framework are both
- * present — see UhifadhiStorageBundle::loadExtension().
+ * Registered ONLY where SecurityBundle and TwigBundle are both present — see
+ * UhifadhiStorageBundle::loadExtension().
  */
 final class FilesController
 {
@@ -83,7 +84,7 @@ final class FilesController
     }
 
     /**
-     * The hub, on the host's widget framework: the person's own resolved layout,
+     * The hub, on the widget framework: the person's own resolved layout,
      * in their own order, with the widgets they switched off simply absent.
      */
     #[Route('/files', name: 'storage_files', methods: ['GET'])]
@@ -91,19 +92,19 @@ final class FilesController
     {
         $this->denyAnonymous();
 
-        $catalog = FilesWidgets::catalog();
+        $catalog = new FilesWidgets()->catalog();
         $filter = FileFilter::fromQuery($request->query->all());
 
         return $this->render('@UhifadhiStorage/files/index.html.twig', [
             ...$this->surface->context($filter),
-            'widgets' => $this->widgets->resolve($catalog, $this->userId()),
+            'widgets' => $this->widgets->resolve($catalog, $this->widgetUser()),
             'libraryUrl' => $this->router->generate('storage_files_widgets'),
             'settingsUrl' => $this->router->generate('storage_files_settings'),
         ]);
     }
 
     /**
-     * The widget library — the host's ONE shared component, handed the whole
+     * The widget library — the widget module's ONE shared component, handed the whole
      * contract. Nothing about it is files-specific except the catalogue, the
      * partial format and the context every partial receives.
      */
@@ -112,16 +113,16 @@ final class FilesController
     {
         $this->denyAnonymous();
 
-        $catalog = FilesWidgets::catalog();
-        $userId = $this->userId();
+        $catalog = new FilesWidgets()->catalog();
+        $person = $this->widgetUser();
 
         return $this->render('@UhifadhiStorage/files/widgets.html.twig', [
             ...$this->surface->context(new FileFilter()),
             'catalog' => $catalog,
             'builtins' => $catalog->builtins(),
-            'customPresets' => $this->widgets->customPresets($catalog, $userId),
-            'active' => $this->widgets->activeRef($catalog, $userId),
-            'widgets' => $this->widgets->resolve($catalog, $userId),
+            'customPresets' => $this->widgets->customPresets($catalog, $person),
+            'active' => $this->widgets->activeRef($catalog, $person),
+            'widgets' => $this->widgets->resolve($catalog, $person),
             'partial' => '@UhifadhiStorage/files/_w_%s.html.twig',
             'urls' => $this->widgetUrls(),
             'csrfToken' => $this->widgetEndpoint->csrfToken($catalog),
@@ -131,49 +132,49 @@ final class FilesController
     #[Route('/files/widgets/save', name: 'storage_files_widgets_save', methods: ['POST'])]
     public function saveWidgets(Request $request): Response
     {
-        return $this->widgetEndpoint->save($request, FilesWidgets::catalog());
+        return $this->widgetEndpoint->save($request, new FilesWidgets()->catalog());
     }
 
     #[Route('/files/widgets/preset/{presetId}', name: 'storage_files_widgets_preset', requirements: ['presetId' => '[a-z0-9_-]+'], methods: ['POST'])]
     public function applyPreset(Request $request, string $presetId): Response
     {
-        return $this->widgetEndpoint->applyPreset($request, FilesWidgets::catalog(), $presetId);
+        return $this->widgetEndpoint->applyPreset($request, new FilesWidgets()->catalog(), $presetId);
     }
 
     #[Route('/files/widgets/preset/{presetId}/copy', name: 'storage_files_widgets_preset_copy', requirements: ['presetId' => '[a-z0-9_-]+'], methods: ['POST'])]
     public function copyPreset(Request $request, string $presetId): Response
     {
-        return $this->widgetEndpoint->copyPreset($request, FilesWidgets::catalog(), $presetId);
+        return $this->widgetEndpoint->copyPreset($request, new FilesWidgets()->catalog(), $presetId);
     }
 
     #[Route('/files/widgets/presets', name: 'storage_files_widgets_preset_create', methods: ['POST'])]
     public function createPreset(Request $request): Response
     {
-        return $this->widgetEndpoint->createCustomPreset($request, FilesWidgets::catalog());
+        return $this->widgetEndpoint->createCustomPreset($request, new FilesWidgets()->catalog());
     }
 
     #[Route('/files/widgets/presets/{presetUuid}/apply', name: 'storage_files_widgets_preset_apply', requirements: ['presetUuid' => self::UUID], methods: ['POST'])]
     public function applyCustomPreset(Request $request, string $presetUuid): Response
     {
-        return $this->widgetEndpoint->applyCustomPreset($request, FilesWidgets::catalog(), $this->uuid($presetUuid));
+        return $this->widgetEndpoint->applyCustomPreset($request, new FilesWidgets()->catalog(), $this->uuid($presetUuid));
     }
 
     #[Route('/files/widgets/presets/{presetUuid}/rename', name: 'storage_files_widgets_preset_rename', requirements: ['presetUuid' => self::UUID], methods: ['POST'])]
     public function renameCustomPreset(Request $request, string $presetUuid): Response
     {
-        return $this->widgetEndpoint->renameCustomPreset($request, FilesWidgets::catalog(), $this->uuid($presetUuid));
+        return $this->widgetEndpoint->renameCustomPreset($request, new FilesWidgets()->catalog(), $this->uuid($presetUuid));
     }
 
     #[Route('/files/widgets/presets/{presetUuid}/delete', name: 'storage_files_widgets_preset_delete', requirements: ['presetUuid' => self::UUID], methods: ['POST'])]
     public function deleteCustomPreset(Request $request, string $presetUuid): Response
     {
-        return $this->widgetEndpoint->deleteCustomPreset($request, FilesWidgets::catalog(), $this->uuid($presetUuid));
+        return $this->widgetEndpoint->deleteCustomPreset($request, new FilesWidgets()->catalog(), $this->uuid($presetUuid));
     }
 
     #[Route('/files/widgets/reset', name: 'storage_files_widgets_reset', methods: ['POST'])]
     public function resetWidgets(Request $request): Response
     {
-        return $this->widgetEndpoint->reset($request, FilesWidgets::catalog());
+        return $this->widgetEndpoint->reset($request, new FilesWidgets()->catalog());
     }
 
     /**
@@ -327,12 +328,15 @@ final class FilesController
     /**
      * Whose layout to resolve. Every screen that asks has already passed
      * denyAnonymous(), so the endpoint's own answer is safe to take at face
-     * value — and taking it from there rather than from the host's User entity
-     * keeps this bundle from needing to know what a user is.
+     * value — and taking it from there rather than reaching for an installation's
+     * own account class keeps this bundle from needing to know what a user is.
+     * What comes back is the contract's person
+     * ({@see Person}), which is what
+     * every stored layout is keyed by.
      */
-    private function userId(): int
+    private function widgetUser(): Person
     {
-        return $this->widgetEndpoint->userId();
+        return $this->widgetEndpoint->user();
     }
 
     private function uuid(string $value): Uuid
@@ -342,7 +346,7 @@ final class FilesController
 
     /**
      * The eight URLs the library component drives itself with. The placeholder
-     * is the host's own, substituted client-side — the component builds a real
+     * is the widget module's own, substituted client-side — the component builds a real
      * URL by replacing it, so these are generated once and never per preset.
      *
      * @return array<string, string>

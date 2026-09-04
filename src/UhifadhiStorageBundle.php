@@ -23,15 +23,17 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
-use Uhifadhi\Service\WidgetEndpoint;
-use Uhifadhi\Service\WidgetService;
+use Uhifadhi\Shell\Contract\NavigationSourceInterface;
 use Uhifadhi\Storage\Controller\EvidenceController;
 use Uhifadhi\Storage\Controller\FilesController;
 use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
+use Uhifadhi\Storage\Shell\FilesNavigation;
 use Uhifadhi\Storage\Twig\FilesExtension;
+use Uhifadhi\Storage\Widget\FilesWidgets;
+use Uhifadhi\Widget\Registry\WidgetSurfaceInterface;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -94,7 +96,7 @@ final class UhifadhiStorageBundle extends AbstractBundle
         $evidence = $this->evidenceConfig($builder);
 
         /*
-         * The evidence storage, declared FOR the host.
+         * The evidence storage, declared FOR the installation.
          *
          * Written in flysystem-bundle's discoverable format ("local:" / "asyncaws:"
          * as the adapter key) and NOT the older `adapter:` + `options:` pair: that
@@ -246,28 +248,25 @@ final class UhifadhiStorageBundle extends AbstractBundle
         }
 
         /*
-         * THE FILES HUB — four screens, registered only where all three things
+         * THE FILES HUB — four screens, registered only where the two things
          * they stand on are actually present.
          *
          * SecurityBundle, because the hub is for signed-in people and the file
          * page's removal form needs a CSRF manager. Twig, because the screens are
-         * templates. And the HOST'S WIDGET FRAMEWORK — Uhifadhi\Service\WidgetService
-         * and its library component — because the hub is a widget dashboard on it
-         * and there is no useful half of that.
+         * templates.
          *
-         * The widget framework is checked with class_exists() rather than through
-         * kernel.bundles, and that is the right check HERE for the reason it is
-         * the wrong one for SecurityBundle: the widget classes are the host
-         * application's own, not a bundle's, so there is no bundle to look for —
-         * and they are not a dependency of this package either, so nothing but a
-         * host (or this bundle's own test fixtures, which stand in for one) can
-         * make them autoloadable.
+         * THE WIDGET FRAMEWORK IS NO LONGER A CONDITION, because it is no longer
+         * optional: uhifadhi/widget-module is a hard requirement of this package.
+         * The hub IS a widget dashboard — the layout, the presets and the library
+         * are the screen rather than a decoration on it — and there was never a
+         * useful half of that. What used to be a class_exists() guard was a guess
+         * about whether an application happened to carry classes of its own; a
+         * composer requirement is the same statement made where it can be checked.
          */
         $files = self::stringKeyed($config['files'] ?? null);
         $wanted = false !== ($files['enabled'] ?? true);
-        $hasWidgets = class_exists(WidgetService::class) && class_exists(WidgetEndpoint::class);
         $hasTwig = \is_array($bundles) && isset($bundles['TwigBundle']);
-        $screens = $wanted && $hasSecurity && $hasTwig && $hasWidgets;
+        $screens = $wanted && $hasSecurity && $hasTwig;
         $builder->setParameter('storage.files.screens', $screens);
 
         /*
@@ -290,14 +289,54 @@ final class UhifadhiStorageBundle extends AbstractBundle
         if ($screens) {
             $permission = $files['settings_permission'] ?? null;
 
+            /*
+             * THE HUB IS A DECLARED DASHBOARD SURFACE, tagged by hand because a
+             * reusable bundle is not autoconfigured. The tag is what makes the
+             * surface FINDABLE: `widget:prune` walks the registry, and layouts
+             * keyed to a surface no service claims are exactly what it deletes.
+             * Registered beside the screens rather than unconditionally — an
+             * installation that turned the hub off has no Files dashboard to
+             * arrange, and claiming the surface anyway would be the module
+             * asserting a screen it does not serve.
+             */
+            $services->set('storage.widget_surface', FilesWidgets::class)
+                ->tag(WidgetSurfaceInterface::TAG);
+
+            /*
+             * THE ONE SIDEBAR ROW, REGISTERED ONLY WHERE THERE IS A SHELL.
+             * uhifadhi/shell-module is a suggestion of this bundle rather than a
+             * requirement, and a service whose class implements an interface
+             * nobody installed is a container that will not compile. The guard
+             * costs nothing — neither ::class constant loads a class — and it is
+             * what keeps the shell soft.
+             *
+             * THE TAG STRING IS WRITTEN OUT rather than read from
+             * UhifadhiShellBundle::NAV_TAG, for the same reason: reading the
+             * constant would load the shell's bundle class, and this file has to
+             * be readable in an installation that has no shell at all.
+             *
+             * Inside the `$screens` guard, because a row is a door: an
+             * installation that turned the hub off has no /files to open, and a
+             * row leading nowhere is worse than no row.
+             */
+            if (interface_exists(NavigationSourceInterface::class)) {
+                $services->set('storage.navigation', FilesNavigation::class)
+                    ->args([
+                        service('router'),
+                        service('security.token_storage'),
+                        service('request_stack'),
+                    ])
+                    ->tag('shell.nav_section');
+            }
+
             $services->set(FilesController::class)
                 ->args([
                     service('twig'),
                     service('storage.file_registry'),
                     service('storage.files_surface'),
                     service('storage.settings'),
-                    service(WidgetService::class),
-                    service(WidgetEndpoint::class),
+                    service('widget.service'),
+                    service('widget.endpoint'),
                     service('router'),
                     service('security.token_storage'),
                     service('security.authorization_checker'),

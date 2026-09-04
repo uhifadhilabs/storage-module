@@ -19,7 +19,7 @@ use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 
 /**
- * "Where files go", answered from the host's own configuration and nothing else.
+ * "Where files go", answered from the installation's own configuration and nothing else.
  *
  * The page this feeds is written for whoever administers the platform, and every
  * line on it is a FACT ABOUT THIS DEPLOYMENT: which places are configured, what

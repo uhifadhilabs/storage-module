@@ -1,7 +1,24 @@
-{# Bundle base: the host's shell plus the Files hub's own stylesheet. Every page
-   of this bundle extends this instead of the host layout directly, so the hub's
-   vocabulary loads only where the hub renders — the host's own stylesheet never
-   references storage.
+{# Bundle base: the SHELL's page frame plus the sheets the Files hub needs.
+
+   Every screen of this bundle extends this rather than the shell directly, so
+   the hub's vocabulary loads only where the hub renders and the preview overlay
+   is included exactly once per page.
+
+   THE FRAME IS THE SHELL'S (uhifadhi/shell-module), not this module's. Before
+   the fleet had a shell, these pages extended a `layout.html.twig` the
+   application was expected to provide, and typed their own `<div class="page">`
+   — which is why the page furniture below moved out: the trail, the page head
+   and the flashes are the frame's sockets now, and a module that types its own
+   copies is a module that drifts from every other screen in the installation.
+
+   THE WIDGET MODULE'S SHEET IS NOT OPTIONAL. The hub IS a widget dashboard, so
+   `.w-grid`, `.w-cell`, `.w-span-*` and the whole library chrome are drawn by
+   that bundle's stylesheet, which its own header says must be linked by the page
+   rendering it. Without it the grid has nothing declaring a span and every
+   widget renders one column wide.
+
+   Ordered shell → widget → preview → hub, weakest to strongest: this module's
+   own sheets are the ones allowed to override, and they are last.
 
    Symfony docs — https://symfony.com/doc/current/frontend/asset_mapper.html :
    "All bundles that have a Resources/public/ or public/ directory will
@@ -9,11 +26,12 @@
    bundles/<BundleName>" — and under AssetMapper those assets are automatically
    content-versioned. So public/files.css is served as
    bundles/uhifadhistorage/files.css with a digest, no assets:install. #}
-{% extends 'layout.html.twig' %}
+{% extends '@UhifadhiShell/page.html.twig' %}
 
 {% block stylesheets %}
     {{ parent() }}
-    {# The PREVIEW's vocabulary first: it belongs to the shareable component, not
+    <link rel="stylesheet" href="{{ asset(constant('Uhifadhi\\Widget\\UhifadhiWidgetBundle::STYLESHEET')) }}">
+    {# The PREVIEW's vocabulary next: it belongs to the shareable component, not
        to the hub, and another module's page loads exactly this one file without
        files.css. The hub is one of its consumers, so it loads it the same way. #}
     <link rel="stylesheet" href="{{ asset('bundles/uhifadhistorage/preview.css') }}">
@@ -30,11 +48,14 @@
     <script src="{{ asset('bundles/uhifadhistorage/files.js') }}" defer></script>
 {% endblock %}
 
-{# The host layout expects each page to supply its own `.page` container. #}
-{% block content %}
-    <div class="page">
-        {% block storage_page %}{% endblock %}
-    </div>
+{# THE HUB IS ORG-WIDE, so it fills the tab socket with nothing. The shell's
+   default there is an area's tab strip, and the Files hub is deliberately about
+   every area at once — a strip naming one of them would be the page claiming a
+   place it is not in. #}
+{% block shell_page_tabs %}{% endblock %}
+
+{% block shell_page %}
+    {% block storage_page %}{% endblock %}
     {# The preview, once per page, for every tile and row drawn above it. #}
     {{ include('@UhifadhiStorage/overlay/_preview.html.twig') }}
 {% endblock %}

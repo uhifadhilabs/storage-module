@@ -11,15 +11,16 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Uhifadhi\Storage\Model;
+namespace Uhifadhi\Storage\Widget;
 
-use Uhifadhi\Model\Widget;
-use Uhifadhi\Model\WidgetCatalog;
-use Uhifadhi\Model\WidgetGroup;
-use Uhifadhi\Model\WidgetPreset;
+use Uhifadhi\Widget\Model\Widget;
+use Uhifadhi\Widget\Model\WidgetCatalog;
+use Uhifadhi\Widget\Model\WidgetGroup;
+use Uhifadhi\Widget\Model\WidgetPreset;
+use Uhifadhi\Widget\Registry\WidgetSurfaceInterface;
 
 /**
- * The Files surface, as the host's widget framework reads it.
+ * The Files surface, as uhifadhi/widget-module reads it.
  *
  * THE TWIN OF THE DESIGN'S OWN DECLARATION. Every id, label, span, note and
  * preset layout below is transcribed from the settled design's
@@ -37,15 +38,18 @@ use Uhifadhi\Model\WidgetPreset;
  * BYTES ARE, SMALL PICTURE, OWNER. Never "storage backend", "media asset",
  * "blob", "object", "adapter", "bucket".
  *
- * Static rather than a service, exactly as the host's own catalogues are: a
- * catalogue is a statement of what a surface ships, it has no dependencies, and
- * nothing may vary it at runtime.
+ * A CATALOGUE IS A STATEMENT OF WHAT A SURFACE SHIPS, so this class has no
+ * dependencies and nothing may vary it at runtime. It is a
+ * {@see WidgetSurfaceInterface} and tagged as one (see the bundle's
+ * loadExtension) because being FINDABLE is the half a catalogue alone cannot
+ * do: `widget:prune` walks the registry, and a surface no service claims is a
+ * surface whose stored layouts read as orphans.
  */
-final class FilesWidgets
+final class FilesWidgets implements WidgetSurfaceInterface
 {
     public const string SURFACE = 'files';
 
-    public static function catalog(): WidgetCatalog
+    public function catalog(): WidgetCatalog
     {
         return new WidgetCatalog(
             self::SURFACE,
@@ -91,7 +95,7 @@ final class FilesWidgets
             new Widget('byday', 'Day by day', 'd', 12, [12], false, 'Files under the day the handset took them, newest day first, drawn small so a week fits.'),
             new Widget('arrivals', 'What arrives each week', 'd', 6, [12, 6], false, 'Eight weeks of arrivals, so “are we growing” is a glance rather than a calculation.'),
             new Widget('bymodule', 'Space by module', 'e', 6, [12, 6], false, 'How much of the bill each module is, and how little of it the thumbnails are.'),
-            new Widget('bybackend', 'Where the bytes are', 'e', 6, [12, 6], false, 'Each storage the host configured, what it holds and how much room is left.'),
+            new Widget('bybackend', 'Where the bytes are', 'e', 6, [12, 6], false, 'Each storage the installation configured, what it holds and how much room is left.'),
             new Widget('biggest', 'The biggest files', 'e', 6, [12, 6], false, 'The largest originals, with their owners — the first place to look when a module’s share jumps.'),
         ];
     }

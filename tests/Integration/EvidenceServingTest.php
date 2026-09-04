@@ -17,7 +17,6 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\User\InMemoryUser;
 use Uhifadhi\Storage\Service\EvidenceStorage;
 
 /**
@@ -28,6 +27,8 @@ use Uhifadhi\Storage\Service\EvidenceStorage;
  */
 final class EvidenceServingTest extends WebTestCase
 {
+    use \Uhifadhi\Storage\Tests\RealPeopleTrait;
+
     private const string IMAGES = __DIR__.'/../Fixtures/images';
 
     private KernelBrowser $client;
@@ -35,6 +36,7 @@ final class EvidenceServingTest extends WebTestCase
     protected function setUp(): void
     {
         $this->client = self::createClient();
+        self::buildSchema();
     }
 
     private function storeUnder(string $prefix, string $clientKey = 'k'): string
@@ -51,12 +53,7 @@ final class EvidenceServingTest extends WebTestCase
 
     private function signIn(): void
     {
-        // The password must match the in-memory provider's (TestKernel), or the
-        // ContextListener refuses to refresh the token on the next request
-        // ("Cannot refresh token because user has changed") and the session is
-        // silently dropped — which would make every assertion below pass for
-        // the wrong reason.
-        $this->client->loginUser(new InMemoryUser('ranger@example.test', 'x', ['ROLE_USER']));
+        $this->client->loginUser(self::rangerAccount());
     }
 
     public function testAGrantingVoterLetsASignedInUserSeeThePhotograph(): void

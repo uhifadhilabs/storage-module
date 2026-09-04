@@ -11,12 +11,12 @@ $finder = (new PhpCsFixer\Finder())
     // precisely to be a file that is NOT a photograph; formatting it as though
     // it were our code would be tidying up the thing under test.
     ->exclude('Fixtures/images')
-    // The HOST's own widget classes, copied in verbatim so this bundle's suite
-    // compiles against the contract it is written to. They keep the host's header
-    // and the host's formatting on purpose: reformatting a copy as though it were
-    // ours would be the first drift, and a stub that has drifted is worse than no
-    // stub at all.
-    ->exclude('Fixtures/Uhifadhi');
+    // NOTHING ELSE IS EXCLUDED ANY MORE. This finder used to skip
+    // tests/Fixtures/Uhifadhi, where copies of the old application's widget
+    // classes stood in for a framework this package did not depend on. They are
+    // gone: uhifadhi/widget-module is a hard requirement now, so the contract is
+    // checked by the compiler rather than by a copy somebody has to keep in step.
+    ;
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)

@@ -15,28 +15,39 @@ namespace Uhifadhi\Storage\Tests\Functional;
 
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Security\Core\User\InMemoryUser;
+use Uhifadhi\Storage\Tests\RealPeopleTrait;
 
 /**
- * The shared half of every Files screen test: a client, and somebody to be.
+ * The shared half of every Files screen test: a schema, a client, and somebody
+ * to be.
  *
- * Two people, because the hub has exactly two audiences. A RANGER is anyone
- * signed in — the hub is open to them and shows them what their permissions
- * allow. A WARDEN carries the deployment's administrator permission, which is
- * the only thing "Where files go" asks for.
+ * Two people, because the hub has exactly two audiences — see
+ * {@see RealPeopleTrait}, which also explains why they are real accounts rather
+ * than in-memory ones.
  */
 abstract class FilesTestCase extends WebTestCase
 {
+    use RealPeopleTrait;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        self::bootKernel();
+        self::buildSchema();
+        self::ensureKernelShutdown();
+    }
+
     protected function ranger(KernelBrowser $client): KernelBrowser
     {
-        $client->loginUser(new InMemoryUser('ranger@example.test', 'x', ['ROLE_USER']));
+        $client->loginUser(self::rangerAccount());
 
         return $client;
     }
 
     protected function warden(KernelBrowser $client): KernelBrowser
     {
-        $client->loginUser(new InMemoryUser('warden@example.test', 'x', ['ROLE_ADMIN', 'ROLE_USER']));
+        $client->loginUser(self::wardenAccount());
 
         return $client;
     }

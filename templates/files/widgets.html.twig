@@ -1,43 +1,45 @@
 {# FILES · WIDGET LIBRARY — /files/widgets.
 
-   STATIC TWIN of the settled design's files/widgets.html — which is deliberately
-   almost empty, because everything inside `data-widget-root` is the HOST's one
-   shared component. This page's whole job is to hand that component the ten
-   things its contract asks for and get out of the way.
+   THE PAGE IS CHROME; everything inside it is uhifadhi/widget-module's ONE
+   shared preset component, handed this surface's catalogue, this surface's
+   partial name and this surface's routes. There are no files-specific widget
+   mechanics anywhere, which is the whole point of riding the framework:
+   adopting a direction here works exactly as it does on every other surface in
+   the installation.
 
    The widgets previewed inside it are the same _w_<id>.html.twig partials the
    hub renders, given the same context, so the library's preview IS the widget. #}
 {% extends '@UhifadhiStorage/base.html.twig' %}
 
-{% block title %}Files · widget library{% endblock %}
+{% block title %}Files &middot; widget library{% endblock %}
+
+{% block shell_breadcrumbs %}<a href="/">uhifadhi</a> / <a href="{{ urls.dashboard }}">files</a> / widget library{% endblock %}
+
+{% block shell_page_title %}Files &middot; widget library{% endblock %}
+
+{% block shell_page_subtitle %}
+    Choose the layout your hub shows, or compose your own. Every widget is the real thing at full
+    size, exactly as the page renders it &mdash; the filters here filter exactly as the filters on the page do.
+{% endblock %}
+
+{% block shell_page_actions %}
+    {# Throwing the whole layout away asks first — through the installation's own
+       confirm-modal controller, never the browser's dialog. The bundle only
+       states WHAT to ask; the installation owns the dialog, so every module asks
+       the same way. #}
+    <button type="button" class="tgl w-act" {{ constant('Uhifadhi\\Widget\\Model\\WidgetDom::RESET') }}
+            data-controller="confirm-modal"
+            data-action="click->confirm-modal#ask"
+            data-confirm-modal-title-value="Reset your widget layout?"
+            data-confirm-modal-body-value="Your own arrangement of the files hub goes back to the one the platform ships with. Nothing happens to any file."
+            data-confirm-modal-confirm-value="Reset it"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Reset to defaults</button>
+    <a class="cta" href="{{ urls.dashboard }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to the hub</a>
+{% endblock %}
 
 {% block storage_page %}
-<div class="crumb"><a href="/">uhifadhi</a> / <a href="{{ urls.dashboard }}">files</a> / widget library</div>
-
-<div class="pghead">
-    <div>
-        <h1 class="pg">Files &middot; widget library</h1>
-        <p class="pgsub">Choose the layout your hub shows, or compose your own. Every widget is the real thing at full
-        size, exactly as the page renders it &mdash; the filters here filter exactly as the filters on the page do.</p>
-    </div>
-    <div class="pgact w-pgact">
-        {# Throwing the whole layout away asks first — through the host's own
-           confirm-modal controller, never the browser's dialog. The bundle only
-           states WHAT to ask; the host owns the dialog, so every module asks the
-           same way. #}
-        <button type="button" class="tgl w-act" {{ constant('Uhifadhi\\Model\\WidgetDom::RESET') }}
-                data-controller="confirm-modal"
-                data-action="click->confirm-modal#ask"
-                data-confirm-modal-title-value="Reset your widget layout?"
-                data-confirm-modal-body-value="Your own arrangement of the files hub goes back to the one the platform ships with. Nothing happens to any file."
-                data-confirm-modal-confirm-value="Reset it"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Reset to defaults</button>
-        <a class="cta" href="{{ urls.dashboard }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to the hub</a>
-    </div>
-</div>
-
 {# THE WHOLE CONTRACT, and nothing files-specific inside it except the catalogue,
    the partial format and the context every partial receives. #}
-{{ include('widgets/_library.html.twig', {
+{{ include('@UhifadhiWidget/widgets/_library.html.twig', {
     catalog: catalog,
     builtins: builtins,
     customPresets: customPresets,
@@ -71,10 +73,18 @@
 }, with_context: false) }}
 {% endblock %}
 
-{% block javascripts %}
-    {{ parent() }}
-    <script type="module">
-        import { initWidgetLibrary } from 'uhifadhi/widgets';
-        initWidgetLibrary();
-    </script>
-{% endblock %}
+{# NO SCRIPT TAG HERE, and that is deliberate rather than an omission. The page
+   renders server-side and every action is a plain form post, so it is whole
+   without JavaScript; what the script adds is PREVIEW and the picker's live
+   filtering. It lives in uhifadhi/widget-module under the AssetMapper namespace
+   `@uhifadhi/widget-module`, and naming that namespace belongs to importmap.php
+   — the one file a bundle may not write. An installation that wants the
+   enhancement adds it once, for every surface at once:
+
+     // assets/app.js
+     import { initWidgetLibrary } from '@uhifadhi/widget-module/widgets.js';
+     initWidgetLibrary();
+
+   A hard `import` typed here instead would be this module deciding an
+   installation's importmap on its behalf, and would take the whole page down
+   wherever that entry is absent. #}

@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Uhifadhi\Storage\Tests\Unit\Model;
+namespace Uhifadhi\Storage\Tests\Unit\Widget;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Uhifadhi\Storage\Model\FilesWidgets;
+use Uhifadhi\Storage\Widget\FilesWidgets;
 
 /**
  * The catalogue is the TWIN of the settled design's own declaration
@@ -28,12 +28,12 @@ final class FilesWidgetsTest extends TestCase
     public function testTheSurfaceIsFiles(): void
     {
         self::assertSame('files', FilesWidgets::SURFACE);
-        self::assertSame('files', FilesWidgets::catalog()->surface);
+        self::assertSame('files', new FilesWidgets()->catalog()->surface);
     }
 
     public function testTheLibrarysHeadedSectionsAreTheFiveDirectionsTheHubWasDrawnIn(): void
     {
-        $groups = FilesWidgets::catalog()->groups();
+        $groups = new FilesWidgets()->catalog()->groups();
 
         self::assertSame(['a', 'b', 'c', 'd', 'e'], array_map(static fn ($g): string => $g->id, $groups));
         self::assertSame(
@@ -46,7 +46,7 @@ final class FilesWidgetsTest extends TestCase
     {
         self::assertSame(
             ['kpis', 'browse', 'recent', 'byowner', 'owners', 'ledger', 'nothumb', 'kinds', 'byday', 'arrivals', 'bymodule', 'bybackend', 'biggest'],
-            FilesWidgets::catalog()->ids(),
+            new FilesWidgets()->catalog()->ids(),
         );
     }
 
@@ -56,7 +56,7 @@ final class FilesWidgetsTest extends TestCase
     #[DataProvider('widgets')]
     public function testEveryWidgetIsFiledUnderItsDirectionAtTheWidthTheDesignDrewIt(string $id, string $group, int $cols, array $spans, bool $on): void
     {
-        $widget = FilesWidgets::catalog()->get($id);
+        $widget = new FilesWidgets()->catalog()->get($id);
 
         self::assertSame($group, $widget->group);
         self::assertSame($cols, $widget->cols);
@@ -89,7 +89,7 @@ final class FilesWidgetsTest extends TestCase
     {
         self::assertSame(
             ['kpis' => 12, 'browse' => 12, 'recent' => 6, 'nothumb' => 6],
-            FilesWidgets::catalog()->defaultLayout(),
+            new FilesWidgets()->catalog()->defaultLayout(),
             'how much have we got, show me it, is anything stuck',
         );
     }
@@ -100,7 +100,7 @@ final class FilesWidgetsTest extends TestCase
     #[DataProvider('presets')]
     public function testEachDirectionComposesTheHubFromItsOwnWidgets(string $id, array $layout): void
     {
-        $preset = FilesWidgets::catalog()->preset($id);
+        $preset = new FilesWidgets()->catalog()->preset($id);
 
         self::assertNotNull($preset);
         self::assertSame($layout, $preset->layout);
@@ -125,7 +125,7 @@ final class FilesWidgetsTest extends TestCase
      */
     public function testADirectionSaysTheSameThingAsAGroupAndAsAPreset(): void
     {
-        $catalog = FilesWidgets::catalog();
+        $catalog = new FilesWidgets()->catalog();
 
         foreach ($catalog->groups() as $group) {
             $preset = $catalog->preset($group->id);
@@ -137,7 +137,7 @@ final class FilesWidgetsTest extends TestCase
 
     public function testTheShippedCompositionIsOfferedAsAPresetOfItsOwn(): void
     {
-        $builtins = FilesWidgets::catalog()->builtins();
+        $builtins = new FilesWidgets()->catalog()->builtins();
 
         self::assertSame(
             ['default', 'a', 'b', 'c', 'd', 'e'],
@@ -149,7 +149,7 @@ final class FilesWidgetsTest extends TestCase
 
     public function testEveryWidgetShipsAPartial(): void
     {
-        foreach (FilesWidgets::catalog()->ids() as $id) {
+        foreach (new FilesWidgets()->catalog()->ids() as $id) {
             self::assertFileExists(
                 \dirname(__DIR__, 3).'/templates/files/_w_'.$id.'.html.twig',
                 \sprintf('the "%s" widget ships a partial', $id),
@@ -166,7 +166,7 @@ final class FilesWidgetsTest extends TestCase
      */
     public function testEveryPartialCarriesTheStaticTwinNoteInItsHeader(): void
     {
-        foreach (FilesWidgets::catalog()->ids() as $id) {
+        foreach (new FilesWidgets()->catalog()->ids() as $id) {
             $header = (string) file_get_contents(\dirname(__DIR__, 3).'/templates/files/_w_'.$id.'.html.twig');
 
             self::assertStringContainsString('STATIC TWIN', $header, $id);

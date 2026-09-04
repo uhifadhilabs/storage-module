@@ -18,7 +18,7 @@ namespace Uhifadhi\Storage\Model;
  *
  * Plain language, deliberately: "where the files go", never "the configured
  * Flysystem adapter". The one place a proper noun is allowed is the name of a
- * storage the organisation actually bought, and that name comes from the host's
+ * storage the organisation actually bought, and that name comes from the installation's
  * own configuration — this bundle never invents a vendor.
  *
  * Everything here is READ-ONLY TRUTH from config/packages/storage.yaml. The
@@ -29,7 +29,7 @@ namespace Uhifadhi\Storage\Model;
 final readonly class StoragePlace
 {
     /**
-     * @param string      $id      "evidence" — the storage's name in the host's configuration
+     * @param string      $id      "evidence" — the storage's name in the installation's configuration
      * @param string      $label   what an administrator calls it: "Hetzner", "This server"
      * @param string      $kind    "s3" or "local"; the pill's modifier in files.css
      * @param string      $what    one line saying what sort of place it is

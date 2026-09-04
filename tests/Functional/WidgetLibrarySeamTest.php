@@ -14,23 +14,24 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Uhifadhi\Model\WidgetDom;
-use Uhifadhi\Storage\Model\FilesWidgets;
+use Uhifadhi\Storage\Widget\FilesWidgets;
+use Uhifadhi\Widget\Model\WidgetDom;
 
 /**
- * /files/widgets hands the HOST's library component the whole contract.
+ * /files/widgets hands uhifadhi/widget-module's library component the whole contract.
  *
- * This is the bundle's copy of the host's own WidgetLibrarySeamTest, asserting
- * the same things about the same attributes — because "the library works" is not
- * a thing a bundle can test (the component is the host's) but "we handed it
- * everything it asks for, and our URLs are the ones it will call" is exactly
- * what a bundle must not get wrong.
+ * "The library works" is uhifadhi/widget-module's own suite to prove; what this
+ * bundle must not get wrong is "we handed the component everything it asks for,
+ * and our URLs are the ones it will call".
  *
- * The component itself is stubbed down to its contract in
- * tests/Integration/Fixtures/templates/widgets/_library.html.twig, which reads
- * every one of the nine parameters WITHOUT a default — so a parameter this
- * bundle forgets to pass is a Twig error here rather than a blank screen in a
- * host.
+ * THE COMPONENT IS THE REAL ONE NOW. It used to be stubbed down to its contract
+ * in this suite's own fixtures, a copy somebody had to keep in step with a
+ * template in another repository. Rendering the real
+ * `@UhifadhiWidget/widgets/_library.html.twig` means a parameter this bundle
+ * forgets to pass is a Twig error HERE, and — more to the point — a parameter
+ * the component starts asking for is one too. Three assertions in this file
+ * changed the day the stub came out, and every one of them was the double
+ * having quietly invented an answer the framework does not give.
  */
 final class WidgetLibrarySeamTest extends FilesTestCase
 {
@@ -103,9 +104,16 @@ final class WidgetLibrarySeamTest extends FilesTestCase
         $library = $crawler->filter('['.WidgetDom::TEMPLATE.'=browse]')->html();
         $hub = $client->request('GET', '/files')->filter('[data-w=browse]')->html();
 
-        self::assertStringContainsString('FL·01', $library, 'the preview carries the design index the hub carries');
+        // The identity used to be asserted through the design workshop's index
+        // chip ("FL·01"), which the templates no longer emit — it was the
+        // workspace's referencing system and it never belonged on a person's
+        // screen. What makes the preview the widget is that it renders the
+        // widget's OWN MARKUP, so that is what is compared now, and it is the
+        // stronger assertion: the filter row is the browse widget, and a chip
+        // was only ever a label on it.
+        self::assertStringContainsString('Every file, across every module', $library, 'the preview is the widget the hub draws');
         self::assertStringContainsString('f-filters', $library, 'and the filter row, because it IS the widget');
-        self::assertStringContainsString('FL·01', $hub);
+        self::assertStringContainsString('f-filters', $hub, 'the same markup, on the hub');
     }
 
     public function testTheLibraryDrawsTheLandmarksTheComponentOwns(): void
@@ -126,7 +134,7 @@ final class WidgetLibrarySeamTest extends FilesTestCase
         $crawler = $client->request('GET', '/files/widgets');
         $reset = $crawler->filter('['.WidgetDom::RESET.']');
 
-        self::assertSame('confirm-modal', $reset->attr('data-controller'), 'the bundle states WHAT to ask; the host owns the dialog');
+        self::assertSame('confirm-modal', $reset->attr('data-controller'), 'the bundle states WHAT to ask; the installation owns the dialog');
         self::assertNotSame('', (string) $reset->attr('data-confirm-modal-title-value'));
     }
 
@@ -156,15 +164,30 @@ final class WidgetLibrarySeamTest extends FilesTestCase
         yield 'delete one of my own' => ['POST', '/files/widgets/presets/'.$id.'/delete'];
     }
 
+    /**
+     * BUILT-INS ARE IMMUTABLE, so a layout is saved onto a COPY.
+     *
+     * This test used to post straight to /save and expect a 204, because the
+     * double it was written against stored whatever it was handed. The real
+     * framework refuses (422, "make a copy to customize it"): a dashboard
+     * renders exactly one preset, somebody who has never chosen is active on
+     * the one this module ships, and editing a shipped design in place would
+     * fork the product behind everybody's back. So the copy comes first — which
+     * is what the library's own toolbar makes you do — and the copy is what
+     * gets edited.
+     */
     public function testALayoutIsSavedAndReadBackOnTheHub(): void
     {
-        // One kernel across the three requests: the host stores a layout in its
-        // own database, and the double that stands in for it here stores it in
-        // memory — which only survives if the kernel does.
+        // One kernel across the requests: the session carries the person, and
+        // the layout is read back through it.
         $client = $this->ranger(static::createClient());
         $client->disableReboot();
         $crawler = $client->request('GET', '/files/widgets');
         $token = (string) $crawler->filter('['.WidgetDom::ROOT.']')->attr(WidgetDom::CSRF_TOKEN);
+
+        // Make the shipped design mine before editing it.
+        $client->request('POST', '/files/widgets/preset/c/copy', server: ['HTTP_X-CSRF-Token' => $token]);
+        self::assertResponseStatusCodeSame(204);
 
         $client->request(
             'POST',
@@ -218,7 +241,16 @@ final class WidgetLibrarySeamTest extends FilesTestCase
         self::assertSame(['ledger', 'nothumb', 'kinds'], $drawn, 'direction C is the ledger, the queue and the kinds — and nothing else');
     }
 
-    public function testAnUnknownDirectionIsANotFound(): void
+    /**
+     * A DESIGN THIS SURFACE DOES NOT SHIP IS UNPROCESSABLE, NOT MISSING — 422,
+     * and the difference is not pedantry. The URL exists and the route matched;
+     * what was wrong is the id in it, which is a value the browser sent. This
+     * test expected 404 because the double it was written against invented that
+     * answer, and no amount of running the suite could have told anyone: the
+     * status code a bundle's controller returns untouched is exactly the kind
+     * of contract a stub cannot hold.
+     */
+    public function testAnUnknownDirectionIsRefusedAsUnprocessable(): void
     {
         $client = $this->ranger(static::createClient());
         $crawler = $client->request('GET', '/files/widgets');
@@ -226,7 +258,7 @@ final class WidgetLibrarySeamTest extends FilesTestCase
 
         $client->request('POST', '/files/widgets/preset/zzz', server: ['HTTP_X-CSRF-Token' => $token]);
 
-        self::assertResponseStatusCodeSame(404);
+        self::assertResponseStatusCodeSame(422);
     }
 
     public function testTheLibraryIsNotOpenToAStranger(): void

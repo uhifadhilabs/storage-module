@@ -20,7 +20,7 @@ use Uhifadhi\Storage\Registry\FileRegistry;
 /**
  * Everything the thirteen widget partials read, gathered ONCE.
  *
- * The host's widget library renders each partial with `with_context: false` and
+ * The widget library renders each partial with `with_context: false` and
  * exactly this array, so a partial that reaches for anything not in here fails
  * loudly rather than rendering an empty widget. That is the point: the return
  * value below IS the contract between the surface and its partials, and both the

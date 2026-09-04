@@ -16,27 +16,29 @@
 
 {% block title %}{{ file.name }}{% endblock %}
 
+{% block shell_breadcrumbs %}<a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / {{ file.name }}{% endblock %}
+
+{% block shell_page_title %}{{ file.name }}{% endblock %}
+
+{% block shell_page_subtitle %}
+    A file&rsquo;s own page. It shows exactly what the overlay on the hub shows; the overlay is for
+    browsing, this is for pointing at.
+{% endblock %}
+
+{% block shell_page_actions %}
+    <a class="tgl w-act" href="{{ hubUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to files</a>
+    {% if file.ownerUrl %}<a class="cta" href="{{ file.ownerUrl }}">Open {{ file.ownerLabel }} &rarr;</a>{% endif %}
+{% endblock %}
+
 {% block storage_page %}
 {# Imported INSIDE the block on purpose: in a child template a macro imported
    outside the blocks is not visible inside them. #}
 {% import '@UhifadhiStorage/files/_ui.html.twig' as ui %}
-<div class="crumb"><a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / {{ file.name }}</div>
 
-<div class="pghead">
-    <div>
-        <h1 class="pg">{{ file.name }}</h1>
-        <p class="pgsub">A file&rsquo;s own page. It shows exactly what the overlay on the hub shows; the overlay is for
-        browsing, this is for pointing at.</p>
-    </div>
-    <div class="pgact w-pgact">
-        <a class="tgl w-act" href="{{ hubUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to files</a>
-        {% if file.ownerUrl %}<a class="cta" href="{{ file.ownerUrl }}">Open {{ file.ownerLabel }} &rarr;</a>{% endif %}
-    </div>
-</div>
 
 <div class="grid g32">
     <div class="c">
-        <span class="tab"><span class="idx">FL&middot;D1</span>The original<span class="src">&middot; fetched through the permission check</span></span>
+        <span class="tab">The original<span class="src">&middot; fetched through the permission check</span></span>
         {# The ONLY place on the platform an original is served. It is not a path
            in the website; it is a route the app answers after asking the owning
            module whether this person may see the record.
@@ -64,7 +66,7 @@
     </div>
 
     <div class="c">
-        <span class="tab"><span class="idx">FL&middot;D2</span>What this file is</span>
+        <span class="tab">What this file is</span>
         <div class="rln"><span>Owner</span><span>{{ ui.owner(file) }}</span></div>
         <div class="rln"><span>Taken</span><span class="mono" style="font-size:11px">{{ file.takenAt ? (file.takenAt|date('D j M Y')|lower ~ ' · ' ~ file.takenAt|date('H:i')) : '—' }}</span></div>
         <div class="rln"><span>Arrived</span><span class="mono" style="font-size:11px">{{ file.arrivedAt|date('D j M Y')|lower }} &middot; {{ file.arrivedAt|date('H:i') }}</span></div>

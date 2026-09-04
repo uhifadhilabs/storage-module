@@ -12,20 +12,22 @@
 
 {% block title %}Where files go{% endblock %}
 
-{% block storage_page %}
-<div class="crumb"><a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / where files go</div>
+{% block shell_breadcrumbs %}<a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / where files go{% endblock %}
 
-<div class="pghead">
-    <div>
-        <h1 class="pg">Where files go</h1>
-        <p class="pgsub">The organisation keeps its files in one or more <b>places it has named</b>. This page says which
-        places those are, which module&rsquo;s files go where, and what is allowed in. It is written for whoever
-        administers the platform &mdash; nothing on it changes what a ranger sees, only where the bytes end up.</p>
-    </div>
-    <div class="pgact w-pgact">
-        <a class="tgl w-act" href="{{ hubUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to files</a>
-    </div>
-</div>
+{% block shell_page_title %}Where files go{% endblock %}
+
+{% block shell_page_subtitle %}
+    The organisation keeps its files in one or more <b>places it has named</b>. This page says which
+    places those are, which module&rsquo;s files go where, and what is allowed in. It is written for whoever
+    administers the platform &mdash; nothing on it changes what a ranger sees, only where the bytes end up.
+{% endblock %}
+
+{% block shell_page_actions %}
+    <a class="tgl w-act" href="{{ hubUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to files</a>
+{% endblock %}
+
+{% block storage_page %}
+
 
 <div class="f-say"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div><b>Only an administrator opens this page.</b> Seeing where files are kept is
 seeing something about every file at once, so it rides on the same permission as installing a module.</div></div>
@@ -48,7 +50,7 @@ seeing something about every file at once, so it rides on the same permission as
 
 <h2 class="zone">Which module&rsquo;s files go where</h2>
 <div class="c">
-    <span class="tab"><span class="idx">FL&middot;S1</span>The map<span class="src">&middot; one line per module</span></span>
+    <span class="tab">The map<span class="src">&middot; one line per module</span></span>
     {# A module does not choose a storage; the HOST tells it which named place to
        use, and the module writes there. That is the whole seam. #}
     <div class="f-map">
@@ -70,7 +72,7 @@ seeing something about every file at once, so it rides on the same permission as
 <h2 class="zone">How long things are kept, and what is allowed in</h2>
 <div class="grid g2">
     <div class="c">
-        <span class="tab"><span class="idx">FL&middot;S2</span>Keeping</span>
+        <span class="tab">Keeping</span>
         <div class="rln"><span>Evidence on any record</span><span class="mono acc" style="font-size:11px">kept, always</span></div>
         <div class="rln"><span>Small pictures</span><span class="mono" style="font-size:11px">re-makeable at any time, never precious</span></div>
         <div class="rln"><span>When a record is removed</span><span class="mono" style="font-size:11px">its files go with it, in the same breath</span></div>
@@ -81,7 +83,7 @@ seeing something about every file at once, so it rides on the same permission as
         administrator switches it on. Until then, kept means kept.</div>
     </div>
     <div class="c">
-        <span class="tab"><span class="idx">FL&middot;S3</span>What is allowed in</span>
+        <span class="tab">What is allowed in</span>
         <div class="rln"><span>Photographs</span><span class="mono" style="font-size:11px">{{ allowed.photos|join(' · ') ?: '—' }}</span></div>
         <div class="rln"><span>Documents</span><span class="mono" style="font-size:11px">{{ allowed.documents|join(' · ') ?: '—' }}</span></div>
         <div class="rln"><span>Tracks</span><span class="mono" style="font-size:11px">{{ allowed.tracks|join(' · ') ?: '—' }}</span></div>
@@ -97,7 +99,7 @@ seeing something about every file at once, so it rides on the same permission as
 </div>
 
 <div class="c" style="margin-top:20px">
-    <span class="tab"><span class="idx">FL&middot;S4</span>What an administrator can change here<span class="src">&middot; and what they cannot</span></span>
+    <span class="tab">What an administrator can change here<span class="src">&middot; and what they cannot</span></span>
     <div class="grid g2" style="margin-bottom:0">
         <div>
             <div class="rln"><span>Point the platform at another place</span><span class="chip acc">yes &mdash; in configuration</span></div>

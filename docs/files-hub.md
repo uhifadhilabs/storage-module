@@ -21,12 +21,19 @@ bytes are in, and whether the one ~400px picture was made. It knows nothing
 about observations or incidents and cannot: the files on it were handed over by
 the modules that own them, through [one seam](#putting-a-modules-files-on-the-hub).
 
-## What a host wires
+## What an installation wires
 
-The screens register themselves where **SecurityBundle**, **TwigBundle** and the
-host's **widget framework** (`Uhifadhi\Service\WidgetService` /
-`WidgetEndpoint`) are all present, and are simply absent otherwise — a host
-without one of them gets no half-working dashboard.
+The screens register themselves where **SecurityBundle** and **TwigBundle** are
+both present, and are simply absent otherwise — an installation without one of
+them gets no half-working dashboard.
+
+The **widget framework is no longer a condition**, because it is no longer
+optional: `uhifadhi/widget-module` is a hard requirement of this package. The hub
+IS a widget dashboard — the layout, the presets and the library are the screen
+rather than a decoration on it — so there was never a useful half of it. Where
+that used to be a `class_exists()` guess about classes an application might
+happen to carry, it is now a composer requirement, which is the same statement
+made somewhere it can be checked.
 
 **1 · Mount the routes** (the same file that mounts the serving route):
 
@@ -37,16 +44,17 @@ storage:
     type: attribute
 ```
 
-**2 · Point the settings page at the host's own administrator permission.** It
-defaults to `ROLE_ADMIN` so it works out of the box; a host with a permission
-catalogue should name the Modules permission instead, because seeing where files
-are kept is seeing something about every file at once:
+**2 · Point the settings page at the installation's own administrator
+permission.** It defaults to `ROLE_ADMIN` so it works out of the box; an
+installation with a permission catalogue (`uhifadhi/team-module`) should name the
+Modules permission instead, because seeing where files are kept is seeing
+something about every file at once:
 
 ```yaml
 # config/packages/storage.yaml
 storage:
     files:
-        settings_permission: 'modules.manage'   # default: ROLE_ADMIN
+        settings_permission: 'module.create'    # default: ROLE_ADMIN
         storage_label: 'Hetzner'                # what YOU call the place files go
         storage_location: 'Falkenstein, Germany'
         # enabled: false                        # to ship the storage without the screens
@@ -60,32 +68,42 @@ the adapter, and never invents a vendor.
 bundle's own `public/` — AssetMapper serves them as
 `bundles/uhifadhistorage/files.css` and `…/files.js`, content-versioned, no
 `assets:install` — and are loaded only by this bundle's own `base.html.twig`, so
-the host's `app.css` never references storage. The widget chrome (`.w-grid`,
-`.w-cell`, `.w-span-N`) is the host's and is already there.
+an installation's `app.css` never references storage. The widget chrome
+(`.w-grid`, `.w-cell`, `.w-span-N`) comes from `uhifadhi/widget-module`'s own
+stylesheet, which `base.html.twig` links for the same reason.
 
-## The sidebar line
+Optionally, one line in `assets/app.js` arms the library's **preview** and the
+picker's live filtering, for every widget surface in the installation at once.
+The page is whole without it — every action is a plain form post — and naming an
+AssetMapper namespace belongs to `importmap.php`, the one file a bundle may not
+write:
 
-The host's sidebar is hardcoded Twig; there is no extension point for a
-top-level entry, so **this is a host-side edit** and no file outside this
-repository has been changed. In `templates/layout.html.twig`, in the **System**
-group, **above Alerts**:
-
-```twig
-<div class="nav-hd">System</div>
-<a class="nav-item{{ _nav.files ? ' on' }}" href="{{ path('storage_files') }}">{{ ux_icon('lucide:image') }}<span>Files</span></a>
-<span class="nav-item off" title="Alerts — planned (workflow + audit roadmap)">{{ ux_icon('lucide:bell') }}<span>Alerts</span></span>
+```js
+import { initWidgetLibrary } from '@uhifadhi/widget-module/widgets.js';
+initWidgetLibrary();
 ```
 
-and in `src/Twig/SidebarExtension.php`'s `build()`:
+## The sidebar row
 
-```php
-'files' => str_starts_with($route, 'storage_files'),
-```
+**Nothing to wire.** The module contributes its own row through
+`uhifadhi/shell-module`'s nav seam (`Uhifadhi\Storage\Shell\FilesNavigation`,
+tagged `shell.nav_section`), so it appears when the module is installed and
+leaves when it is removed.
+
+This replaces two hand-edits in the application's own repository — a nav-item
+typed into `layout.html.twig` and a second edit in a Twig extension so the row
+lit up on the right pages — neither of which any test could see, and both of
+which every installation had to redo.
+
+The row is **absent for a stranger, never hidden**, and offered to everyone else:
+being signed in is the hub's whole gate, because every file is shown with its
+owner and every original is permission-checked on its way out, so the hub shows
+*less* to some people rather than being closed to them.
 
 **Why System and not Observatory** (the design left this open): the hub is
 org-wide, it is not an area tab, and it administers as much as it observes.
-Moving it to Observatory beside Performance is one line if the ruling goes the
-other way.
+Moving it to Observatory beside Performance is one constant
+(`FilesNavigation::SECTION`) if the ruling goes the other way.
 
 ## The screens
 
@@ -97,7 +115,7 @@ other way.
 | Remove a file | `POST /files/f/{key}/remove` | whoever the owning record says |
 | Where files go | `GET /files/settings` | `files.settings_permission` |
 
-The hub is a **widget dashboard on the host's framework**: thirteen widgets in
+The hub is a **widget dashboard on `uhifadhi/widget-module`**: thirteen widgets in
 five headed sections, and all five design directions ship as built-in presets
 (`a` contact sheet, `b` owner first, `c` the ledger, `d` by the day it was
 taken, `e` where the bytes are) beside the direction-neutral composition the
@@ -142,8 +160,8 @@ $services->set('patrol.file_source', PatrolFileSource::class)
 ```
 
 The tag is applied by hand because a reusable bundle is not autoconfigured; a
-**host's** own service carries `#[AutoconfigureTag(FileSourceInterface::TAG)]`
-on its own class instead.
+an **application's** own service carries
+`#[AutoconfigureTag(FileSourceInterface::TAG)]` on its own class instead.
 
 `FileEntry` is what a module hands over, and the fields are the contract:
 

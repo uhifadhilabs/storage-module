@@ -33,9 +33,10 @@
         "symfony/routing": "^7.3 || ^8.0",
         "symfony/security-core": "^7.3 || ^8.0",
         "symfony/security-csrf": "^7.3 || ^8.0",
-        "symfony/twig-bundle": "^7.3 || ^8.0",
         "symfony/uid": "^7.3 || ^8.0",
-        "twig/twig": "^3.12"
+        "twig/twig": "^3.12",
+        "uhifadhi/module-contracts": "^0.3",
+        "uhifadhi/widget-module": "^0.1"
     },
     "autoload": {
         "psr-4": {
@@ -44,25 +45,31 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Uhifadhi\\Storage\\Tests\\": "tests/",
-            "Uhifadhi\\Model\\": "tests/Fixtures/Uhifadhi/Model/",
-            "Uhifadhi\\Service\\": "tests/Fixtures/Uhifadhi/Service/"
+            "Uhifadhi\\Storage\\Tests\\": "tests/"
         }
     },
     "require-dev": {
+        "doctrine/doctrine-bundle": "^3.0",
         "friendsofphp/php-cs-fixer": "^3.95",
         "league/flysystem-async-aws-s3": "^3.0",
         "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^13.2",
+        "symfony/asset-mapper": "^7.3 || ^8.0",
         "symfony/browser-kit": "^7.3 || ^8.0",
         "symfony/css-selector": "^7.3 || ^8.0",
         "symfony/security-bundle": "^7.3 || ^8.0",
-        "symfony/security-http": "^7.3 || ^8.0"
+        "symfony/security-http": "^7.3 || ^8.0",
+        "symfony/twig-bundle": "^7.3 || ^8.0",
+        "symfony/ux-icons": "^2.20 || ^3.0",
+        "uhifadhi/shell-module": "^0.5",
+        "uhifadhi/team-module": "^0.4"
     },
     "suggest": {
         "ext-imagick": "Preferred thumbnail engine. Decodes HEIC/HEIF where the system ImageMagick was built with libheif; GD cannot.",
         "ext-gd": "Fallback thumbnail engine (JPEG/PNG/WebP/AVIF).",
-        "league/flysystem-async-aws-s3": "Required when a deployment selects the S3 adapter (storage.evidence.adapter: s3)."
+        "league/flysystem-async-aws-s3": "Required when a deployment selects the S3 adapter (storage.evidence.adapter: s3).",
+        "uhifadhi/shell-module": "The page frame the four Files screens render in, and the sidebar this module contributes its Files row to; without it the screens have no frame to extend.",
+        "symfony/twig-bundle": "Required to render the Files hub. Without Twig the bundle registers no screen at all and is storage machinery only — the named storages, the evidence API, the thumbnails and the serving route."
     },
     "scripts": {
         "cs:fix": "php-cs-fixer fix",
