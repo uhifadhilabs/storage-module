@@ -35,7 +35,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 /**
  * Smallest possible host app: framework + security + flysystem + storage. No
  * database and no doctrine anywhere — this bundle owns no entities, and that
- * absence is part of its charter (README §Charter).
+ * absence is part of its charter (docs/charter.md).
  *
  * The evidence store writes into a throwaway directory: the round-trip tests
  * assert that real bytes landed, so a mock filesystem would be testing itself.

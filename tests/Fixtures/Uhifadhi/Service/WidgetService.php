@@ -21,7 +21,7 @@ use Uhifadhi\Model\WidgetPreset;
  * THE HOST'S SERVICE, DOUBLED — signatures pinned, persistence in memory.
  *
  * The host's real WidgetService stores a person's layout in two Doctrine tables.
- * This bundle owns no entities and its suite has no database (README §Charter),
+ * This bundle owns no entities and its suite has no database (docs/charter.md),
  * so copying that class byte-for-byte the way the value objects beside it are
  * copied would mean dragging Doctrine and a Postgres service into a bundle whose
  * whole charter is that it has neither.
