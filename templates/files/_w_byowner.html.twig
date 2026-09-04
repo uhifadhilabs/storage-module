@@ -8,7 +8,7 @@
    decoration. #}
 {% import '@UhifadhiStorage/files/_ui.html.twig' as ui %}
 <div class="c" data-w="byowner">
-    <span class="tab"><span class="idx">FL&middot;03</span>The records that hold files<span class="src">&middot; the shape the model is actually in</span></span>
+    <span class="tab">The records that hold files<span class="src">&middot; the shape the model is actually in</span></span>
     {% for record in byOwner %}
         <div class="f-rec">
             <div class="hd">{{ ui.owner(record.files|first) }}<span class="ttl">{{ record.areaLabel ? record.areaLabel ~ ' · ' : '' }}{{ record.day|date('D j M Y')|lower }}</span><span class="n">{{ record.files|length }} file{{ record.files|length == 1 ? '' : 's' }}</span></div>

@@ -9,7 +9,7 @@
    so it sits under the day it was filed. #}
 {% import '@UhifadhiStorage/files/_ui.html.twig' as ui %}
 <div class="c" data-w="byday">
-    <span class="tab"><span class="idx">FL&middot;08</span>Day by day<span class="src">&middot; the day the picture was taken, not the day it uploaded</span></span>
+    <span class="tab">Day by day<span class="src">&middot; the day the picture was taken, not the day it uploaded</span></span>
     {% for group in byDay|slice(0, 8) %}
         <div class="f-day"><b>{{ group.day|date('D j M Y')|lower }}</b><span class="cnt">{{ group.files|length }} file{{ group.files|length == 1 ? '' : 's' }}</span></div>
         <div class="f-grid dense" data-f-grid>{%- for file in group.files -%}{{ ui.tile(file) }}{%- endfor -%}</div>

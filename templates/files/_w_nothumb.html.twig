@@ -11,7 +11,7 @@
 {% set queued = waiting|filter(f => f.thumbState.value == 'wait')|length %}
 {% set unmade = waiting|filter(f => f.thumbState.value == 'failed')|length %}
 <div class="c" data-w="nothumb">
-    <span class="tab"><span class="idx">FL&middot;06</span>Waiting for a small picture<span class="src">&middot; {{ queued }} in the queue &middot; {{ unmade }} could not be made</span></span>
+    <span class="tab">Waiting for a small picture<span class="src">&middot; {{ queued }} in the queue &middot; {{ unmade }} could not be made</span></span>
     {% for file in waiting|slice(0, 8) %}
         <div class="rln">
             <span style="display:flex;align-items:center;gap:9px">{{ ui.owner(file) }}<span class="f-note">{{ file.name }}</span></span>

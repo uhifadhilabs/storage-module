@@ -14,10 +14,12 @@
    this is where the promise is kept.
 
    WHERE THESE RULES CAME FROM. Nothing here restates the design system: the
-   plate (.c), the tab (.tab/.idx/.src), the chips (.chip), the tables (.tbl),
+   plate (.c), the tab (.tab/.src), the chips (.chip), the tables (.tbl),
    the caption (.use), the meta line (.rln), the KPI (.kpi) and the page
-   scaffold all come from uhifadhi.css, and every dashboard rule comes from
-   widgets.css. This file adds ONLY what a file hub needs and no other surface
+   scaffold all come from the shell's stylesheet, and every dashboard rule comes
+   from uhifadhi/widget-module's widget.css. The workshop's index chip (.idx) is
+   deliberately absent from that list: it is the design workspace's referencing
+   system, it never shipped anywhere else, and it no longer ships here. This file adds ONLY what a file hub needs and no other surface
    has: the thumbnail tile, the owner tag, the storage pills, the file overlay,
    the day rail and the usage bars.
 

@@ -8,7 +8,7 @@
    picture was taken. #}
 {% import '@UhifadhiStorage/files/_ui.html.twig' as ui %}
 <div class="c" data-w="recent">
-    <span class="tab"><span class="idx">FL&middot;02</span>Just arrived<span class="src">&middot; newest first, by the time they reached us</span></span>
+    <span class="tab">Just arrived<span class="src">&middot; newest first, by the time they reached us</span></span>
     <div class="f-grid" data-f-grid>
         {%- for file in recent -%}{{ ui.tile(file) }}{%- endfor -%}
     </div>
