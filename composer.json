@@ -35,8 +35,8 @@
         "symfony/security-csrf": "^7.3 || ^8.0",
         "symfony/uid": "^7.3 || ^8.0",
         "twig/twig": "^3.12",
-        "uhifadhi/module-contracts": "^0.3 || dev-main",
-        "uhifadhi/widget-module": "^0.1 || dev-main"
+        "uhifadhi/module-contracts": "^0.5",
+        "uhifadhi/widget-module": "^0.1"
     },
     "autoload": {
         "psr-4": {
@@ -61,8 +61,8 @@
         "symfony/security-http": "^7.3 || ^8.0",
         "symfony/twig-bundle": "^7.3 || ^8.0",
         "symfony/ux-icons": "^2.20 || ^3.0",
-        "uhifadhi/shell-module": "^0.5",
-        "uhifadhi/team-module": "^0.4"
+        "uhifadhi/shell-module": "^0.8",
+        "uhifadhi/team-module": "^0.8"
     },
     "suggest": {
         "ext-imagick": "Preferred thumbnail engine. Decodes HEIC/HEIF where the system ImageMagick was built with libheif; GD cannot.",

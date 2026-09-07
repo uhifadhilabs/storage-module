@@ -153,9 +153,31 @@ final class TestKernel extends Kernel
                 // The skeleton's own choice, mirrored so the SQL these bundles
                 // emit is exercised against the column names it will meet.
                 'naming_strategy' => 'doctrine.orm.naming_strategy.underscore',
-                // NO resolve_target_entities HERE, DELIBERATELY — team prepends
-                // it. If that ever stopped happening the schema would not build
-                // and this whole suite would say so at once.
+                // NO resolve_target_entities FOR THE USER CONTRACT HERE,
+                // DELIBERATELY — team prepends it, and this suite is the proof:
+                // the widget hub keeps a layout per PERSON and points at the
+                // contract to do it, so if that prepend ever stopped happening
+                // the schema would not build and this whole suite would say so
+                // at once.
+                //
+                // THE AREA CONTRACT IS THE HOST'S TO ANSWER, so this kernel — a
+                // host, minimally — answers it, exactly as a real installation
+                // does through uhifadhi/area-module. Team's Department carries a
+                // nullable area and points it at the platform's AreaInterface
+                // (module-contracts); its metadata cannot be built until that
+                // interface resolves to a concrete entity. This module owns no
+                // area, so it resolves to the stand-in host area below.
+                'resolve_target_entities' => [
+                    \Uhifadhi\ModuleContracts\Entity\AreaInterface::class => Fixtures\Area\HostArea::class,
+                ],
+                'mappings' => [
+                    'StorageTestArea' => [
+                        'type' => 'attribute',
+                        'dir' => __DIR__.'/Fixtures/Area',
+                        'prefix' => 'Uhifadhi\\Storage\\Tests\\Integration\\Fixtures\\Area',
+                        'is_bundle' => false,
+                    ],
+                ],
             ],
         ]);
 
