@@ -92,6 +92,16 @@
 .pgact .tgl{font-weight:600}
 .pgact .tgl svg,.pgact .cta svg{width:14px;height:14px;flex:none}
 
+/* THE KPI STRIP — PORTED FROM THE DESIGN'S `.dp-kstrip` (its widgets.css).
+   The four counts are ONE widget whose inner `.grid` must lay them out four
+   across — as many equal columns as fit, each at least 168px, wrapping below
+   that. The host shell's `.grid` is display:grid with a gap and NO columns, so
+   it defaults to a single column and the four counts stack full-width. This is
+   the design's own class name, shipped here the same way area-module and
+   incident-module ship it (they name their copy `.kstrip`); without it the KPI
+   strip is four stacked bands instead of a row. */
+.dp-kstrip{grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
+
 /* THE PREVIEW'S OWN VOCABULARY IS NOT HERE. The owner tag, the storage pills,
    the action links and the overlay moved to preview.css, which every surface
    that opens a file loads — this sheet is one of them, not their owner. See the

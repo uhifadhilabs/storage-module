@@ -20,7 +20,7 @@
         {% for module in modules %}
             <button type="button" class="f-fchip{{ filter.module == module.slug ? ' on' }}" data-f-filter="mod" data-f-value="{{ module.slug }}"><i class="{{ module.slug }}"></i>{{ module.label }}</button>
         {% endfor %}
-        {% if areas|length > 1 %}
+        {% if areas is not empty %}
             <span class="sep"></span>
             <span class="lbl">Area</span>
             <button type="button" class="f-fchip{{ filter.area is null ? ' on' }}" data-f-filter="area" data-f-value="">Every area</button>
