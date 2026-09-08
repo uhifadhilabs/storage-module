@@ -50,8 +50,27 @@
   --tx:rgb(var(--c-tx)); --fog:rgb(var(--c-fog)); --dim:rgb(var(--c-dim));
   --acc:rgb(var(--c-acc)); --accT:rgb(var(--c-accT));
   --ln:var(--c-ln); --ln2:var(--c-ln2); --raised:rgb(var(--c-raised));
+  /* The status triad the guard callouts, the thumbnail-state pills and the
+     danger button spend. Without these three aliases every one of those rules
+     resolves var(--ok|warn|fail) to nothing and falls back to the inherited
+     colour — a green callout goes grey, a red pill loses its warning. */
+  --ok:rgb(var(--c-ok)); --warn:rgb(var(--c-warn)); --fail:rgb(var(--c-fail));
   --shadow:0 18px 40px rgba(0,0,0,.28);
 }
+
+/* THE ROW LINE, AND ITS COLOUR HELPERS — PORTED FROM THE DESIGN'S GLOBAL SHEET.
+   The design keeps .rln and the .g/.w/.r/.d/.fog helpers in uhifadhi.css, its
+   global stylesheet. The host shell (uhifadhi/shell-module) does not re-ship
+   them, so a file card's every row — Owner, Taken, Size, the whole settings
+   page — would collapse to an unspaced block without this. Byte-faithful to the
+   design; spent in the module's own sheet because that is where the hub can be
+   sure of it. (The cleaner home is the host shell; area-module and team-module
+   ship their own copies for the same reason, so a hoist there would retire all
+   three.) */
+.rln{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;
+  padding:8px 2px;border-bottom:1px dashed color-mix(in srgb,var(--fog) 18%,transparent)}
+.rln:last-child{border:0}
+.g{color:var(--ok)}.w{color:var(--warn)}.r{color:var(--fail)}.d{color:var(--dim)}.fog{color:var(--fog)}
 
 /* THE PREVIEW'S OWN VOCABULARY IS NOT HERE. The owner tag, the storage pills,
    the action links and the overlay moved to preview.css, which every surface

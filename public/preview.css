@@ -33,6 +33,10 @@
   --tx:rgb(var(--c-tx)); --fog:rgb(var(--c-fog)); --dim:rgb(var(--c-dim));
   --acc:rgb(var(--c-acc)); --accT:rgb(var(--c-accT));
   --ln:var(--c-ln); --ln2:var(--c-ln2); --raised:rgb(var(--c-raised));
+  /* The status triad: the storage pill's local-disk dot, the thumbnail-state
+     pills (made/queued/failed) and the danger action all spend these. Unaliased,
+     they render with a broken colour on the host. */
+  --ok:rgb(var(--c-ok)); --warn:rgb(var(--c-warn)); --fail:rgb(var(--c-fail));
   --f-shadow:0 18px 40px rgba(0,0,0,.28);
 }
 
