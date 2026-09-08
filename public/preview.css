@@ -153,6 +153,18 @@
 .f-ovside .rln{font-size:11.5px}
 .f-ovside .rln .mono{font-size:10.5px}
 .f-ovside .val{max-width:58%;text-align:right;word-break:break-all}
+/* THE THIN SCROLLBAR THE OVERLAY SIDE SCROLLS ON — PORTED FROM THE DESIGN'S
+   GLOBAL SHEET (uhifadhi.css `.modal-scroll`). The overlay markup tags
+   `.f-ovside modal-scroll`, but the host shell does not re-ship `.modal-scroll`,
+   so without this the class is inert. The shell's global `::-webkit-scrollbar`
+   rule covers the visible result, but a used-but-not-shipped class is exactly the
+   drift this bundle pins against, so the rule ships here where the overlay can be
+   sure of it. */
+.modal-scroll{scrollbar-width:thin;scrollbar-color:var(--ln2) transparent}
+.modal-scroll::-webkit-scrollbar{width:10px;height:10px}
+.modal-scroll::-webkit-scrollbar-track{background:transparent}
+.modal-scroll::-webkit-scrollbar-thumb{background:var(--ln2);border-radius:8px;border:3px solid transparent;background-clip:content-box}
+.modal-scroll::-webkit-scrollbar-thumb:hover{background:var(--fog);background-clip:content-box}
 @media (max-width:900px){.f-ovbody{grid-template-columns:1fr}.f-ovside{border-left:0;border-top:1px solid var(--ln)}}
 
 /* [hidden] must beat a display the component sets itself — an arrow on a set of
