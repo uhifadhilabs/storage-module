@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Security;
 
 use Symfony\Component\Security\Core\User\UserInterface;
+use Uhifadhi\Storage\Service\EvidenceKey;
 
 /**
  * Collects the installed modules' voters and reaches one answer.
@@ -39,6 +40,13 @@ final class EvidenceAccessDecider
 
     public function mayRead(string $key, ?UserInterface $user): bool
     {
+        // A PREVIEW INHERITS ITS ORIGINAL'S READABILITY. A `.thumb.jpg` key names
+        // a generated preview that carries no record of its own — no module's
+        // voter claims it — so authorising one means authorising the evidence it
+        // previews. Without this every thumbnail is denied (deny-by-default on an
+        // unclaimed key) even where its original is freely readable.
+        $key = EvidenceKey::original($key);
+
         $claimed = false;
 
         foreach ($this->voters as $voter) {

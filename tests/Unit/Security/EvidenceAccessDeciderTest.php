@@ -113,6 +113,26 @@ final class EvidenceAccessDeciderTest extends TestCase
         self::assertTrue($decider->mayRead('observation/x/k.jpg.thumb.jpg', $this->user()));
     }
 
+    /**
+     * THE REAL BUG THIS GUARDS. An owning voter authorises by the EXACT stored
+     * key (it looks the evidence record up by path), and a `.thumb.jpg` preview
+     * carries no record of its own — so asked about the thumb key directly the
+     * voter refuses, and every thumbnail 404s even where its original is freely
+     * readable. The decider must resolve a preview to its original BEFORE asking.
+     * (Distinct from the prefix-voter case above, which grants either way and so
+     * cannot catch this.).
+     */
+    public function testAThumbnailIsAuthorisedAgainstItsOriginalKeyNotTheThumbKey(): void
+    {
+        $decider = new EvidenceAccessDecider([
+            $this->voterForExactKey('observation/x/k.jpg'),
+        ]);
+
+        self::assertTrue($decider->mayRead('observation/x/k.jpg.thumb.jpg', $this->user()));
+        self::assertTrue($decider->mayRead('observation/x/k.jpg', $this->user()));
+        self::assertFalse($decider->mayRead('observation/x/other.jpg', $this->user()));
+    }
+
     /** A voter that blows up must not be read as a grant. */
     public function testAVoterThatThrowsIsTreatedAsARefusal(): void
     {
@@ -148,6 +168,29 @@ final class EvidenceAccessDeciderTest extends TestCase
             public function mayRead(string $key, ?UserInterface $user): bool
             {
                 return $this->grants;
+            }
+        };
+    }
+
+    /**
+     * A voter that grants ONLY the exact key it was given — standing in for the
+     * real modules, which authorise by looking a record up by its stored path.
+     */
+    private function voterForExactKey(string $exact): EvidenceAccessVoterInterface
+    {
+        return new class($exact) implements EvidenceAccessVoterInterface {
+            public function __construct(private readonly string $exact)
+            {
+            }
+
+            public function claimsKey(string $key): bool
+            {
+                return str_starts_with($key, explode('/', $this->exact)[0].'/');
+            }
+
+            public function mayRead(string $key, ?UserInterface $user): bool
+            {
+                return $key === $this->exact;
             }
         };
     }

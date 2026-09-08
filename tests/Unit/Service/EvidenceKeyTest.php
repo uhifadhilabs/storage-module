@@ -52,6 +52,24 @@ final class EvidenceKeyTest extends TestCase
         self::assertSame('observation/x/k.jpg.thumb.jpg', EvidenceKey::thumb('observation/x/k.jpg'));
     }
 
+    /**
+     * The inverse: a preview key resolves back to the original it sits beside, so
+     * a `.thumb.jpg` can be authorised/resolved against the evidence it previews
+     * (which is the only thing that carries a record). Round-trips with thumb().
+     */
+    public function testTheOriginalOfAThumbnailStripsTheSuffix(): void
+    {
+        self::assertSame('observation/x/k.jpg', EvidenceKey::original('observation/x/k.jpg.thumb.jpg'));
+        self::assertTrue(EvidenceKey::isThumb('observation/x/k.jpg.thumb.jpg'));
+    }
+
+    /** A key that is not a preview is returned unchanged, and is not a thumb. */
+    public function testTheOriginalOfANonThumbnailKeyIsUnchanged(): void
+    {
+        self::assertSame('observation/x/k.jpg', EvidenceKey::original('observation/x/k.jpg'));
+        self::assertFalse(EvidenceKey::isThumb('observation/x/k.jpg'));
+    }
+
     /** @return iterable<string, array{string}> */
     public static function refusedKeys(): iterable
     {

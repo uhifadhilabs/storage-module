@@ -84,6 +84,24 @@ final class EvidenceKey
         return $key.self::THUMB_SUFFIX;
     }
 
+    /** Whether a key names a preview rather than the original it sits beside. */
+    public static function isThumb(string $key): bool
+    {
+        return str_ends_with($key, self::THUMB_SUFFIX);
+    }
+
+    /**
+     * The original a preview key points at — or the key unchanged when it is not
+     * a preview. A `.thumb.jpg` carries no record of its own, so authorising or
+     * resolving one means resolving the evidence it previews.
+     */
+    public static function original(string $key): string
+    {
+        return self::isThumb($key)
+            ? substr($key, 0, -\strlen(self::THUMB_SUFFIX))
+            : $key;
+    }
+
     public static function isValid(string $key): bool
     {
         if ('' === $key) {
