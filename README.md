@@ -4,6 +4,14 @@ The uhifadhi platform's file-storage machinery: named Flysystem storages, a
 private evidence API with a detected-MIME allowlist, thumbnails, and one
 authenticated route by which any of it comes back out.
 
+## Contents
+
+- [What it is](#what-it-is)
+- [Installation](#installation)
+- [Getting started](#getting-started)
+- [Learn more](#learn-more)
+- [License](#license)
+
 ## What it is
 
 Mechanism only. The bundle owns no entities, no migrations and no screens of a
@@ -13,13 +21,24 @@ route. Which record a file hangs off, and who may read it, stays with the module
 that wrote the key — see [the charter](docs/charter.md).
 
 On top of that machinery it ships one optional cross-module screen, the **Files
-hub** (`/files`), which is a dashboard on `uhifadhi/widget-module` — which is why
-that package is a hard requirement rather than a suggestion.
+hub** (`/files`), which is a dashboard on the widget machinery `ShellBundle`
+ships — which is why the core, `uhifadhi/uhifadhi`, is a hard requirement rather
+than a suggestion.
 
 ## Installation
 
 ```console
 composer require uhifadhi/storage-module
+```
+
+The core is not on Packagist yet, so the installation names where it comes from
+— a `repositories` entry in a dependency's own `composer.json` is ignored, and
+this line belongs in the application's:
+
+```json
+"repositories": [
+    { "type": "vcs", "url": "https://github.com/uhifadhilabs/uhifadhi" }
+]
 ```
 
 The recipe registers the bundles and writes `config/packages/storage.yaml` and
@@ -28,17 +47,17 @@ lines:
 
 ```php
 League\FlysystemBundle\FlysystemBundle::class => ['all' => true],
-Uhifadhi\Bundle\ShellBundle\Widget\ShellBundle::class => ['all' => true],
+Uhifadhi\Bundle\ShellBundle\ShellBundle::class => ['all' => true],
 Uhifadhi\Storage\UhifadhiStorageBundle::class => ['all' => true],
 ```
 
 The bundle **prepends** its own `flysystem` block, so an installation never
 writes `config/packages/flysystem.yaml` to get an evidence store.
 
-The widget module keeps its layouts in two tables of its own, so after
-installing run your own `doctrine:migrations:diff` and `migrate` — and see that
-module's recipe for the single `resolve_target_entities` line an installation
-without `uhifadhi/team-module` has to write.
+`ShellBundle` keeps its widget layouts in two tables of its own, so after
+installing run your own `doctrine:migrations:diff` and `migrate`. It answers
+`Uhifadhi\Contracts\Entity\UserInterface` from `TeamBundle`, in the same
+package, so an installation writes no `resolve_target_entities` line.
 
 ## Getting started
 
@@ -82,7 +101,7 @@ optional and layered on from there.
 - [docs/charter.md](docs/charter.md) — what belongs in this bundle and what stays in the owning module.
 - [docs/configuration.md](docs/configuration.md) — the full `storage.yaml` reference: local and S3-compatible object storage, and why visibility is not a setting.
 - [docs/evidence-api.md](docs/evidence-api.md) — `EvidenceStorage`, the key rules, the three exceptions, validation and thumbnails.
-- [docs/serving-and-permissions.md](docs/serving-and-permissions.md) — the serving route and the permission seam: voters, deny-by-default, and enumeration.
+- [docs/serving-and-permissions.md](docs/serving-and-permissions.md) — the serving route and the permission contribution point: voters, deny-by-default, and enumeration.
 - [docs/files-hub.md](docs/files-hub.md) — the cross-module `/files` screens: what an installation wires, the widgets, `FileSourceInterface`, and removal.
 - [docs/adopting-in-a-module.md](docs/adopting-in-a-module.md) — step-by-step adoption for patrol-module and incident-module.
 - [docs/service-reference.md](docs/service-reference.md) — service ids, classes, the tag and the route.

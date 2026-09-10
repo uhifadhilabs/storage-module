@@ -36,7 +36,7 @@ final class StubEvidenceVoter implements EvidenceAccessVoterInterface
     public function mayRead(string $key, ?UserInterface $user): bool
     {
         // Even a claimed key needs somebody to be signed in — a module that
-        // forgot this check is the reason the seam passes the user along.
+        // forgot this check is the reason the voter is passed the user at all.
         return null !== $user && str_starts_with($key, 'granted/');
     }
 }

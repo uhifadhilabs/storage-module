@@ -11,7 +11,7 @@ deleted.
 It does ship **one cross-module screen**, the Files hub at `/files`, and that is
 not an exception to the rule above: the hub owns no record either. It is a
 reading of what the installed modules handed over through `FileSourceInterface`,
-laid out on `uhifadhi/widget-module`. Turn every module off and the hub is empty
+laid out on the widget machinery `ShellBundle` ships. Turn every module off and the hub is empty
 rather than wrong.
 
 What lives here is the part every module would otherwise re-implement, slightly
@@ -27,4 +27,4 @@ differently each time:
 
 The last row is the important one. Storage cannot know what an observation is,
 so it does not try: it asks the module that wrote the key. See
-[the permission seam](serving-and-permissions.md).
+[the permission contribution point](serving-and-permissions.md).

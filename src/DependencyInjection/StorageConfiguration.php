@@ -41,7 +41,7 @@ use Uhifadhi\Storage\Model\EvidenceConstraints;
  * up serving a carcass photograph to the open internet.
  *
  * There is no public_url key either, for the same reason: a public URL would
- * route around the permission seam entirely.
+ * route around the permission contribution point entirely.
  *
  * Static so the tree is testable with a plain Processor and shared verbatim by
  * the bundle's configure() and its prependExtension().
@@ -61,7 +61,7 @@ final class StorageConfiguration
             ->addDefaultsIfNotSet()
             ->children()
                 ->arrayNode('files')
-                    ->info('The Files hub — the cross-module screen at /files. It needs SecurityBundle and Twig; where either is absent the screens are simply not registered. The widget framework is no longer a condition — uhifadhi/widget-module is a hard requirement, because the hub IS a widget dashboard.')
+                    ->info('The Files hub — the cross-module screen at /files. It needs SecurityBundle and Twig; where either is absent the screens are simply not registered. The widget machinery is not a condition: it ships in the core, which this bundle requires, because the hub IS a widget dashboard.')
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('enabled')
@@ -69,7 +69,7 @@ final class StorageConfiguration
                             ->defaultTrue()
                         ->end()
                         ->scalarNode('settings_permission')
-                            ->info('What “Where files go” asks for. Seeing where files are kept is seeing something about every file at once, so it rides on the deployment’s administrator permission — set it to the installation’s own Modules permission where there is one (`module.create`, with uhifadhi/team-module).')
+                            ->info('What “Where files go” asks for. Seeing where files are kept is seeing something about every file at once, so it rides on the deployment’s administrator permission — set it to the installation’s own Modules permission where there is one (`module.create`, with the core’s TeamBundle).')
                             ->defaultValue('ROLE_ADMIN')
                             ->cannotBeEmpty()
                         ->end()

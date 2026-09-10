@@ -11,11 +11,6 @@ $finder = (new PhpCsFixer\Finder())
     // precisely to be a file that is NOT a photograph; formatting it as though
     // it were our code would be tidying up the thing under test.
     ->exclude('Fixtures/images')
-    // NOTHING ELSE IS EXCLUDED ANY MORE. This finder used to skip
-    // tests/Fixtures/Uhifadhi, where copies of the old application's widget
-    // classes stood in for a framework this package did not depend on. They are
-    // gone: uhifadhi/widget-module is a hard requirement now, so the contract is
-    // checked by the compiler rather than by a copy somebody has to keep in step.
     ;
 
 return (new PhpCsFixer\Config())

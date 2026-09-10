@@ -21,10 +21,11 @@ jobs:
         php: ['8.4', '8.5']
 
     # A real database for the integration suite, and the charter is intact:
-    # this bundle still owns no entities. The database belongs to
-    # uhifadhi/widget-module — the Files hub is a widget dashboard, one person's
-    # arrangement of one is a stored row, and the bundle that owns the row owns
-    # its schema. Plain Postgres: no geometry is stored here.
+    # this bundle owns no entities. The database is the core's — the Files hub is
+    # a widget dashboard, one person's arrangement of one is a stored row, and
+    # the bundle that owns the row owns its schema. Plain Postgres: the kernel
+    # boots the registry, the shell and the team, none of which stores geometry,
+    # and AreaBundle — the one core bundle that does — is not in it.
     #
     # The bytes are a different thing entirely and still go where they always
     # did: the local adapter writes them into a temp directory during the tests.

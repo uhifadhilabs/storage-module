@@ -1,4 +1,4 @@
-# Serving, and the permission seam
+# Serving, and the permission contribution point
 
 ```
 GET /storage/evidence/{key}

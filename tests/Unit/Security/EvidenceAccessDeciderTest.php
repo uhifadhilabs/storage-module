@@ -20,7 +20,7 @@ use Uhifadhi\Storage\Security\EvidenceAccessDecider;
 use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
 
 /**
- * The permission seam. This bundle stores bytes; it has no idea what an
+ * The permission contribution point. This bundle stores bytes; it has no idea what an
  * observation is, who a ranger reports to, or which department may look at a
  * carcass photograph. Only the OWNING module knows, so only the owning module
  * decides — and if no module speaks up for a key, nobody sees it.

@@ -24,17 +24,15 @@ use Uhifadhi\Bundle\ShellBundle\Model\NavSection;
 /**
  * THE ONE ROW THIS MODULE PUTS IN THE SIDEBAR.
  *
- * Files is the platform-wide row the shell's nav seam is documented to expect
- * from a module: "the rare platform-wide row that belongs to nobody's area".
+ * Files is the platform-wide row the shell's navigation contribution point is
+ * documented to expect from a module: "the rare platform-wide row that belongs
+ * to nobody's area".
  * The hub is org-wide by construction — it is every module's files across every
  * area at once — so it is not an area tab and could not be one.
  *
- * IT REPLACES A HAND-EDIT. Before the fleet had a shell, putting this row in
- * the sidebar meant opening the application's own layout.html.twig and typing a
- * nav-item beside the others, then remembering a second edit in a Twig
- * extension so the row lit up on the right pages. Two edits, in somebody else's
- * repository, that no test could see. This is the same row, stated by the
- * module that owns the screen, and it leaves when the module does.
+ * THE ROW IS STATED BY THE MODULE THAT OWNS THE SCREEN, so it arrives with the
+ * package and leaves with it — no edit in the application's own layout, and
+ * nothing in somebody else's repository for a test here to be blind to.
  *
  * SIGNED IN IS THE WHOLE GATE, and that is the hub's own rule rather than a
  * shortcut: every file is shown with its owner, every ORIGINAL is

@@ -18,22 +18,18 @@ use Uhifadhi\Bundle\ShellBundle\Widget\Model\WidgetDom;
 use Uhifadhi\Storage\Widget\FilesWidgets;
 
 /**
- * /files/widgets hands uhifadhi/widget-module's library component the whole contract.
+ * /files/widgets hands the shell's library component the whole contract.
  *
- * "The library works" is uhifadhi/widget-module's own suite to prove; what this
- * bundle must not get wrong is "we handed the component everything it asks for,
- * and our URLs are the ones it will call".
+ * "The library works" is ShellBundle's own suite to prove; what this bundle must
+ * not get wrong is "we handed the component everything it asks for, and our URLs
+ * are the ones it will call".
  *
- * THE COMPONENT IS THE REAL ONE NOW. It used to be stubbed down to its contract
- * in this suite's own fixtures, a copy somebody had to keep in step with a
- * template in another repository. Rendering the real
- * `@Shell/widget/_library.html.twig` means a parameter this bundle
- * forgets to pass is a Twig error HERE, and — more to the point — a parameter
- * the component starts asking for is one too. Three assertions in this file
- * changed the day the stub came out, and every one of them was the double
- * having quietly invented an answer the framework does not give.
+ * THE COMPONENT IS THE REAL ONE. Rendering
+ * `@Shell/widget/_library.html.twig` means a parameter this bundle forgets to
+ * pass is a Twig error HERE, and — more to the point — a parameter the component
+ * starts asking for is one too.
  */
-final class WidgetLibrarySeamTest extends FilesTestCase
+final class WidgetLibraryContractTest extends FilesTestCase
 {
     public function testTheLibraryHandsTheComponentTheWholeContract(): void
     {

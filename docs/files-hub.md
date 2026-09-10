@@ -19,7 +19,7 @@ dies. Two consequences run through every line of this feature:
 The hub adds exactly the two facts no module page knows — which named place the
 bytes are in, and whether the one ~400px picture was made. It knows nothing
 about observations or incidents and cannot: the files on it were handed over by
-the modules that own them, through [one seam](#putting-a-modules-files-on-the-hub).
+the modules that own them, through [one interface](#putting-a-modules-files-on-the-hub).
 
 ## What an installation wires
 
@@ -27,13 +27,10 @@ The screens register themselves where **SecurityBundle** and **TwigBundle** are
 both present, and are simply absent otherwise — an installation without one of
 them gets no half-working dashboard.
 
-The **widget framework is no longer a condition**, because it is no longer
-optional: `uhifadhi/widget-module` is a hard requirement of this package. The hub
+The **widget machinery is not a condition**: it ships in `ShellBundle`, inside
+the core this package requires, so it is present wherever this bundle is. The hub
 IS a widget dashboard — the layout, the presets and the library are the screen
-rather than a decoration on it — so there was never a useful half of it. Where
-that used to be a `class_exists()` guess about classes an application might
-happen to carry, it is now a composer requirement, which is the same statement
-made somewhere it can be checked.
+rather than a decoration on it — so there is no useful half of it to register.
 
 **1 · Mount the routes** (the same file that mounts the serving route):
 
@@ -46,7 +43,7 @@ storage:
 
 **2 · Point the settings page at the installation's own administrator
 permission.** It defaults to `ROLE_ADMIN` so it works out of the box; an
-installation with a permission catalogue (`uhifadhi/team-module`) should name the
+installation with a permission catalogue (the core's `TeamBundle`) should name the
 Modules permission instead, because seeing where files are kept is seeing
 something about every file at once:
 
@@ -69,7 +66,7 @@ bundle's own `public/` — AssetMapper serves them as
 `bundles/uhifadhistorage/files.css` and `…/files.js`, content-versioned, no
 `assets:install` — and are loaded only by this bundle's own `base.html.twig`, so
 an installation's `app.css` never references storage. The widget chrome
-(`.w-grid`, `.w-cell`, `.w-span-N`) comes from `uhifadhi/widget-module`'s own
+(`.w-grid`, `.w-cell`, `.w-span-N`) comes from `ShellBundle`'s widget
 stylesheet, which `base.html.twig` links for the same reason.
 
 Optionally, one line in `assets/app.js` arms the library's **preview** and the
@@ -79,21 +76,18 @@ AssetMapper namespace belongs to `importmap.php`, the one file a bundle may not
 write:
 
 ```js
-import { initWidgetLibrary } from '@uhifadhi/widget-module/widgets.js';
+import { initWidgetLibrary } from '@uhifadhi/shell-bundle/widgets.js';
 initWidgetLibrary();
 ```
 
 ## The sidebar row
 
 **Nothing to wire.** The module contributes its own row through
-`uhifadhi/shell-module`'s nav seam (`Uhifadhi\Storage\Shell\FilesNavigation`,
-tagged `shell.nav_section`), so it appears when the module is installed and
-leaves when it is removed.
-
-This replaces two hand-edits in the application's own repository — a nav-item
-typed into `layout.html.twig` and a second edit in a Twig extension so the row
-lit up on the right pages — neither of which any test could see, and both of
-which every installation had to redo.
+`ShellBundle`'s navigation contribution point
+(`Uhifadhi\Storage\Shell\FilesNavigation`, tagged `shell.nav_section`), so it
+appears when the module is installed and leaves when it is removed. There is
+nothing to type into an application's own layout, and nothing for an
+installation to redo.
 
 The row is **absent for a stranger, never hidden**, and offered to everyone else:
 being signed in is the hub's whole gate, because every file is shown with its
@@ -115,7 +109,7 @@ Moving it to Observatory beside Performance is one constant
 | Remove a file | `POST /files/f/{key}/remove` | whoever the owning record says |
 | Where files go | `GET /files/settings` | `files.settings_permission` |
 
-The hub is a **widget dashboard on `uhifadhi/widget-module`**: thirteen widgets in
+The hub is a **widget dashboard on `ShellBundle`'s widget machinery**: thirteen widgets in
 five headed sections, and all five design directions ship as built-in presets
 (`a` contact sheet, `b` owner first, `c` the ledger, `d` by the day it was
 taken, `e` where the bytes are) beside the direction-neutral composition the
@@ -236,7 +230,7 @@ the twin of the matching `html` entry in `files.widgets.js`, and each partial's
 header says so; `public/files.css` is the twin of the design's `files.css`.
 Change one and change the other, or the library's preview stops being the
 widget. `FilesWidgetsTest` fails if a partial loses that header, and
-`WidgetLibrarySeamTest` fails if the library and the hub stop rendering the same
+`WidgetLibraryContractTest` fails if the library and the hub stop rendering the same
 partial with the same context.
 
 **Open questions the design left, answered as defaults** — each overridable

@@ -15,13 +15,12 @@
 
    WHERE THESE RULES CAME FROM. Nothing here restates the design system: the
    plate (.c), the tab (.tab/.src), the chips (.chip), the tables (.tbl),
-   the caption (.use), the meta line (.rln), the KPI (.kpi) and the page
-   scaffold all come from the shell's stylesheet, and every dashboard rule comes
-   from uhifadhi/widget-module's widget.css. The workshop's index chip (.idx) is
-   deliberately absent from that list: it is the design workspace's referencing
-   system, it never shipped anywhere else, and it no longer ships here. This file adds ONLY what a file hub needs and no other surface
-   has: the thumbnail tile, the owner tag, the storage pills, the file overlay,
-   the day rail and the usage bars.
+   the caption (.use), the colour words (.g/.w/.r/.d/.fog), the KPI (.kpi) and
+   the page scaffold all come from the shell's design-system stylesheet, and
+   every dashboard rule comes from the shell's widget.css. This file adds ONLY
+   what a file hub needs and no other surface has: the meta line (.rln), the
+   thumbnail tile, the owner tag, the storage pills, the file overlay, the day
+   rail and the usage bars.
 
    WHERE THEY BELONG WHEN PORTED. The hub is the user-facing surface of
    uhifadhi/storage-module, so these rules ship in the MODULE's stylesheet

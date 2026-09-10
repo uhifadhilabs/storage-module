@@ -18,7 +18,7 @@ use Uhifadhi\Storage\Model\FileEntry;
 use Uhifadhi\Storage\Model\FileGuard;
 
 /**
- * The seam by which an OWNING MODULE puts its files on the hub.
+ * The contribution point by which an OWNING MODULE puts its files on the hub.
  *
  * The hub is a cross-module registry with ZERO knowledge of observations,
  * incidents or permits — it cannot have any, because knowing what a photograph
@@ -70,7 +70,7 @@ interface FileSourceInterface
     /**
      * ONE RECORD'S FILES, asked for by that record's own uuid.
      *
-     * The seam another module needs when it is SHOWING a record it does not own —
+     * What another module needs when it is SHOWING a record it does not own —
      * the incidents report flow drawing the photographs of the observation it is
      * filed from, so the filer can see what they are filing about. Walking
      * {@see FileRegistry::all()} and string-matching a uuid inside somebody
@@ -79,7 +79,7 @@ interface FileSourceInterface
      * module that knows.
      *
      * $source is the token the ASKING module was handed on the wire (the report
-     * seam's `source=patrol`), matched against {@see moduleSlug()} by
+     * flow's `source=patrol`), matched against {@see moduleSlug()} by
      * {@see FileRegistry::forRecord()}; a source that is asked about a module
      * that is not its own returns nothing.
      *

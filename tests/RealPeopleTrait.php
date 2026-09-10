@@ -21,13 +21,11 @@ use Uhifadhi\Bundle\TeamBundle\Enum\TeamRoleEnum;
 /**
  * THE PEOPLE THE SUITE SIGNS IN, AND THE SCHEMA THEY LIVE IN.
  *
- * They are REAL ACCOUNTS, not InMemoryUser, and that changed when this module
- * joined the fleet. The Files hub is a widget dashboard; a dashboard layout
- * belongs to a PERSON; the row storing one carries a NOT NULL foreign key to
- * that person's own table. An in-memory user has no row to point at, so the
- * moment the hub started riding the real widget framework instead of a double,
- * it started needing accounts that exist. The class is
- * uhifadhi/team-module's, which is what an installation has.
+ * They are REAL ACCOUNTS, not InMemoryUser. The Files hub is a widget dashboard;
+ * a dashboard layout belongs to a PERSON; the row storing one carries a NOT NULL
+ * foreign key to that person's own table. An in-memory user has no row to point
+ * at, so a hub riding the shell's real widget machinery needs accounts that
+ * exist. The class is TeamBundle's, which is what an installation has.
  *
  * A PASSWORD THAT DOES NOT CHANGE BETWEEN REQUESTS. Symfony's ContextListener
  * refreshes the token on every request and refuses if the user has changed

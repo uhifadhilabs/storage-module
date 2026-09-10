@@ -22,18 +22,18 @@ use Uhifadhi\Contracts\Entity\AreaInterface;
  * points at, present in this suite only so the schema can be built.
  *
  * Storage owns no entities and maps no tables, but its test kernel installs
- * uhifadhi/team-module for the account class, and team's Department now carries
- * a nullable association to the platform's {@see AreaInterface} (module-contracts).
- * A real installation resolves that interface to its own area class through
- * `doctrine.orm.resolve_target_entities`, and uhifadhi/area-module is the
- * package that answers it. This suite installs neither area-module nor the seam,
- * so — exactly as team's own test kernel does — it plays the host itself: a real
+ * TeamBundle for the account class and RegistryBundle for the catalogue, and
+ * both point associations at {@see AreaInterface}. An installation resolves that
+ * interface through `doctrine.orm.resolve_target_entities`, and AreaBundle is
+ * the package that answers it. This kernel installs AreaBundle deliberately not
+ * at all — storage draws nothing from an area, and AreaBundle brings PostGIS
+ * geometry and screens with it — so the kernel plays the host itself: a real
  * entity implementing the interface, resolved to by the kernel alone.
  *
- * It mirrors team-module's own fixture area: a sequential id the association is
- * built on, and a public UUIDv7 for addressing. The interface asks for nothing
- * but identity, a name and a public address, so everything past those is the
- * host's business and is deliberately absent.
+ * A sequential id the association is built on, and a public UUIDv7 for
+ * addressing. The interface asks for nothing but identity, a name and a public
+ * address, so everything past those is the host's business and is deliberately
+ * absent.
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'fixture_host_area')]

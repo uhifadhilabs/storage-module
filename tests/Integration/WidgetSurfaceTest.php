@@ -22,12 +22,10 @@ use Uhifadhi\Storage\Widget\FilesWidgets;
 /**
  * THE FILES HUB IS A DECLARED SURFACE OF THE REAL WIDGET FRAMEWORK.
  *
- * Before this module joined the fleet it compiled against doubles of the old
- * application's widget classes, which meant the one thing it could never prove
- * was the thing that matters: that an installation booting uhifadhi/widget-module
- * finds this module's dashboard in the registry. A surface nothing registers is
- * a surface `widget:prune` reads as an orphan — it would delete every layout
- * anybody ever saved of the Files hub, and the module would never notice.
+ * What matters is that an installation booting ShellBundle finds this module's
+ * dashboard in the registry. A surface nothing registers is a surface
+ * `widget:prune` reads as an orphan — it would delete every layout anybody ever
+ * saved of the Files hub, and the module would never notice.
  *
  * So the assertion is about the REGISTRY rather than about the catalogue: the
  * catalogue is a value object any unit test can build, and being findable is the

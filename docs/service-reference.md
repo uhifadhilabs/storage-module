@@ -21,8 +21,8 @@ Tags:
 |---|---|
 | `uhifadhi.evidence_access_voter` | a module's voter, answering for its own key prefix |
 | `storage.file_source` | a module's `FileSourceInterface`, putting its files on the hub |
-| `uhifadhi.widget_surface` | `storage.widget_surface` — the `files` dashboard, declared into `uhifadhi/widget-module` |
-| `shell.nav_section` | `storage.navigation` — the sidebar row, declared into `uhifadhi/shell-module` |
+| `uhifadhi.widget_surface` | `storage.widget_surface` — the `files` dashboard, declared into `ShellBundle`'s widget registry |
+| `shell.nav_section` | `storage.navigation` — the sidebar row, declared into `ShellBundle`'s navigation |
 
 Routes: `storage_evidence_show` — registered only when SecurityBundle is present.
 The hub's own eleven (`storage_files`, `storage_files_widgets` and the eight

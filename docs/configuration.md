@@ -7,7 +7,7 @@ Two things are deliberately **not** configurable: there is no `visibility` key
 and no `public_url` key. The evidence storage is private by construction,
 because "private unless someone remembers to say so" is how deployments end up
 serving field photographs to the open internet, and a public URL would route
-around the permission seam entirely.
+around the permission contribution point entirely.
 
 ## Local (default)
 

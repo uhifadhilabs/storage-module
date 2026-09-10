@@ -88,7 +88,7 @@ final readonly class StorageSettings
      * Which module's files go where.
      *
      * A module never names a place: it asks for "the place my files go" and the
-     * host answers. That is the whole seam, and it is what lets one deployment
+     * host answers. That is the whole contract, and it is what lets one deployment
      * run on a disk and another on object storage without a single change inside
      * patrols or incidents.
      *

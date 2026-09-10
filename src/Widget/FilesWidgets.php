@@ -20,7 +20,7 @@ use Uhifadhi\Bundle\ShellBundle\Widget\Model\WidgetPreset;
 use Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceInterface;
 
 /**
- * The Files surface, as uhifadhi/widget-module reads it.
+ * The Files surface, as the shell's widget registry reads it.
  *
  * THE TWIN OF THE DESIGN'S OWN DECLARATION. Every id, label, span, note and
  * preset layout below is transcribed from the settled design's

@@ -16,7 +16,7 @@ namespace Uhifadhi\Storage\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * The seam by which an OWNING MODULE decides who may see its evidence.
+ * The contribution point by which an OWNING MODULE decides who may see its evidence.
  *
  * This bundle stores bytes. It does not know what an observation is, which
  * department a ranger belongs to, or whether a carcass photograph is

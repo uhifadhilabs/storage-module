@@ -291,7 +291,7 @@ final class FileRegistryTest extends TestCase
     // ── ONE RECORD'S FILES, ASKED OF THE MODULE THAT OWNS IT ────────────────
 
     /**
-     * THE SEAM ANOTHER MODULE SHOWS A RECORD THROUGH. The incidents report flow
+     * HOW ANOTHER MODULE SHOWS A RECORD IT DOES NOT OWN. The incidents report flow
      * draws the photographs of the observation it is filed from, so the filer can
      * see what they are filing about — and it gets them by ASKING the owning
      * module, never by walking every file in the deployment and string-matching a
@@ -322,7 +322,7 @@ final class FileRegistryTest extends TestCase
     }
 
     /**
-     * THE TOKEN ON THE WIRE IS NOT ALWAYS THE SLUG. A report seam sends
+     * THE TOKEN ON THE WIRE IS NOT ALWAYS THE SLUG. A report flow sends
      * "patrol"; the module calls itself "patrols". Two bundles may not name each
      * other's constants, and a card must not go blank over a plural.
      */
@@ -446,7 +446,7 @@ final class FileRegistryTest extends TestCase
 }
 
 /**
- * A module, reduced to the seam.
+ * A module, reduced to the interface the hub asks it through.
  */
 final class StubSource implements FileSourceInterface
 {

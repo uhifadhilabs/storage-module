@@ -24,6 +24,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Uhifadhi\Bundle\ShellBundle\Contract\NavigationSourceInterface;
+use Uhifadhi\Bundle\ShellBundle\ShellBundle;
 use Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceInterface;
 use Uhifadhi\Storage\Controller\EvidenceController;
 use Uhifadhi\Storage\Controller\FilesController;
@@ -278,13 +279,11 @@ final class UhifadhiStorageBundle extends AbstractBundle
          * page's removal form needs a CSRF manager. Twig, because the screens are
          * templates.
          *
-         * THE WIDGET FRAMEWORK IS NO LONGER A CONDITION, because it is no longer
-         * optional: uhifadhi/widget-module is a hard requirement of this package.
-         * The hub IS a widget dashboard — the layout, the presets and the library
-         * are the screen rather than a decoration on it — and there was never a
-         * useful half of that. What used to be a class_exists() guard was a guess
-         * about whether an application happened to carry classes of its own; a
-         * composer requirement is the same statement made where it can be checked.
+         * THE WIDGET MACHINERY IS NOT A CONDITION. It ships in ShellBundle,
+         * inside the core this package requires, so it is present wherever this
+         * bundle is. The hub IS a widget dashboard — the layout, the presets and
+         * the library are the screen rather than a decoration on it — and there
+         * is no useful half of that to register.
          */
         $files = self::stringKeyed($config['files'] ?? null);
         $wanted = false !== ($files['enabled'] ?? true);
@@ -326,31 +325,22 @@ final class UhifadhiStorageBundle extends AbstractBundle
                 ->tag(WidgetSurfaceInterface::TAG);
 
             /*
-             * THE ONE SIDEBAR ROW, REGISTERED ONLY WHERE THERE IS A SHELL.
-             * uhifadhi/shell-module is a suggestion of this bundle rather than a
-             * requirement, and a service whose class implements an interface
-             * nobody installed is a container that will not compile. The guard
-             * costs nothing — neither ::class constant loads a class — and it is
-             * what keeps the shell soft.
-             *
-             * THE TAG STRING IS WRITTEN OUT rather than read from
-             * ShellBundle::NAV_TAG, for the same reason: reading the
-             * constant would load the shell's bundle class, and this file has to
-             * be readable in an installation that has no shell at all.
+             * THE ONE SIDEBAR ROW. ShellBundle ships in the core this package
+             * requires, so {@see NavigationSourceInterface} is always there and
+             * there is nothing to guard on; the tag comes from the shell's own
+             * constant rather than a string typed twice.
              *
              * Inside the `$screens` guard, because a row is a door: an
              * installation that turned the hub off has no /files to open, and a
              * row leading nowhere is worse than no row.
              */
-            if (interface_exists(NavigationSourceInterface::class)) {
-                $services->set('storage.navigation', FilesNavigation::class)
-                    ->args([
-                        service('router'),
-                        service('security.token_storage'),
-                        service('request_stack'),
-                    ])
-                    ->tag('shell.nav_section');
-            }
+            $services->set('storage.navigation', FilesNavigation::class)
+                ->args([
+                    service('router'),
+                    service('security.token_storage'),
+                    service('request_stack'),
+                ])
+                ->tag(ShellBundle::NAV_TAG);
 
             $services->set(FilesController::class)
                 ->args([
@@ -386,9 +376,9 @@ final class UhifadhiStorageBundle extends AbstractBundle
         $container->registerForAutoconfiguration(EvidenceAccessVoterInterface::class)
             ->addTag('uhifadhi.evidence_access_voter');
 
-        // The same courtesy for the hub's seam, with the same caveat: a module
-        // shipped as a reusable bundle is not autoconfigured and still tags its
-        // source by hand. See FileSourceInterface.
+        // The same courtesy for the hub's file sources, with the same caveat: a
+        // module shipped as a reusable bundle is not autoconfigured and still
+        // tags its source by hand. See FileSourceInterface.
         $container->registerForAutoconfiguration(FileSourceInterface::class)
             ->addTag(FileSourceInterface::TAG);
     }

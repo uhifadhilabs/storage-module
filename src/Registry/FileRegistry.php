@@ -105,8 +105,8 @@ final class FileRegistry
      *
      * $source is the token the asking module was handed on the wire and it is
      * matched against {@see FileSourceInterface::moduleSlug()}. Both spellings a
-     * seam realistically carries are accepted — the module's slug ("patrols") and
-     * the singular token the report seam sends ("patrol") — because the two
+     * wire realistically carries are accepted — the module's slug ("patrols") and
+     * the singular token the report flow sends ("patrol") — because the two
      * bundles may not name each other's constants and a card must not go blank
      * over a plural.
      *
@@ -146,7 +146,7 @@ final class FileRegistry
 
     /**
      * Whether a wire token names this module. "patrols" is the slug; "patrol" is
-     * what the report seam sends. A card must not go blank over a plural.
+     * what the report flow sends. A card must not go blank over a plural.
      */
     private static function names(string $slug, string $token): bool
     {

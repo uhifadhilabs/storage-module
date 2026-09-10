@@ -90,7 +90,7 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(EvidenceStorage::class, 'storage.evidence_storage');
 
     /*
-     * The permission seam. The iterator is EMPTY on a host that has installed
+     * The permission contribution point. The iterator is EMPTY on a host that has installed
      * no module yet — and an empty iterator denies everything, which is the
      * intended reading (EvidenceAccessDecider).
      */
@@ -101,7 +101,7 @@ return static function (ContainerConfigurator $container): void {
     /*
      * THE CROSS-MODULE FILE REGISTRY — the Files hub's whole supply.
      *
-     * The same shape as the permission seam above and for the same reason: this
+     * The same shape as the permission contribution point above and for the same reason: this
      * bundle has no idea what an observation or an incident is, so the files on
      * the hub are the ones OWNING MODULES handed over, each already carrying its
      * owner. The iterator is empty on a host that has installed no module yet,

@@ -21,21 +21,18 @@ use Uhifadhi\Storage\Widget\FilesWidgets;
 /**
  * THE SUITE DECLARES THIS MODULE'S SURFACES AND NOBODY ELSE'S.
  *
- * {@see TestKernel} boots uhifadhi/team-module for one reason: an account class
- * the stored layouts can be resolved against. Team also happens to be a module
- * with dashboards of its own, so it tags two surfaces into the widget registry —
- * and every one it adds or renames would otherwise rewrite the expected value of
- * a test about THIS bundle. That is a dependency's release notes deciding
- * whether this suite is green.
+ * {@see TestKernel} boots TeamBundle for one reason: an account class the stored
+ * layouts can be resolved against. Team also happens to be a module with
+ * dashboards of its own, so it tags surfaces into the widget registry — and
+ * every one it adds or renames would otherwise rewrite the expected value of a
+ * test about THIS bundle. That is a dependency's release notes deciding whether
+ * this suite is green.
  *
  * So the tag is cleared off everything outside this module's own namespace. The
  * rule is by namespace, not by service id: a surface team ships tomorrow is
- * excluded for the same reason as the two it ships today, and the assertion that
- * the registry holds the Files hub stays an assertion about storage rather than
- * about a version number.
- *
- * Copied in discipline from uhifadhi/widget-module's own suite, which needs the
- * same isolation for the same reason and names it OnlyThisSuitesSurfacesPass.
+ * excluded for the same reason as the ones it ships today, and the assertion
+ * that the registry holds the Files hub stays an assertion about storage rather
+ * than about a version number.
  */
 final class OnlyThisModulesSurfacesPass implements CompilerPassInterface
 {

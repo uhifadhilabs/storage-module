@@ -16,12 +16,9 @@ namespace Uhifadhi\Storage\Tests\Functional;
 /**
  * THE FILES ROW IN THE SHELL'S SIDEBAR.
  *
- * This used to be documentation: "open the application's layout.html.twig, type
- * a nav-item beside the others, then remember a second edit in a Twig extension
- * so the row lights up". Two hand-edits in somebody else's repository, which no
- * test could see and every installation had to redo. It is a service tagged into
- * the shell's nav seam now, so it is a thing that can be asserted — and these
- * are the assertions.
+ * The row is a service tagged into the shell's navigation contribution point,
+ * so it is a thing that can be asserted rather than a hand-edit in somebody
+ * else's repository that no test could see — and these are the assertions.
  */
 final class SidebarRowTest extends FilesTestCase
 {
