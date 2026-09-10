@@ -142,10 +142,13 @@ final class TestKernel extends Kernel
                 ],
             ],
             'firewalls' => [
-                'main' => ['lazy' => true, 'provider' => 'team_user_provider'],
+                // No form_login: the suite signs people in with loginUser(), and
+                // an installation's own sign-in screens are TeamBundle's, mounted
+                // by the application. Nothing here renders one.
+                'main' => ['lazy' => true, 'provider' => 'team_user_provider', 'user_checker' => 'team.user_checker'],
             ],
             'role_hierarchy' => [
-                'ROLE_ADMIN' => ['ROLE_AREAS', 'ROLE_MODULES', 'ROLE_TEAM'],
+                'ROLE_ADMIN' => ['ROLE_USER'],
                 'ROLE_SUPER_ADMIN' => ['ROLE_ADMIN', 'ROLE_ALLOWED_TO_SWITCH'],
             ],
         ]);
