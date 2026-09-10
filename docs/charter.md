@@ -33,7 +33,7 @@ differently each time:
 |---|---|
 | The named storages (`storage.evidence`) | The entity that records a key |
 | `store()` / `stream()` / `delete()` / `exists()` | Deciding *when* to call them |
-| The MIME allowlist and size cap | Narrowing them, if a deployment must |
+| The MIME allowlist and size cap | Narrowing or widening them, if a deployment must |
 | Thumbnail generation | Displaying the thumbnail |
 | The authenticated serving route | The **voter** that says who may read a key |
 

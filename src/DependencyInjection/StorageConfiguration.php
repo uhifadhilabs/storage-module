@@ -108,7 +108,7 @@ final class StorageConfiguration
                             ->min(1)
                         ->end()
                         ->arrayNode('allowed_mime_types')
-                            ->info('The DETECTED types accepted. A deployment may narrow this; it may not widen it usefully, because a thumbnail engine still has to read the result.')
+                            ->info('The DETECTED types accepted. A deployment may narrow this, or widen it to what a case genuinely carries (application/pdf, say): a widened type is keyed by its own extension, and simply gets no thumbnail unless an engine can read it.')
                             ->scalarPrototype()->cannotBeEmpty()->end()
                             ->defaultValue(EvidenceConstraints::DEFAULT_MIME_TYPES)
                             ->requiresAtLeastOneElement()

@@ -26,6 +26,13 @@ storage:
         allowed_mime_types: ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp']
 ```
 
+`allowed_mime_types` may be narrowed, or widened to what a case genuinely
+carries — `application/pdf` for a signed document, say. A widened type is stored
+under its own extension (`.pdf`), and simply gets no thumbnail unless an engine
+can read it. A type nothing can name an extension for is refused by `store()`
+rather than stored under a guessed one; see
+[the evidence API](evidence-api.md#validation).
+
 ## S3-compatible object storage
 
 Hetzner Object Storage is the production target. It is S3-compatible, so the

@@ -45,18 +45,24 @@ its own for a caller that wants to validate before committing to an upload:
 ```php
 $constraints->validate($file);              // throws EvidenceRejectedException
 $constraints->allows('image/heic');         // bool
-EvidenceConstraints::extensionFor($mime);   // 'jpg' | 'png' | 'heic' | 'heif' | 'webp'
+EvidenceConstraints::extensionFor($mime);   // 'jpg' for image/jpeg, 'pdf' for application/pdf, …
 ```
 
-These are **deliberately the semantics patrol-module already applies** in
-`PhotoSyncService::guardFile()` / `extensionFor()` — the same three checks in
-the same order, the same five types, the same "detected type, never the
+The three checks are **deliberately the semantics patrol-module already
+applies** in `PhotoSyncService::guardFile()` — the same checks in the same
+order, the same five default types, the same "detected type, never the
 filename" rule, and the same tolerance of a file whose type cannot be detected
 at all. Patrol can adopt this class and reject exactly what it rejected before.
 
 The extension is derived from the detected type because a filename is
 attacker-controlled text, and letting it choose is how an upload directory ends
-up holding a `.php`.
+up holding a `.php`. It is looked up in `symfony/mime`'s table, so a deployment
+that widens `allowed_mime_types` gets the right one — a signed PDF is keyed
+`.pdf`, not `.jpg`. A type that is allowed but that nothing can name an
+extension for is **refused** (`EvidenceRejectedException`, reason
+`unsupported_type`) rather than stored under a guessed one. A file whose type
+cannot be detected at all is still accepted, and is keyed `.bin` — the
+extension of the `application/octet-stream` it is recorded as.
 
 ## Thumbnails
 
