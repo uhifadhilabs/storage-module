@@ -170,10 +170,11 @@ final class TestKernel extends Kernel
                 // resolves to a concrete entity. An installation gets that from
                 // AreaBundle, which brings PostGIS geometry and area screens
                 // this module draws nothing from; storage owns no area either,
-                // so the lightest honest answer is the stand-in host area below.
-                // {@see Fixtures\Area\HostArea} — and {@see AreaBundle}'s own
-                // tests/Integration/Web/WebKernel.php, which plays the same move
-                // in the other direction for the user contract.
+                // so the lightest honest answer is the stand-in host area in
+                // Fixtures/Area/HostArea.php. AreaBundle's own
+                // tests/Integration/Web/WebKernel.php plays the same move in the
+                // other direction, answering the user contract with a HostUser
+                // fixture rather than booting TeamBundle.
                 'resolve_target_entities' => [
                     \Uhifadhi\Contracts\Entity\AreaInterface::class => Fixtures\Area\HostArea::class,
                 ],
