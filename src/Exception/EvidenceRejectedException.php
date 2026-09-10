@@ -59,4 +59,20 @@ final class EvidenceRejectedException extends \RuntimeException
             ['mimeType' => $mimeType],
         );
     }
+
+    /**
+     * On the allowlist, yet nothing knows a file extension for it. The same
+     * reason as unsupportedType() deliberately: to a caller this is still
+     * "that type cannot be stored here, and retrying will not change it", and
+     * a new reason would need a mapping in every module that already answers
+     * these three.
+     */
+    public static function unnameableType(string $mimeType): self
+    {
+        return new self(
+            RejectionReasonEnum::UnsupportedType,
+            'This deployment allows that type, but no file extension is known for it.',
+            ['mimeType' => $mimeType],
+        );
+    }
 }

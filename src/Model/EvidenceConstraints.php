@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Model;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Mime\MimeTypes;
 use Uhifadhi\Storage\Exception\EvidenceRejectedException;
 
 /**
@@ -114,16 +115,35 @@ final readonly class EvidenceConstraints
      * filename is attacker-controlled text, and letting it choose the extension
      * is how an upload directory ends up holding a ".php".
      *
-     * The fall-through to "jpg" is patrol's, kept verbatim.
+     * The type is looked up in symfony/mime's table, whose getExtensions()
+     * returns "the extensions for the given MIME type in decreasing order of
+     * preference" (MimeTypesInterface) — so the first entry is the answer, and
+     * the table already gives 'jpg' for image/jpeg, 'heic' for image/heic and
+     * 'pdf' for application/pdf.
+     * https://symfony.com/doc/current/components/mime.html#guessing-the-mime-type
+     *
+     * No hand-written map sits in front of it: every type in the default
+     * allowlist gets the extension this platform wants from the table itself,
+     * and EvidenceConstraintsTest pins each one, so a table change fails the
+     * build rather than quietly renaming tomorrow's evidence.
+     *
+     * A type this deployment allows but that nothing can name is REFUSED —
+     * guessing one is how a widened allowlist would key a signed PDF ".jpg".
+     *
+     * @throws EvidenceRejectedException
      */
     public static function extensionFor(?string $mimeType): string
     {
-        return match ($mimeType) {
-            'image/png' => 'png',
-            'image/heic' => 'heic',
-            'image/heif' => 'heif',
-            'image/webp' => 'webp',
-            default => 'jpg',
-        };
+        // An undetectable type is accepted by the guard above and recorded by
+        // EvidenceStorage as application/octet-stream; the key says the same
+        // rather than claiming to be a photograph.
+        $mimeType ??= 'application/octet-stream';
+
+        $extensions = MimeTypes::getDefault()->getExtensions($mimeType);
+        if ([] === $extensions) {
+            throw EvidenceRejectedException::unnameableType($mimeType);
+        }
+
+        return $extensions[0];
     }
 }

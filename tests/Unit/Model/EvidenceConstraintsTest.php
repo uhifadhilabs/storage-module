@@ -143,14 +143,51 @@ final class EvidenceConstraintsTest extends TestCase
 
     public function testTheExtensionComesFromTheDetectedTypeNeverTheFilename(): void
     {
-        // Same mapping as patrol's extensionFor(): an attacker-controlled
-        // filename is how an upload directory ends up holding a ".php".
+        // An attacker-controlled filename is how an upload directory ends up
+        // holding a ".php". These five are the default allowlist, pinned
+        // because the extension of a stored key is permanent: a change in what
+        // symfony/mime answers first must fail the build rather than silently
+        // rename tomorrow's evidence.
         self::assertSame('png', EvidenceConstraints::extensionFor('image/png'));
         self::assertSame('heic', EvidenceConstraints::extensionFor('image/heic'));
         self::assertSame('heif', EvidenceConstraints::extensionFor('image/heif'));
         self::assertSame('webp', EvidenceConstraints::extensionFor('image/webp'));
         self::assertSame('jpg', EvidenceConstraints::extensionFor('image/jpeg'));
-        // Patrol's match() falls through to 'jpg'; so does this one.
-        self::assertSame('jpg', EvidenceConstraints::extensionFor(null));
+    }
+
+    /**
+     * A deployment that widens the allowlist to the signed document a money
+     * case carries must get a ".pdf": the extension names what the bytes are,
+     * for every allowed type and not only the images.
+     */
+    public function testAWidenedTypeIsKeyedByItsOwnExtension(): void
+    {
+        self::assertSame('pdf', EvidenceConstraints::extensionFor('application/pdf'));
+        self::assertSame('gpx', EvidenceConstraints::extensionFor('application/gpx+xml'));
+    }
+
+    /**
+     * A type nothing can name an extension for is refused outright, so no file
+     * is ever stored under an extension that misdescribes it.
+     */
+    public function testATypeNothingCanNameIsRefusedRatherThanGuessed(): void
+    {
+        try {
+            EvidenceConstraints::extensionFor('application/x-uhifadhi-nonesuch');
+            self::fail('An unnameable type was given an extension anyway.');
+        } catch (EvidenceRejectedException $exception) {
+            self::assertSame(RejectionReasonEnum::UnsupportedType, $exception->reason);
+            self::assertSame('application/x-uhifadhi-nonesuch', $exception->details['mimeType'] ?? null);
+        }
+    }
+
+    /**
+     * An undetectable type is still accepted by the guard, so it still needs a
+     * key: it takes the extension of the type it is recorded as,
+     * application/octet-stream, rather than a claim to be a photograph.
+     */
+    public function testAnUndetectableTypeIsKeyedAsOpaqueBytes(): void
+    {
+        self::assertSame('bin', EvidenceConstraints::extensionFor(null));
     }
 }
