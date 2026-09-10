@@ -25,44 +25,44 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Symfony\UX\Icons\UXIconsBundle;
 use Symfony\UX\StimulusBundle\StimulusBundle;
-use Uhifadhi\Shell\UhifadhiShellBundle;
+use Uhifadhi\Bundle\RegistryBundle\RegistryBundle;
+use Uhifadhi\Bundle\ShellBundle\ShellBundle;
+use Uhifadhi\Bundle\TeamBundle\Entity\User;
+use Uhifadhi\Bundle\TeamBundle\TeamBundle;
 use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Service\EvidenceStorage;
 use Uhifadhi\Storage\Tests\Integration\Fixtures\StubEvidenceVoter;
 use Uhifadhi\Storage\Tests\Integration\Fixtures\StubFileSource;
 use Uhifadhi\Storage\UhifadhiStorageBundle;
-use Uhifadhi\Team\Entity\User;
-use Uhifadhi\Team\UhifadhiTeamBundle;
-use Uhifadhi\Widget\UhifadhiWidgetBundle;
 
 /**
  * The smallest installation this bundle can live in: framework + twig +
- * doctrine + security + flysystem, the shell the four Files screens render
- * through and the widget framework the hub IS, talking to a REAL database
- * (STORAGE_TEST_DATABASE_URL, see phpunit.dist.xml).
+ * doctrine + security + flysystem, and three of the core's five bundles — the
+ * registry, the shell the four Files screens render through and whose widget
+ * machinery the hub IS, and the team the accounts come from — talking to a REAL
+ * database (STORAGE_TEST_DATABASE_URL, see phpunit.dist.xml).
  *
- * IT HAS A DATABASE NOW, AND THE CHARTER DID NOT CHANGE. Storage still owns no
- * entities — the photo records stay in the modules that own them, and nothing
- * under src/ maps a table. What arrived with uhifadhi/widget-module is a
- * database this bundle does not write to and cannot see: the hub is a widget
- * dashboard, one person's arrangement of a dashboard is a stored row, and the
- * bundle that owns that row owns its schema. The suite needs a real one because
- * doubling it is exactly what this fleet-join removed.
+ * IT HAS A DATABASE AND THE CHARTER IS INTACT. Storage owns no entities — the
+ * photo records stay in the modules that own them, and nothing under src/ maps a
+ * table. The schema is the core's: the hub is a widget dashboard, one person's
+ * arrangement of one is a stored row, and the bundle that owns the row owns its
+ * schema. The suite needs a real database because doubling that row is exactly
+ * what depending on the core removes.
  *
- * IT INSTALLS uhifadhi/team-module FOR THE ACCOUNT CLASS. Widget points every
- * stored layout at `Uhifadhi\ModuleContracts\Entity\UserInterface` and cannot
- * build a schema until an installation resolves it. Resolving it to a REAL
- * account class rather than to a stub means the suite proves what an
- * installation actually does — team states the resolution from its own bundle,
- * so there is no `resolve_target_entities` block here and its absence is the
- * assertion.
+ * IT INSTALLS TeamBundle FOR THE ACCOUNT CLASS. The shell points every stored
+ * layout at `Uhifadhi\Contracts\Entity\UserInterface` and cannot build a schema
+ * until an installation resolves it. Resolving it to a REAL account class rather
+ * than to a stub means the suite proves what an installation actually does —
+ * TeamBundle states the resolution from its own bundle, so there is no
+ * `resolve_target_entities` line for the user contract here and its absence is
+ * the assertion.
  *
- * IT INSTALLS TEAM FOR THE ACCOUNT CLASS AND NOTHING ELSE. Team is also a
- * module with dashboards, and its two surfaces would land in the widget
- * registry beside this module's own; {@see OnlyThisModulesSurfacesPass} keeps
- * them out, so what this suite asserts about the registry stays about STORAGE
- * rather than about a dependency's release notes.
+ * IT INSTALLS TEAM FOR THE ACCOUNT CLASS AND NOTHING ELSE. Team is also a module
+ * with dashboards, and its surfaces would land in the widget registry beside
+ * this module's own; {@see OnlyThisModulesSurfacesPass} keeps them out, so what
+ * this suite asserts about the registry stays about STORAGE rather than about a
+ * dependency's release notes.
  *
  * The evidence store writes into a throwaway directory: the round-trip tests
  * assert that real bytes landed, so a mock filesystem would be testing itself.
@@ -87,11 +87,14 @@ final class TestKernel extends Kernel
         yield new UXIconsBundle();
         yield new DoctrineBundle();
         yield new SecurityBundle();
-        yield new UhifadhiShellBundle();
-        // Hard-required: the hub is a widget surface, not a page with widgets on it.
-        yield new UhifadhiWidgetBundle();
+        // The catalogue and the per-area ledger the team's own screens read, and
+        // the bundle TeamBundle requires.
+        yield new RegistryBundle();
+        // The page frame the screens extend, and the widget machinery the hub is:
+        // the hub is a widget surface, not a page with widgets on it.
+        yield new ShellBundle();
         // For the account class every stored layout is keyed by, and nothing else.
-        yield new UhifadhiTeamBundle();
+        yield new TeamBundle();
         yield new FlysystemBundle();
         yield new UhifadhiStorageBundle();
     }
@@ -154,21 +157,25 @@ final class TestKernel extends Kernel
                 // emit is exercised against the column names it will meet.
                 'naming_strategy' => 'doctrine.orm.naming_strategy.underscore',
                 // NO resolve_target_entities FOR THE USER CONTRACT HERE,
-                // DELIBERATELY — team prepends it, and this suite is the proof:
-                // the widget hub keeps a layout per PERSON and points at the
-                // contract to do it, so if that prepend ever stopped happening
-                // the schema would not build and this whole suite would say so
-                // at once.
+                // DELIBERATELY — TeamBundle prepends it, and this suite is the
+                // proof: the widget hub keeps a layout per PERSON and points at
+                // the contract to do it, so if that prepend ever stopped
+                // happening the schema would not build and this whole suite
+                // would say so at once.
                 //
-                // THE AREA CONTRACT IS THE HOST'S TO ANSWER, so this kernel — a
-                // host, minimally — answers it, exactly as a real installation
-                // does through uhifadhi/area-module. Team's Department carries a
-                // nullable area and points it at the platform's AreaInterface
-                // (module-contracts); its metadata cannot be built until that
-                // interface resolves to a concrete entity. This module owns no
-                // area, so it resolves to the stand-in host area below.
+                // THE AREA CONTRACT IS ANSWERED HERE BECAUSE AreaBundle IS NOT
+                // IN THIS KERNEL. The registry's ledger and the team's
+                // Department both point at `Uhifadhi\Contracts\Entity\
+                // AreaInterface`, and their metadata cannot be built until it
+                // resolves to a concrete entity. An installation gets that from
+                // AreaBundle, which brings PostGIS geometry and area screens
+                // this module draws nothing from; storage owns no area either,
+                // so the lightest honest answer is the stand-in host area below.
+                // {@see Fixtures\Area\HostArea} — and {@see AreaBundle}'s own
+                // tests/Integration/Web/WebKernel.php, which plays the same move
+                // in the other direction for the user contract.
                 'resolve_target_entities' => [
-                    \Uhifadhi\ModuleContracts\Entity\AreaInterface::class => Fixtures\Area\HostArea::class,
+                    \Uhifadhi\Contracts\Entity\AreaInterface::class => Fixtures\Area\HostArea::class,
                 ],
                 'mappings' => [
                     'StorageTestArea' => [
@@ -212,10 +219,10 @@ final class TestKernel extends Kernel
             EvidenceStorage::class => 'storage.evidence_storage',
             FileRegistry::class => 'storage.file_registry',
             StubFileSource::class => StubFileSource::class,
-            \Uhifadhi\Widget\Registry\WidgetSurfaceRegistry::class => 'widget.surfaces',
-            \Uhifadhi\Widget\Service\WidgetService::class => 'widget.service',
-            \Uhifadhi\Widget\Service\WidgetEndpoint::class => 'widget.endpoint',
-            \Uhifadhi\Team\Repository\UserRepository::class => \Uhifadhi\Team\Repository\UserRepository::class,
+            \Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceRegistry::class => 'shell.widget.surfaces',
+            \Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetService::class => 'shell.widget.service',
+            \Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetEndpoint::class => 'shell.widget.endpoint',
+            \Uhifadhi\Bundle\TeamBundle\Repository\UserRepository::class => \Uhifadhi\Bundle\TeamBundle\Repository\UserRepository::class,
         ] as $class => $serviceId) {
             $container->services()->alias('test_public.'.$class, $serviceId)->public();
         }
@@ -229,8 +236,10 @@ final class TestKernel extends Kernel
         $routes->import('@UhifadhiStorageBundle/src/Controller/', 'attribute');
 
         // The front door every installation has — the crumb on every Files
-        // screen points at it, and a link to nowhere is a broken page.
-        $routes->import('@UhifadhiShellBundle/src/Controller/', 'attribute');
+        // screen points at it, and a link to nowhere is a broken page. The shell
+        // ships its welcome route as a RESOURCE it never loads; an application
+        // imports it, and this kernel is an application.
+        $routes->import(ShellBundle::ROUTES);
     }
 
     public function build(ContainerBuilder $container): void

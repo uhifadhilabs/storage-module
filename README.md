@@ -28,7 +28,7 @@ lines:
 
 ```php
 League\FlysystemBundle\FlysystemBundle::class => ['all' => true],
-Uhifadhi\Widget\UhifadhiWidgetBundle::class => ['all' => true],
+Uhifadhi\Bundle\ShellBundle\Widget\ShellBundle::class => ['all' => true],
 Uhifadhi\Storage\UhifadhiStorageBundle::class => ['all' => true],
 ```
 

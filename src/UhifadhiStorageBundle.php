@@ -23,7 +23,8 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
-use Uhifadhi\Shell\Contract\NavigationSourceInterface;
+use Uhifadhi\Bundle\ShellBundle\Contract\NavigationSourceInterface;
+use Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceInterface;
 use Uhifadhi\Storage\Controller\EvidenceController;
 use Uhifadhi\Storage\Controller\FilesController;
 use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
@@ -33,7 +34,6 @@ use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
 use Uhifadhi\Storage\Shell\FilesNavigation;
 use Uhifadhi\Storage\Twig\FilesExtension;
 use Uhifadhi\Storage\Widget\FilesWidgets;
-use Uhifadhi\Widget\Registry\WidgetSurfaceInterface;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -311,7 +311,7 @@ final class UhifadhiStorageBundle extends AbstractBundle
              * what keeps the shell soft.
              *
              * THE TAG STRING IS WRITTEN OUT rather than read from
-             * UhifadhiShellBundle::NAV_TAG, for the same reason: reading the
+             * ShellBundle::NAV_TAG, for the same reason: reading the
              * constant would load the shell's bundle class, and this file has to
              * be readable in an installation that has no shell at all.
              *
@@ -335,8 +335,8 @@ final class UhifadhiStorageBundle extends AbstractBundle
                     service('storage.file_registry'),
                     service('storage.files_surface'),
                     service('storage.settings'),
-                    service('widget.service'),
-                    service('widget.endpoint'),
+                    service('shell.widget.service'),
+                    service('shell.widget.endpoint'),
                     service('router'),
                     service('security.token_storage'),
                     service('security.authorization_checker'),

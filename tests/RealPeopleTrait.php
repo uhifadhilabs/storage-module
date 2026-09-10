@@ -15,8 +15,8 @@ namespace Uhifadhi\Storage\Tests;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
-use Uhifadhi\Team\Entity\User;
-use Uhifadhi\Team\Enum\TeamRoleEnum;
+use Uhifadhi\Bundle\TeamBundle\Entity\User;
+use Uhifadhi\Bundle\TeamBundle\Enum\TeamRoleEnum;
 
 /**
  * THE PEOPLE THE SUITE SIGNS IN, AND THE SCHEMA THEY LIVE IN.

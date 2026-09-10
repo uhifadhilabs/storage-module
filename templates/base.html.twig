@@ -4,17 +4,15 @@
    the hub's vocabulary loads only where the hub renders and the preview overlay
    is included exactly once per page.
 
-   THE FRAME IS THE SHELL'S (uhifadhi/shell-module), not this module's. Before
-   the fleet had a shell, these pages extended a `layout.html.twig` the
-   application was expected to provide, and typed their own `<div class="page">`
-   — which is why the page furniture below moved out: the trail, the page head
-   and the flashes are the frame's sockets now, and a module that types its own
-   copies is a module that drifts from every other screen in the installation.
+   THE FRAME IS THE SHELL'S (ShellBundle, in the core), not this module's. The
+   trail, the page head and the flashes are the frame's sockets, and a module
+   that types its own copies is a module that drifts from every other screen in
+   the installation.
 
-   THE WIDGET MODULE'S SHEET IS NOT OPTIONAL. The hub IS a widget dashboard, so
+   THE SHELL'S WIDGET SHEET IS NOT OPTIONAL. The hub IS a widget dashboard, so
    `.w-grid`, `.w-cell`, `.w-span-*` and the whole library chrome are drawn by
-   that bundle's stylesheet, which its own header says must be linked by the page
-   rendering it. Without it the grid has nothing declaring a span and every
+   the shell's widget stylesheet, which its own header says must be linked by the
+   page rendering it. Without it the grid has nothing declaring a span and every
    widget renders one column wide.
 
    Ordered shell → widget → preview → hub, weakest to strongest: this module's
@@ -26,11 +24,11 @@
    bundles/<BundleName>" — and under AssetMapper those assets are automatically
    content-versioned. So public/files.css is served as
    bundles/uhifadhistorage/files.css with a digest, no assets:install. #}
-{% extends '@UhifadhiShell/page.html.twig' %}
+{% extends '@Shell/page.html.twig' %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset(constant('Uhifadhi\\Widget\\UhifadhiWidgetBundle::STYLESHEET')) }}">
+    <link rel="stylesheet" href="{{ asset(constant('Uhifadhi\\Bundle\\ShellBundle\\ShellBundle::WIDGET_STYLESHEET')) }}">
     {# The PREVIEW's vocabulary next: it belongs to the shareable component, not
        to the hub, and another module's page loads exactly this one file without
        files.css. The hub is one of its consumers, so it loads it the same way. #}

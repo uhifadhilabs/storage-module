@@ -27,16 +27,16 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Uid\Uuid;
 use Twig\Environment;
-use Uhifadhi\ModuleContracts\Entity\UserInterface as Person;
+use Uhifadhi\Bundle\ShellBundle\Widget\Model\WidgetDom;
+use Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetEndpoint;
+use Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetService;
+use Uhifadhi\Contracts\Entity\UserInterface as Person;
 use Uhifadhi\Storage\Model\FileFilter;
 use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Removal\FileRemovalInterface;
 use Uhifadhi\Storage\Service\FilesSurface;
 use Uhifadhi\Storage\Service\StorageSettings;
 use Uhifadhi\Storage\Widget\FilesWidgets;
-use Uhifadhi\Widget\Model\WidgetDom;
-use Uhifadhi\Widget\Service\WidgetEndpoint;
-use Uhifadhi\Widget\Service\WidgetService;
 
 /**
  * The Files hub: every photograph, document and track this organisation holds,

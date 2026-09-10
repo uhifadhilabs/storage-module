@@ -17,9 +17,9 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Uhifadhi\Shell\Contract\NavigationSourceInterface;
-use Uhifadhi\Shell\Model\NavItem;
-use Uhifadhi\Shell\Model\NavSection;
+use Uhifadhi\Bundle\ShellBundle\Contract\NavigationSourceInterface;
+use Uhifadhi\Bundle\ShellBundle\Model\NavItem;
+use Uhifadhi\Bundle\ShellBundle\Model\NavSection;
 
 /**
  * THE ONE ROW THIS MODULE PUTS IN THE SIDEBAR.

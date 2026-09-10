@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Tests\Integration;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceRegistry;
+use Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetEndpoint;
+use Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetService;
 use Uhifadhi\Storage\Widget\FilesWidgets;
-use Uhifadhi\Widget\Registry\WidgetSurfaceRegistry;
-use Uhifadhi\Widget\Service\WidgetEndpoint;
-use Uhifadhi\Widget\Service\WidgetService;
 
 /**
  * THE FILES HUB IS A DECLARED SURFACE OF THE REAL WIDGET FRAMEWORK.

@@ -19,6 +19,12 @@
             "homepage": "https://github.com/eemjema"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/uhifadhilabs/uhifadhi"
+        }
+    ],
     "require": {
         "php": ">=8.4",
         "league/flysystem": "^3.0",
@@ -35,8 +41,7 @@
         "symfony/security-csrf": "^7.3 || ^8.0",
         "symfony/uid": "^7.3 || ^8.0",
         "twig/twig": "^3.12",
-        "uhifadhi/module-contracts": "^0.5",
-        "uhifadhi/widget-module": "^0.1"
+        "uhifadhi/uhifadhi": "^1.0@dev"
     },
     "autoload": {
         "psr-4": {
@@ -60,15 +65,12 @@
         "symfony/security-bundle": "^7.3 || ^8.0",
         "symfony/security-http": "^7.3 || ^8.0",
         "symfony/twig-bundle": "^7.3 || ^8.0",
-        "symfony/ux-icons": "^2.20 || ^3.0",
-        "uhifadhi/shell-module": "^0.8",
-        "uhifadhi/team-module": "^0.8"
+        "symfony/ux-icons": "^2.20 || ^3.0"
     },
     "suggest": {
         "ext-imagick": "Preferred thumbnail engine. Decodes HEIC/HEIF where the system ImageMagick was built with libheif; GD cannot.",
         "ext-gd": "Fallback thumbnail engine (JPEG/PNG/WebP/AVIF).",
         "league/flysystem-async-aws-s3": "Required when a deployment selects the S3 adapter (storage.evidence.adapter: s3).",
-        "uhifadhi/shell-module": "The page frame the four Files screens render in, and the sidebar this module contributes its Files row to; without it the screens have no frame to extend.",
         "symfony/twig-bundle": "Required to render the Files hub. Without Twig the bundle registers no screen at all and is storage machinery only — the named storages, the evidence API, the thumbnails and the serving route."
     },
     "scripts": {

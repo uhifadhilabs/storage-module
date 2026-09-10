@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use Uhifadhi\Bundle\ShellBundle\Widget\Model\WidgetDom;
 use Uhifadhi\Storage\Widget\FilesWidgets;
-use Uhifadhi\Widget\Model\WidgetDom;
 
 /**
  * /files/widgets hands uhifadhi/widget-module's library component the whole contract.
@@ -27,7 +27,7 @@ use Uhifadhi\Widget\Model\WidgetDom;
  * THE COMPONENT IS THE REAL ONE NOW. It used to be stubbed down to its contract
  * in this suite's own fixtures, a copy somebody had to keep in step with a
  * template in another repository. Rendering the real
- * `@UhifadhiWidget/widgets/_library.html.twig` means a parameter this bundle
+ * `@Shell/widget/_library.html.twig` means a parameter this bundle
  * forgets to pass is a Twig error HERE, and — more to the point — a parameter
  * the component starts asking for is one too. Three assertions in this file
  * changed the day the stub came out, and every one of them was the double

@@ -15,7 +15,7 @@ namespace Uhifadhi\Storage\Tests\Integration\Fixtures\Area;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
-use Uhifadhi\ModuleContracts\Entity\AreaInterface;
+use Uhifadhi\Contracts\Entity\AreaInterface;
 
 /**
  * THE HOST'S AREA, PLAYED BY A STAND-IN — the area a sibling module's record

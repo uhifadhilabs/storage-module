@@ -27,7 +27,7 @@
        confirm-modal controller, never the browser's dialog. The bundle only
        states WHAT to ask; the installation owns the dialog, so every module asks
        the same way. #}
-    <button type="button" class="tgl w-act" {{ constant('Uhifadhi\\Widget\\Model\\WidgetDom::RESET') }}
+    <button type="button" class="tgl w-act" {{ constant('Uhifadhi\\Bundle\\ShellBundle\\Widget\\Model\\WidgetDom::RESET') }}
             data-controller="confirm-modal"
             data-action="click->confirm-modal#ask"
             data-confirm-modal-title-value="Reset your widget layout?"
@@ -39,7 +39,7 @@
 {% block storage_page %}
 {# THE WHOLE CONTRACT, and nothing files-specific inside it except the catalogue,
    the partial format and the context every partial receives. #}
-{{ include('@UhifadhiWidget/widgets/_library.html.twig', {
+{{ include('@Shell/widget/_library.html.twig', {
     catalog: catalog,
     builtins: builtins,
     customPresets: customPresets,
