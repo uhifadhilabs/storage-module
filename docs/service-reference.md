@@ -1,5 +1,13 @@
 # Service reference
 
+## Contents
+
+- [Services](#services)
+- [Tags](#tags)
+- [Routes](#routes)
+
+## Services
+
 | Service id | Class | Notes |
 |---|---|---|
 | `storage.evidence` | `League\Flysystem\Filesystem` | The named storage. Private on both visibility axes. |
@@ -13,9 +21,9 @@
 | `storage.settings` | `StorageSettings` | "Where files go", from configuration only. |
 | `storage.twig_extension` | `FilesExtension` | Registered wherever there is a Twig. |
 | `storage.widget_surface` | `FilesWidgets` | The `files` dashboard. Hub screens only. |
-| `storage.navigation` | `FilesNavigation` | The sidebar's Files row. Hub screens only, and only where a shell is installed. |
+| `storage.navigation` | `FilesNavigation` | The sidebar's Files row. Hub screens only. |
 
-Tags:
+## Tags
 
 | Tag | What carries it |
 |---|---|
@@ -24,7 +32,9 @@ Tags:
 | `uhifadhi.widget_surface` | `storage.widget_surface` — the `files` dashboard, declared into `ShellBundle`'s widget registry |
 | `shell.nav_section` | `storage.navigation` — the sidebar row, declared into `ShellBundle`'s navigation |
 
-Routes: `storage_evidence_show` — registered only when SecurityBundle is present.
+## Routes
+
+`storage_evidence_show` — registered only when SecurityBundle is present.
 The hub's own eleven (`storage_files`, `storage_files_widgets` and the eight
 writes behind it, `storage_files_show`, `storage_files_remove`,
 `storage_files_settings`) are registered only where SecurityBundle and TwigBundle

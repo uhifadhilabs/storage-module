@@ -3,6 +3,11 @@
 > No code outside this repository has been changed. These are the steps to take
 > in each module, when you choose to take them.
 
+## Contents
+
+- [patrol-module](#patrol-module)
+- [incident-module](#incident-module)
+
 ## patrol-module
 
 1. **Depend on it** — add `uhifadhi/storage-module` to `composer.json`, and

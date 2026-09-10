@@ -1,5 +1,13 @@
 # Serving, and the permission contribution point
 
+## Contents
+
+- [The route](#the-route)
+- [The owning module decides](#the-owning-module-decides)
+- [Deny by default](#deny-by-default)
+
+## The route
+
 ```
 GET /storage/evidence/{key}
 ```
@@ -12,6 +20,8 @@ read passes through this route.
 
 The route is registered **only when SecurityBundle is in the kernel**. A host
 without security gets no route at all rather than an unprotected one.
+
+## The owning module decides
 
 Authorization is delegated to the owning module:
 
@@ -44,6 +54,8 @@ $services->set('patrol.evidence_voter', PatrolEvidenceVoter::class)
 ```
 
 (A voter defined in the **host's** `src/` is autoconfigured and needs no tag.)
+
+## Deny by default
 
 **Deny by default, in the strong sense.** A grant requires that at least one
 module claimed the key *and* that every module which claimed it agreed. Silence

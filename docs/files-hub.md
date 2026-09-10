@@ -21,6 +21,15 @@ bytes are in, and whether the one ~400px picture was made. It knows nothing
 about observations or incidents and cannot: the files on it were handed over by
 the modules that own them, through [one interface](#putting-a-modules-files-on-the-hub).
 
+## Contents
+
+- [What an installation wires](#what-an-installation-wires)
+- [The sidebar row](#the-sidebar-row)
+- [The screens](#the-screens)
+- [Putting a module's files on the hub](#putting-a-modules-files-on-the-hub)
+- [Removal — remove, never delete](#removal--remove-never-delete)
+- [The design this hub is a port of](#the-design-this-hub-is-a-port-of)
+
 ## What an installation wires
 
 The screens register themselves where **SecurityBundle** and **TwigBundle** are

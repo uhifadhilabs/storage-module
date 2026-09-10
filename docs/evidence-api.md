@@ -32,6 +32,11 @@ Three exceptions, distinguished so callers can answer correctly:
 | `EvidenceStorageFailedException` | The store failed: full disk, transient mount, S3 timeout | Yes |
 | `InvalidEvidenceKeyException` | The caller built a key that is not relative | No — it is a bug |
 
+## Contents
+
+- [Validation](#validation)
+- [Thumbnails](#thumbnails)
+
 ## Validation
 
 `EvidenceConstraints` carries the allowlist and the size cap, and is reusable on

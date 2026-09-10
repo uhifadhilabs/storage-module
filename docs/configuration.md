@@ -9,6 +9,11 @@ because "private unless someone remembers to say so" is how deployments end up
 serving field photographs to the open internet, and a public URL would route
 around the permission contribution point entirely.
 
+## Contents
+
+- [Local (default)](#local-default)
+- [S3-compatible object storage](#s3-compatible-object-storage)
+
 ## Local (default)
 
 ```yaml

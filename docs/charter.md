@@ -1,5 +1,13 @@
 # Charter — what belongs here and what does not
 
+## Contents
+
+- [Mechanism only](#mechanism-only)
+- [The one cross-module screen](#the-one-cross-module-screen)
+- [What lives here, and what lives in the module](#what-lives-here-and-what-lives-in-the-module)
+
+## Mechanism only
+
 **This bundle is mechanism only.**
 
 It owns **no entities**, no migrations and no screens of a module's own. The
@@ -8,11 +16,15 @@ grows — stay in the modules that own them, because only those modules know wha
 attached to, who may see it, and what should happen when the parent record is
 deleted.
 
+## The one cross-module screen
+
 It does ship **one cross-module screen**, the Files hub at `/files`, and that is
 not an exception to the rule above: the hub owns no record either. It is a
 reading of what the installed modules handed over through `FileSourceInterface`,
 laid out on the widget machinery `ShellBundle` ships. Turn every module off and the hub is empty
 rather than wrong.
+
+## What lives here, and what lives in the module
 
 What lives here is the part every module would otherwise re-implement, slightly
 differently each time:
