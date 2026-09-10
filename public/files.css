@@ -66,16 +66,6 @@
   padding:8px 2px;border-bottom:1px dashed color-mix(in srgb,var(--fog) 18%,transparent)}
 .rln:last-child{border:0}
 
-/* THE QUIET CONTROL IN THE PAGE HEAD. The wrapper (`.pgact`) and the primary
-   action inside it (`.pgact .cta`) are the shell's rules and are not restated
-   here; what the hub adds is the height and padding of the SECONDARY control it
-   puts beside them, so "Where files go" and "Widget library" sit at the same
-   height as a `.cta` rather than at the bare `.tgl`'s. */
-.pgact .tgl{height:32px;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;
-  padding:0 13px;border-radius:9px;font-family:inherit;font-size:12px;line-height:1;
-  white-space:nowrap;text-decoration:none;font-weight:600}
-.pgact .tgl svg{width:14px;height:14px;flex:none}
-
 /* THE KPI STRIP — PORTED FROM THE DESIGN'S `.dp-kstrip` (its widgets.css).
    The four counts are ONE widget whose inner `.grid` must lay them out four
    across — as many equal columns as fit, each at least 168px, wrapping below
