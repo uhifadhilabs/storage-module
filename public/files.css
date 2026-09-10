@@ -17,10 +17,10 @@
    plate (.c), the tab (.tab/.src), the chips (.chip), the tables (.tbl),
    the caption (.use), the colour words (.g/.w/.r/.d/.fog), the KPI (.kpi) and
    the page scaffold all come from the shell's design-system stylesheet, and
-   every dashboard rule comes from the shell's widget.css. This file adds ONLY
-   what a file hub needs and no other surface has: the meta line (.rln), the
-   thumbnail tile, the owner tag, the storage pills, the file overlay, the day
-   rail and the usage bars.
+   every dashboard rule comes from the shell's widget.css, the meta line (.rln)
+   included. This file adds ONLY what a file hub needs and no other surface
+   has: the thumbnail tile, the owner tag, the storage pills, the file overlay,
+   the day rail and the usage bars.
 
    WHERE THEY BELONG WHEN PORTED. The hub is the user-facing surface of
    uhifadhi/storage-module, so these rules ship in the MODULE's stylesheet
@@ -56,15 +56,6 @@
   --ok:rgb(var(--c-ok)); --warn:rgb(var(--c-warn)); --fail:rgb(var(--c-fail));
   --shadow:0 18px 40px rgba(0,0,0,.28);
 }
-
-/* THE ROW LINE. The meta row a file card, the index and the settings page are
-   each a stack of — Owner, Taken, Size — and it is this module's own: the shell
-   ships no .rln, so without this every one of those rows collapses to an
-   unspaced block. The colour words it is written with (.g/.w/.r/.d/.fog) are
-   the shell's, spent here and defined there. */
-.rln{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;
-  padding:8px 2px;border-bottom:1px dashed color-mix(in srgb,var(--fog) 18%,transparent)}
-.rln:last-child{border:0}
 
 /* THE KPI STRIP — PORTED FROM THE DESIGN'S `.dp-kstrip` (its widgets.css).
    The four counts are ONE widget whose inner `.grid` must lay them out four
