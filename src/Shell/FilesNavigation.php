@@ -103,7 +103,7 @@ final readonly class FilesNavigation implements NavigationSourceInterface
             new NavItem(
                 label: 'Files',
                 url: $url,
-                icon: 'lucide:image',
+                icon: 'storage:image',
                 current: $this->viewerIsHere($url),
             ),
         ], position: self::POSITION);

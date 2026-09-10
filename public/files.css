@@ -58,48 +58,31 @@
   --shadow:0 18px 40px rgba(0,0,0,.28);
 }
 
-/* THE ROW LINE, AND ITS COLOUR HELPERS — PORTED FROM THE DESIGN'S GLOBAL SHEET.
-   The design keeps .rln and the .g/.w/.r/.d/.fog helpers in uhifadhi.css, its
-   global stylesheet. The host shell (uhifadhi/shell-module) does not re-ship
-   them, so a file card's every row — Owner, Taken, Size, the whole settings
-   page — would collapse to an unspaced block without this. Byte-faithful to the
-   design; spent in the module's own sheet because that is where the hub can be
-   sure of it. (The cleaner home is the host shell; area-module and team-module
-   ship their own copies for the same reason, so a hoist there would retire all
-   three.) */
+/* THE ROW LINE. The meta row a file card, the index and the settings page are
+   each a stack of — Owner, Taken, Size — and it is this module's own: the shell
+   ships no .rln, so without this every one of those rows collapses to an
+   unspaced block. The colour words it is written with (.g/.w/.r/.d/.fog) are
+   the shell's, spent here and defined there. */
 .rln{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;
   padding:8px 2px;border-bottom:1px dashed color-mix(in srgb,var(--fog) 18%,transparent)}
 .rln:last-child{border:0}
-.g{color:var(--ok)}.w{color:var(--warn)}.r{color:var(--fail)}.d{color:var(--dim)}.fog{color:var(--fog)}
 
-/* THE PAGE-HEAD ACTION ROW — PORTED FROM THE DESIGN'S `.pgact.w-pgact`.
-   The design draws every hub header as `.pgact.w-pgact`, and widget-module's
-   `.w-pgact { display:flex; gap }` is what makes it a row. But the wrapper is
-   rendered by the SHELL (page.html.twig writes `<div class="pgact">`), a module
-   filling `shell_page_actions` cannot add a class to it, and the shell's `.pgact`
-   is `flex-shrink:0` and nothing else — so the hub's two actions ("Where files
-   go" beside "Widget library") come out as a stacked run with no gap, and a
-   `.tgl` at 5px/11px beside a `.cta` at 7px/15px is two different heights on one
-   line. This is `.w-pgact`'s block, scoped to the header of the pages that load
-   this sheet, so the row lays out and every control in it is the same height —
-   exactly the fix team-module and the shell agree on. */
-.pgact{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
-.pgact .tgl,
-.pgact .cta{height:32px;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;
+/* THE QUIET CONTROL IN THE PAGE HEAD. The wrapper (`.pgact`) and the primary
+   action inside it (`.pgact .cta`) are the shell's rules and are not restated
+   here; what the hub adds is the height and padding of the SECONDARY control it
+   puts beside them, so "Where files go" and "Widget library" sit at the same
+   height as a `.cta` rather than at the bare `.tgl`'s. */
+.pgact .tgl{height:32px;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;
   padding:0 13px;border-radius:9px;font-family:inherit;font-size:12px;line-height:1;
-  white-space:nowrap;text-decoration:none}
-.pgact .cta{font-weight:700}
-.pgact .tgl{font-weight:600}
-.pgact .tgl svg,.pgact .cta svg{width:14px;height:14px;flex:none}
+  white-space:nowrap;text-decoration:none;font-weight:600}
+.pgact .tgl svg{width:14px;height:14px;flex:none}
 
 /* THE KPI STRIP — PORTED FROM THE DESIGN'S `.dp-kstrip` (its widgets.css).
    The four counts are ONE widget whose inner `.grid` must lay them out four
    across — as many equal columns as fit, each at least 168px, wrapping below
-   that. The host shell's `.grid` is display:grid with a gap and NO columns, so
-   it defaults to a single column and the four counts stack full-width. This is
-   the design's own class name, shipped here the same way area-module and
-   incident-module ship it (they name their copy `.kstrip`); without it the KPI
-   strip is four stacked bands instead of a row. */
+   that. The shell's `.grid` is display:grid with a gap and NO columns, so it
+   defaults to a single column and the four counts stack full-width. Without
+   this the KPI strip is four stacked bands instead of a row. */
 .dp-kstrip{grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
 
 /* THE PREVIEW'S OWN VOCABULARY IS NOT HERE. The owner tag, the storage pills,
