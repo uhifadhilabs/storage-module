@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block shell_page_actions %}
-    <a class="tgl w-act" href="{{ hubUrl }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to files</a>
+    <a class="tgl w-act" href="{{ hubUrl }}">{{ ux_icon('shell:chevron-left') }} Back to files</a>
     {% if file.ownerUrl %}<a class="cta" href="{{ file.ownerUrl }}">Open {{ file.ownerLabel }} &rarr;</a>{% endif %}
 {% endblock %}
 

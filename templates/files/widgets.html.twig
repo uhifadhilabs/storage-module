@@ -32,8 +32,8 @@
             data-action="click->confirm-modal#ask"
             data-confirm-modal-title-value="Reset your widget layout?"
             data-confirm-modal-body-value="Your own arrangement of the files hub goes back to the one the platform ships with. Nothing happens to any file."
-            data-confirm-modal-confirm-value="Reset it"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Reset to defaults</button>
-    <a class="cta" href="{{ urls.dashboard }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to the hub</a>
+            data-confirm-modal-confirm-value="Reset it">{{ ux_icon('shell:rotate-ccw') }} Reset to defaults</button>
+    <a class="cta" href="{{ urls.dashboard }}">{{ ux_icon('shell:chevron-left') }} Back to the hub</a>
 {% endblock %}
 
 {% block storage_page %}
