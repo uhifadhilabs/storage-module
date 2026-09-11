@@ -18,6 +18,7 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
+use Uhifadhi\Storage\Model\EvidenceConstraints;
 
 final class StorageConfigurationTest extends TestCase
 {
@@ -81,10 +82,12 @@ final class StorageConfigurationTest extends TestCase
         self::assertSame('%kernel.project_dir%/var/storage/evidence', $evidence['directory']);
         self::assertSame(12 * 1024 * 1024, $evidence['max_bytes']);
         self::assertSame(400, $evidence['thumbnail_long_edge']);
-        self::assertSame(
-            ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'],
-            $evidence['allowed_mime_types'],
-        );
+        // One of each of the hub's three kinds, so a deployment that configured
+        // nothing can still receive a document and a track — and the two bare
+        // XML types, which are how a GPX's bytes actually detect.
+        self::assertSame(EvidenceConstraints::DEFAULT_MIME_TYPES, $evidence['allowed_mime_types']);
+        self::assertContains('application/pdf', $evidence['allowed_mime_types']);
+        self::assertContains('application/gpx+xml', $evidence['allowed_mime_types']);
     }
 
     public function testADeploymentCanPointTheLocalStoreSomewhereElse(): void

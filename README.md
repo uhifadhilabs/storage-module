@@ -138,7 +138,13 @@ $services->set('sighting.upload_target', SightingEvidenceTarget::class)
 Two presentations — `zone`, a dropzone card where receiving the file IS the
 step, and `tile`, one cell of a grid of things already attached — one endpoint
 (`POST /files/upload`, `DELETE /files/{key}`), and every refusal a sentence
-written by whoever refused. The full contract, the worked example, the events and
+written by whoever refused, naming what the TARGET takes rather than what the
+file is.
+
+The shipped `allowed_mime_types` default covers **one of each kind the hub
+names** — photographs, `application/pdf`, and a GPX under the three types a
+track can arrive as. A deployment may narrow it; see
+[docs/configuration.md](docs/configuration.md). The full contract, the worked example, the events and
 the `controllers.json` entry are in [docs/uploads.md](docs/uploads.md).
 
 ## Learn more

@@ -15,6 +15,7 @@ namespace Uhifadhi\Storage\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\DomCrawler\Crawler;
+use Uhifadhi\Storage\Model\EvidenceConstraints;
 use Uhifadhi\Storage\Twig\UploadExtension;
 use Uhifadhi\Storage\Twig\UploadRuntime;
 
@@ -55,7 +56,11 @@ final class UploadComponentTest extends FilesTestCase
     {
         $kinds = $this->page()->filter('[data-stub=zone] .upl-kinds')->text();
 
-        self::assertStringContainsString('jpg · png · heic', $kinds);
+        // One of each of the hub's three kinds, and NOT "xml": bare XML is on
+        // the allowlist because that is what a GPX's bytes detect as, and it
+        // earns no word of its own on a line a person reads.
+        self::assertStringContainsString('jpg · png · heic · heif · webp · pdf · gpx', $kinds);
+        self::assertStringNotContainsString('xml', $kinds);
         self::assertStringContainsString('up to 12.6 MB each', $kinds);
         self::assertStringContainsString('10 files at a time', $kinds);
     }
@@ -104,8 +109,10 @@ final class UploadComponentTest extends FilesTestCase
     /** The picker's filter is the target's own allowlist, not a typed list. */
     public function testThePickerIsFilteredByWhatTheTargetTakes(): void
     {
+        // Every type, CARRIERS INCLUDED: the operating system's dialog filters
+        // on what a file will actually be read as, and a GPX is read as xml.
         self::assertSame(
-            'image/jpeg,image/png,image/heic,image/heif,image/webp',
+            implode(',', EvidenceConstraints::DEFAULT_MIME_TYPES),
             $this->page()->filter('[data-stub=zone] .upl-zone')->attr('data-upl-accept'),
         );
     }

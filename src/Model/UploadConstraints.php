@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Model;
 
 use Symfony\Component\Mime\MimeTypes;
+use Uhifadhi\Storage\Enum\FileKindEnum;
 
 /**
  * WHAT ONE TARGET TAKES — the rule the upload component states before anybody
@@ -96,6 +97,13 @@ final readonly class UploadConstraints
     {
         $extensions = [];
         foreach ($this->allowedMimeTypes as $mimeType) {
+            // A CARRIER EARNS NO WORD. `text/xml` is on a list because that is
+            // what a GPX's bytes detect as, not because anybody wants to be
+            // offered "xml" on a zone that takes tracks.
+            if (FileKindEnum::isCarrier($mimeType, $this->allowedMimeTypes)) {
+                continue;
+            }
+
             $known = MimeTypes::getDefault()->getExtensions($mimeType);
             if ([] === $known || \in_array($known[0], $extensions, true)) {
                 continue;
@@ -104,6 +112,49 @@ final readonly class UploadConstraints
         }
 
         return $extensions;
+    }
+
+    /**
+     * WHAT THIS TARGET TAKES, in kinds — the same reading the zone's line is
+     * built from.
+     *
+     * @return list<FileKindEnum>
+     */
+    public function kinds(): array
+    {
+        return FileKindEnum::inMimeTypes($this->allowedMimeTypes);
+    }
+
+    /**
+     * THE NOUN A REFUSAL NAMES — the second half of "that file is not …".
+     *
+     * It says what the TARGET takes and never what the file is, because the
+     * person reading it is holding a file that did not work and needs to know
+     * which one would have. Read from `allowedMimeTypes`, the very list the
+     * zone's kinds line is read from, so the promise and the refusal cannot
+     * disagree.
+     *
+     * TWO SHAPES, AND THE SECOND ONE EXISTS TO STAY TRUE. Normally the kinds are
+     * the answer: "a photograph or document". But a target may narrow INSIDE a
+     * kind — one that takes PNGs and not JPEGs — and "that file is not a
+     * photograph" would then be a sentence about a photograph. Where the refused
+     * file's own kind is one this target takes, the spellings are named instead,
+     * and they are the same spellings the line printed.
+     */
+    public function refusalNounFor(?string $mimeType): string
+    {
+        $kinds = $this->kinds();
+        // recognise(), not fromMimeType(): a refused file got past nothing, so
+        // the Document fallback that is right for a STORED file would be a guess
+        // here — and a guess is what turns "not a photograph" into a sentence
+        // about a photograph.
+        $refused = null === $mimeType ? null : FileKindEnum::recognise($mimeType);
+
+        if (null === $refused || !\in_array($refused, $kinds, true)) {
+            return FileKindEnum::phrase($kinds);
+        }
+
+        return 'one of '.implode(' · ', $this->extensions());
     }
 
     /**

@@ -30,14 +30,19 @@ final class EvidenceConstraintsTest extends TestCase
 {
     private const string IMAGES = __DIR__.'/../../Fixtures/images';
 
-    public function testTheDefaultAllowlistIsWhatACameraMaySend(): void
+    public function testTheDefaultAllowlistIsOneOfEachKindTheHubNames(): void
     {
         $constraints = EvidenceConstraints::default();
 
-        // Same five as patrol's ALLOWED_MIME_TYPES, in the same spirit:
-        // anything else is not a photograph.
+        // The five a camera may send — patrol's original ALLOWED_MIME_TYPES, in
+        // the same order — then the signed document a money case carries, then
+        // the track, under the three types a GPX can arrive as.
         self::assertSame(
-            ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'],
+            [
+                'image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp',
+                'application/pdf',
+                'application/gpx+xml', 'application/xml', 'text/xml',
+            ],
             $constraints->allowedMimeTypes,
         );
         self::assertSame(12 * 1024 * 1024, $constraints->maxBytes);
@@ -164,6 +169,70 @@ final class EvidenceConstraintsTest extends TestCase
     {
         self::assertSame('pdf', EvidenceConstraints::extensionFor('application/pdf'));
         self::assertSame('gpx', EvidenceConstraints::extensionFor('application/gpx+xml'));
+    }
+
+    /**
+     * THE DEFAULT COVERS ALL THREE OF THE HUB'S KINDS, not only the first.
+     *
+     * The Files hub's own filter row reads "Photos / Documents / Tracks", and a
+     * deployment that has configured nothing must be able to receive one of
+     * each — otherwise the second and third chips can only ever be empty, and
+     * a module whose target genuinely takes a GPX is refused by a default
+     * nobody chose. A deployment may still NARROW it.
+     */
+    public function testTheDefaultAllowlistCoversPhotographsDocumentsAndTracks(): void
+    {
+        $default = EvidenceConstraints::default();
+
+        self::assertTrue($default->allows('image/jpeg'), 'photographs');
+        self::assertTrue($default->allows('application/pdf'), 'documents');
+        self::assertTrue($default->allows('application/gpx+xml'), 'tracks');
+    }
+
+    /**
+     * A GPX ARRIVES AS XML AND MUST STILL BE ACCEPTED. fileinfo reads the BYTES
+     * and has never heard of GPX, so a real track file detects as `text/xml`
+     * (or `application/xml`). Those two are on the list for that reason alone —
+     * they are how a track arrives, not a kind of their own.
+     */
+    public function testATrackFileIsAcceptedUnderTheTypeItsBytesActuallyDetectAs(): void
+    {
+        $default = EvidenceConstraints::default();
+        $gpx = new File(\dirname(__DIR__, 2).'/Fixtures/tracks/walk.gpx');
+
+        $detected = $default->detect($gpx);
+
+        self::assertContains($detected, ['text/xml', 'application/xml'], 'fileinfo reads the bytes, and they are xml');
+        self::assertTrue($default->allows($detected), 'a track the deployment configured nothing about is accepted');
+
+        // And the guard agrees with the predicate: it throws on a refusal, so
+        // reaching the line after it is the rest of the assertion.
+        $default->validate($gpx);
+    }
+
+    /**
+     * WHAT THIS DEPLOYMENT ACCEPTS, IN WORDS — read from the very list the guard
+     * enforces, so a refusal cannot name something the allowlist does not say.
+     */
+    public function testItSaysWhatItAcceptsInTheHubsOwnWords(): void
+    {
+        self::assertSame('a photograph, document or GPX track', EvidenceConstraints::default()->describe());
+        self::assertSame('a photograph', new EvidenceConstraints(['image/png'], 1000)->describe());
+        self::assertSame('a document', new EvidenceConstraints(['application/pdf'], 1000)->describe());
+    }
+
+    /** The refusal says what IS accepted, not what a photograph is. */
+    public function testTheRefusalNamesWhatThisDeploymentAccepts(): void
+    {
+        $constraints = new EvidenceConstraints(['application/gpx+xml', 'application/xml', 'text/xml'], 1_000_000);
+
+        try {
+            $constraints->validate(new File(self::IMAGES.'/landscape-800x600.jpg'));
+            self::fail('A photograph was accepted by a track-only deployment.');
+        } catch (EvidenceRejectedException $exception) {
+            self::assertSame(RejectionReasonEnum::UnsupportedType, $exception->reason);
+            self::assertSame('That file is not a GPX track.', $exception->getMessage());
+        }
     }
 
     /**

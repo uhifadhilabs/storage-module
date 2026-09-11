@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="uhifadhi-storage-tests" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>Sample walk</name>
+    <trkseg>
+      <trkpt lat="-3.20000" lon="-29.70000"><ele>1200</ele></trkpt>
+      <trkpt lat="-3.20100" lon="-29.70100"><ele>1204</ele></trkpt>
+      <trkpt lat="-3.20200" lon="-29.70200"><ele>1209</ele></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

@@ -51,11 +51,18 @@ final class EvidenceRejectedException extends \RuntimeException
         );
     }
 
-    public static function unsupportedType(?string $mimeType): self
+    /**
+     * $accepts is what the refusing allowlist DOES take, in words — "a
+     * photograph", "a GPX track", "a photograph, document or GPX track". It is
+     * passed in rather than written here because only the allowlist knows, and a
+     * sentence that named photographs while the deployment took tracks would be
+     * a message the guard could not keep.
+     */
+    public static function unsupportedType(?string $mimeType, string $accepts = 'a kind this deployment accepts'): self
     {
         return new self(
             RejectionReasonEnum::UnsupportedType,
-            'That file is not a photograph.',
+            \sprintf('That file is not %s.', $accepts),
             ['mimeType' => $mimeType],
         );
     }

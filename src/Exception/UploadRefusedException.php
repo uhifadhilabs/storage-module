@@ -48,17 +48,18 @@ final class UploadRefusedException extends \RuntimeException
     }
 
     /**
-     * A kind this target does not take. Named by EXTENSION rather than by mime
-     * type: "a jpg" is what somebody looking at their own files recognises,
-     * where "image/jpeg" is what a developer does.
+     * A kind this target does not take.
+     *
+     * $accepts is what the TARGET does take, in words, and it comes from the
+     * target's own {@see \Uhifadhi\Storage\Model\UploadConstraints} — the very
+     * list the zone printed its kinds line from, so the promise and the refusal
+     * cannot disagree. Naming what the FILE is instead would be the easier
+     * sentence and the less useful one: somebody holding a file that did not
+     * work needs to know which one would have.
      */
-    public static function kindNotAllowed(?string $extension): self
+    public static function kindNotAllowed(string $accepts): self
     {
-        return new self(
-            null === $extension || '' === $extension
-                ? 'That kind of file is not one this target takes.'.self::NOTHING
-                : \sprintf('A %s is not a kind this target takes.%s', $extension, self::NOTHING),
-        );
+        return new self(\sprintf('That file is not %s.%s', $accepts, self::NOTHING));
     }
 
     public static function tooLarge(int $maxBytes): self

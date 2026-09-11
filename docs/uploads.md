@@ -41,7 +41,7 @@ interface.
 | `kind(): string` | the target key prefix — `incident`, `observation`, `patrol-track`, `zone-boundary`. It is the half of a target string before the colon AND the first segment of every key the target's files are stored under. |
 | `accepts(string $targetId): ?object` | resolves the half after the colon to the owning record, or null. Null means "no such record", never "you may not". |
 | `mayUpload(object $record, UserInterface $user): bool` | may this person attach a file here. |
-| `constraints(object $record): UploadConstraints` | what this record takes: allowed mime types, largest single file, how many at once. |
+| `constraints(object $record): UploadConstraints` | what this record takes: allowed mime types, largest single file, how many at once. `UploadConstraints::from($deployment)` inherits the installation's own list, which by default covers all three of the hub's kinds. |
 | `received(object $record, StoredFile $file, UserInterface $user): UploadReceipt` | the bytes are stored — write the row, and say what the file became. |
 | `mayRemove(string $key, UserInterface $user): bool` | may this person take this file back off. A different question from `mayUpload()`: a verified case may well accept evidence and refuse to release it. |
 | `removed(string $key, UserInterface $user): void` | the file is going — unpick the record. Called BEFORE the bytes are deleted, so a module that refuses after all can throw and leave the file where it is. |
@@ -103,9 +103,14 @@ final readonly class SightingEvidenceTarget implements UploadTargetInterface
 
     public function constraints(object $record): UploadConstraints
     {
-        // The deployment's own allowlist and cap. Narrow it only where the
-        // record genuinely takes less; widening it promises what the storage
+        // The deployment's own allowlist and cap — photographs, documents and
+        // tracks unless the installation narrowed it. Narrow further only where
+        // the record genuinely takes less; widening promises what the storage
         // will then refuse.
+        //
+        // A TRACKS-ONLY TARGET NAMES THE CARRIERS TOO, or it refuses every GPX
+        // ever dropped on it — fileinfo reads bytes, and a GPX's bytes are xml:
+        //     ['application/gpx+xml', ...FileKindEnum::TRACK_CARRIERS]
         return UploadConstraints::from($this->deployment);
     }
 
@@ -250,7 +255,8 @@ in the tile that caused it. The component never invents an error message.
 
 | Situation | Sentence | Status |
 |---|---|---|
-| kind not allowed | `A jpg is not a kind this target takes. Nothing was written.` | 422 |
+| kind not allowed | `That file is not a GPX track. Nothing was written.` | 422 |
+| kind not allowed, inside one kind | `That file is not one of png · webp. Nothing was written.` | 422 |
 | too large | `Larger than the 12.6 MB limit this storage accepts. Nothing was written.` | 422 |
 | upload truncated | `That upload did not arrive intact. Nothing was written.` | 422 |
 | no file at all | `No file arrived with that upload. Nothing was written.` | 422 |
@@ -263,6 +269,18 @@ in the tile that caused it. The component never invents an error message.
 
 Every upload refusal ends with *what did not happen*, because the thing a person
 needs to know after a failure is whether they now have half a record.
+
+**A kind refusal names what the TARGET takes, never what the file is.** Somebody
+holding a file that did not work needs to know which one would have. The noun is
+read from the same `allowedMimeTypes` the zone printed its kinds line from, so
+the promise and the refusal cannot disagree — `UploadConstraints::refusalNounFor()`
+and `UploadConstraints::extensions()` are two readings of one list.
+
+It has two shapes, and the second exists to stay true. Normally the kinds are the
+answer: *a photograph*, *a photograph or document*, *a photograph, document or
+GPX track*. But a target may narrow INSIDE a kind — one that takes PNGs and not
+JPEGs — and "that file is not a photograph" would then be a sentence about a
+photograph; there the spellings are named instead.
 
 The **one** sentence the component writes for itself is the queue cap — `Only 10
 files at a time. Nothing was written.` — because the queue is the only thing here

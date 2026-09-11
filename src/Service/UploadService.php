@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
+use Uhifadhi\Storage\Enum\RejectionReasonEnum;
 use Uhifadhi\Storage\Exception\EvidenceRejectedException;
 use Uhifadhi\Storage\Exception\EvidenceStorageFailedException;
 use Uhifadhi\Storage\Exception\InvalidEvidenceKeyException;
@@ -138,9 +139,10 @@ final readonly class UploadService
             throw UploadRefusedException::notPermitted();
         }
 
-        $this->guard($module->constraints($record), $file);
+        $constraints = $module->constraints($record);
+        $this->guard($constraints, $file);
 
-        $stored = $this->store($module, $targetId, $file);
+        $stored = $this->store($module, $targetId, $file, $constraints);
 
         return $this->hand($module, $record, $stored, $user);
     }
@@ -202,18 +204,19 @@ final readonly class UploadService
         }
 
         // The type read from the BYTES, through the deployment's own detector,
-        // so the sentence names what was actually sent rather than what the
-        // filename claimed.
+        // so what is judged is what was actually sent rather than what the
+        // filename claimed. The SENTENCE, though, names what the target takes —
+        // read from the same list the zone's kinds line came from.
         $mimeType = $this->deployment->detect($file);
         if (!$constraints->allows($mimeType)) {
-            throw UploadRefusedException::kindNotAllowed(self::extensionOf($mimeType));
+            throw UploadRefusedException::kindNotAllowed($constraints->refusalNounFor($mimeType));
         }
     }
 
     /**
      * @throws UploadRefusedException
      */
-    private function store(UploadTargetInterface $module, string $targetId, UploadedFile $file): StoredFile
+    private function store(UploadTargetInterface $module, string $targetId, UploadedFile $file, UploadConstraints $constraints): StoredFile
     {
         // THE PREFIX IS THE CONTRACT: `<kind>/<targetId>`. A target with no
         // record behind it has no second segment, and its files sit directly
@@ -225,10 +228,13 @@ final readonly class UploadService
             // storage asks for, and a uuid answers it without a round trip.
             return $this->storage->store($file, $prefix, Uuid::v7()->toRfc4122());
         } catch (EvidenceRejectedException $rejected) {
-            // The DEPLOYMENT refused what the target allowed — a target that
+            // THE DEPLOYMENT REFUSED WHAT THE TARGET ALLOWED — a target that
             // widened past the installation's allowlist, or a type nothing can
-            // name. Its own sentence is the honest one.
-            throw new UploadRefusedException($rejected->getMessage().' Nothing was written.', previous: $rejected);
+            // name an extension for. The person still dropped a file on THIS
+            // target, so a kind refusal is answered in the target's words like
+            // every other one; anything else (a truncated upload) keeps the
+            // storage's own sentence, which is already about what happened.
+            throw RejectionReasonEnum::UnsupportedType === $rejected->reason ? UploadRefusedException::kindNotAllowed($constraints->refusalNounFor($this->deployment->detect($file))) : new UploadRefusedException($rejected->getMessage().' Nothing was written.', previous: $rejected);
         } catch (EvidenceStorageFailedException|InvalidEvidenceKeyException $failed) {
             throw UploadRefusedException::storageFailed($failed);
         }
@@ -283,23 +289,6 @@ final readonly class UploadService
         try {
             $this->storage->delete($key);
         } catch (\Throwable) {
-        }
-    }
-
-    /**
-     * The extension a refusal names the type by. Null where nothing can name it,
-     * and the sentence then says "that kind of file" rather than inventing one.
-     */
-    private static function extensionOf(?string $mimeType): ?string
-    {
-        if (null === $mimeType) {
-            return null;
-        }
-
-        try {
-            return EvidenceConstraints::extensionFor($mimeType);
-        } catch (EvidenceRejectedException) {
-            return null;
         }
     }
 }

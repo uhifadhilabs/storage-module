@@ -46,6 +46,7 @@ final class UploadEndpointTest extends FilesTestCase
 
     private const string PHOTO = __DIR__.'/../Fixtures/images/tiny-100x80.jpg';
     private const string NOT_AN_IMAGE = __DIR__.'/../Fixtures/images/not-an-image.php';
+    private const string TRACK = __DIR__.'/../Fixtures/tracks/walk.gpx';
 
     public function testAFileIsStoredAndTheModuleSaysWhatItBecame(): void
     {
@@ -94,7 +95,56 @@ final class UploadEndpointTest extends FilesTestCase
         self::assertFalse($this->storage()->exists($this->field($client, 'key')), 'the blob was thrown away with the receipt');
     }
 
-    public function testAKindThisTargetDoesNotTakeIsRefusedInASentence(): void
+    /**
+     * A TRACK REACHES A TRACK TARGET. It used to be refused with "that file is
+     * not a photograph": the shipped DEFAULT allowlist was images only, so it
+     * overruled a target whose records genuinely take a GPX, and answered for it
+     * in words written for a camera.
+     */
+    public function testAGpxIsStoredOnATargetThatTakesTracks(): void
+    {
+        $client = $this->ranger(self::createClient());
+
+        $this->upload($client, 'stub:track', self::TRACK, 'patrol_0822.gpx');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringStartsWith('stub/track/', $this->field($client, 'key'));
+    }
+
+    /** And on any target that has not narrowed, because the default now covers it. */
+    public function testAGpxIsStoredOnATargetThatSimplyTakesWhatTheDeploymentDoes(): void
+    {
+        $client = $this->ranger(self::createClient());
+
+        $this->upload($client, 'stub:open', self::TRACK, 'patrol_0822.gpx');
+
+        self::assertResponseIsSuccessful();
+    }
+
+    /**
+     * THE REFUSAL NAMES WHAT THE TARGET TAKES, never what the file is. Somebody
+     * holding a file that did not work needs to know which one would have — and
+     * the noun is read from the same list the zone printed its kinds line from.
+     */
+    public function testAKindThisTargetDoesNotTakeIsRefusedInTheTargetsOwnWords(): void
+    {
+        $client = $this->ranger(self::createClient());
+
+        $this->upload($client, 'stub:track', self::PHOTO, 'IMG_1204.jpg');
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        self::assertSame(
+            'That file is not a GPX track. Nothing was written.',
+            $this->field($client, 'error'),
+        );
+    }
+
+    /**
+     * THE RIGHT KIND, THE WRONG SPELLING. A target that takes PNGs and not
+     * JPEGs cannot answer "that is not a photograph" — it is one. The sentence
+     * names the spellings instead, and they are the spellings the line printed.
+     */
+    public function testARefusalInsideOneKindNamesTheSpellings(): void
     {
         $client = $this->ranger(self::createClient());
 
@@ -102,11 +152,16 @@ final class UploadEndpointTest extends FilesTestCase
 
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         self::assertSame(
-            'A jpg is not a kind this target takes. Nothing was written.',
+            'That file is not one of png. Nothing was written.',
             $this->field($client, 'error'),
         );
     }
 
+    /**
+     * THE DEPLOYMENT'S OWN REFUSAL, ANSWERED IN THE TARGET'S WORDS. The person
+     * dropped this on a target, so the sentence is about that target whichever
+     * of the two allowlists actually turned it away.
+     */
     public function testAFileThatIsNotEvenAKindTheDeploymentKnowsIsRefused(): void
     {
         $client = $this->ranger(self::createClient());
@@ -114,7 +169,10 @@ final class UploadEndpointTest extends FilesTestCase
         $this->upload($client, 'stub:open', self::NOT_AN_IMAGE, 'sneaky.jpg');
 
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        self::assertStringContainsString('Nothing was written.', $this->field($client, 'error'));
+        self::assertSame(
+            'That file is not a photograph, document or GPX track. Nothing was written.',
+            $this->field($client, 'error'),
+        );
     }
 
     public function testAFileOverTheLimitIsRefusedInTheDesignsOwnWords(): void

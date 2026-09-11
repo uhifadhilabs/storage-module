@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Tests\Integration\Fixtures;
 
 use Symfony\Component\Security\Core\User\UserInterface;
+use Uhifadhi\Storage\Enum\FileKindEnum;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
 use Uhifadhi\Storage\Model\StoredFile;
 use Uhifadhi\Storage\Model\UploadConstraints;
@@ -42,7 +43,7 @@ final class StubUploadTarget implements UploadTargetInterface
     public const string KIND = 'stub';
 
     /** Records that exist. Anything else resolves to null and the endpoint says so. */
-    public const array RECORDS = ['open', 'locked', 'sealed', 'tiny', 'png', 'parsed'];
+    public const array RECORDS = ['open', 'locked', 'sealed', 'tiny', 'png', 'track', 'parsed'];
 
     /** @var list<string> the keys this target was told about, newest last */
     public array $received = [];
@@ -74,6 +75,14 @@ final class StubUploadTarget implements UploadTargetInterface
             // without a suite that has to ship a 13MB file to provoke it.
             'tiny' => new UploadConstraints(EvidenceConstraints::DEFAULT_MIME_TYPES, 64),
             'png' => new UploadConstraints(['image/png'], EvidenceConstraints::DEFAULT_MAX_BYTES),
+            // A TRACKS-ONLY TARGET, shaped exactly as a real one is: the GPX
+            // type plus the two bare-XML types a track's BYTES actually detect
+            // as. A target that listed only application/gpx+xml would refuse
+            // every GPX ever dropped on it.
+            'track' => new UploadConstraints(
+                ['application/gpx+xml', ...FileKindEnum::TRACK_CARRIERS],
+                EvidenceConstraints::DEFAULT_MAX_BYTES,
+            ),
             default => UploadConstraints::from(EvidenceConstraints::default()),
         };
     }

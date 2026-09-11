@@ -15,6 +15,7 @@ namespace Uhifadhi\Storage\Model;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Mime\MimeTypes;
+use Uhifadhi\Storage\Enum\FileKindEnum;
 use Uhifadhi\Storage\Exception\EvidenceRejectedException;
 
 /**
@@ -33,11 +34,29 @@ use Uhifadhi\Storage\Exception\EvidenceRejectedException;
 final readonly class EvidenceConstraints
 {
     /**
-     * What a camera may send. Anything else is not a photograph.
+     * WHAT AN UNCONFIGURED DEPLOYMENT ACCEPTS — one of each of the hub's three
+     * kinds, because the hub's own filter row reads "Photos / Documents /
+     * Tracks" and a default that covered only the first made two of those chips
+     * permanently empty. Worse, it silently OVERRULED any module: a target whose
+     * records genuinely take a GPX was refused by a list nobody had chosen, with
+     * a sentence about photographs.
+     *
+     * A deployment may NARROW this (the config key is `allowed_mime_types`);
+     * widening it is allowed too, and a widened type is keyed by its own
+     * extension and simply gets no thumbnail unless an engine can read it.
+     *
+     * THE LAST TWO ARE CARRIERS, NOT KINDS. fileinfo reads BYTES and has never
+     * heard of GPX, so a real track file detects as `text/xml`. They are here so
+     * a track can get through, and {@see FileKindEnum::isCarrier()} is what stops
+     * them being advertised as a kind of their own.
      *
      * @var list<string>
      */
-    public const array DEFAULT_MIME_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'];
+    public const array DEFAULT_MIME_TYPES = [
+        'image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp',
+        'application/pdf',
+        'application/gpx+xml', 'application/xml', 'text/xml',
+    ];
 
     public const int DEFAULT_MAX_BYTES = 12 * 1024 * 1024;
 
@@ -79,8 +98,23 @@ final readonly class EvidenceConstraints
 
         $mimeType = $this->detect($file);
         if (!$this->allows($mimeType)) {
-            throw EvidenceRejectedException::unsupportedType($mimeType);
+            // The sentence names what IS accepted, read from this very list — so
+            // a deployment that narrowed to tracks says "not a GPX track" rather
+            // than the photograph wording the first allowlist was written for.
+            throw EvidenceRejectedException::unsupportedType($mimeType, $this->describe());
         }
+    }
+
+    /**
+     * WHAT THIS DEPLOYMENT ACCEPTS, IN WORDS — "a photograph, document or GPX
+     * track", with the article, ready to drop into a sentence.
+     *
+     * Derived from the allowlist itself rather than written beside it, which is
+     * the only way a refusal cannot name something the guard does not enforce.
+     */
+    public function describe(): string
+    {
+        return FileKindEnum::phrase(FileKindEnum::inMimeTypes($this->allowedMimeTypes));
     }
 
     /**

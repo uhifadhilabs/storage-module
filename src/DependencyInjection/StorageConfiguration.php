@@ -26,7 +26,7 @@ use Uhifadhi\Storage\Model\EvidenceConstraints;
  *       directory: '%kernel.project_dir%/var/storage/evidence'
  *       max_bytes: 12582912
  *       thumbnail_long_edge: 400
- *       allowed_mime_types: ['image/jpeg', …]
+ *       allowed_mime_types: ['image/jpeg', …, 'application/pdf', 'application/gpx+xml', …]
  *       s3:
  *         endpoint: '%env(STORAGE_S3_ENDPOINT)%'
  *         bucket:   '%env(STORAGE_S3_BUCKET)%'
@@ -108,7 +108,7 @@ final class StorageConfiguration
                             ->min(1)
                         ->end()
                         ->arrayNode('allowed_mime_types')
-                            ->info('The DETECTED types accepted. A deployment may narrow this, or widen it to what a case genuinely carries (application/pdf, say): a widened type is keyed by its own extension, and simply gets no thumbnail unless an engine can read it.')
+                            ->info('The DETECTED types accepted. The default is one of each kind the Files hub names — photographs, documents (application/pdf) and tracks (application/gpx+xml, plus application/xml and text/xml, which is what a GPX\'s bytes actually detect as). A deployment may NARROW this, or widen it further: a widened type is keyed by its own extension, and simply gets no thumbnail unless an engine can read it.')
                             ->scalarPrototype()->cannotBeEmpty()->end()
                             ->defaultValue(EvidenceConstraints::DEFAULT_MIME_TYPES)
                             ->requiresAtLeastOneElement()
