@@ -21,6 +21,7 @@ use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Symfony\UX\Icons\UXIconsBundle;
@@ -34,7 +35,10 @@ use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Service\EvidenceStorage;
 use Uhifadhi\Storage\Tests\Integration\Fixtures\StubEvidenceVoter;
 use Uhifadhi\Storage\Tests\Integration\Fixtures\StubFileSource;
+use Uhifadhi\Storage\Tests\Integration\Fixtures\StubUploadPageController;
+use Uhifadhi\Storage\Tests\Integration\Fixtures\StubUploadTarget;
 use Uhifadhi\Storage\UhifadhiStorageBundle;
+use Uhifadhi\Storage\Upload\UploadTargetInterface;
 
 /**
  * The smallest installation this bundle can live in: framework + twig +
@@ -204,6 +208,13 @@ final class TestKernel extends Kernel
             'ignore_not_found' => true,
         ]);
 
+        // The stand-in installation's own templates, under a namespace no bundle
+        // owns — so a template of this suite's can never be mistaken for one
+        // this bundle ships.
+        $container->extension('twig', [
+            'paths' => [__DIR__.'/Fixtures/templates' => 'StubHost'],
+        ]);
+
         // The OWNING MODULE's voter, played by a fixture. Tagged by hand — a
         // reusable-bundle test kernel does not autoconfigure, exactly as the
         // real patrol/incident bundles tag their own.
@@ -217,12 +228,29 @@ final class TestKernel extends Kernel
             ->set(StubFileSource::class)
             ->tag(FileSourceInterface::TAG);
 
+        // THE OWNING MODULE OF AN UPLOAD, played by a fixture, tagged by hand for
+        // the third time and for the third same reason. The endpoint's whole
+        // behaviour is "ask the module", so a kernel with no target would
+        // exercise the questions and never the answers.
+        $container->services()
+            ->set(StubUploadTarget::class)
+            ->tag(UploadTargetInterface::TAG);
+
+        // THE STAND-IN MODULE'S ONE SCREEN — the page that writes the Twig line.
+        // Public, because the router fetches a controller from the container
+        // directly.
+        $container->services()
+            ->set(StubUploadPageController::class)
+            ->args([new Reference('twig')])
+            ->public();
+
         // Public aliases so the tests can reach private services. The routes
         // reference them too, but a test needs a handle of its own.
         foreach ([
             EvidenceStorage::class => 'storage.evidence_storage',
             FileRegistry::class => 'storage.file_registry',
             StubFileSource::class => StubFileSource::class,
+            StubUploadTarget::class => StubUploadTarget::class,
             \Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceRegistry::class => 'shell.widget.surfaces',
             \Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetService::class => 'shell.widget.service',
             \Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetEndpoint::class => 'shell.widget.endpoint',
@@ -244,6 +272,15 @@ final class TestKernel extends Kernel
         // ships its welcome route as a RESOURCE it never loads; an application
         // imports it, and this kernel is an application.
         $routes->import(ShellBundle::ROUTES);
+
+        // The stand-in module's screen. Added rather than imported: a fixture
+        // controller carrying an #[Route] would be swept up by a directory
+        // import in some other suite, and a route only one suite uses should be
+        // named where that suite can see it.
+        $routes->add('stub_upload_page', '/stub/upload/{target}')
+            ->controller(StubUploadPageController::class)
+            ->requirements(['target' => '.+'])
+            ->methods(['GET']);
     }
 
     public function build(ContainerBuilder $container): void

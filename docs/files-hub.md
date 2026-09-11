@@ -12,7 +12,8 @@ dies. Two consequences run through every line of this feature:
 
 - **There is no upload control anywhere on the hub**, and that is a rule rather
   than an omission. A file arrives by being attached to a record, on that
-  record's own page.
+  record's own page — through the [upload component](uploads.md), which this
+  bundle also owns and which the hub deliberately does not draw.
 - **Every tile, row and list entry carries its owner as a link.** A file card
   with no owner tag would be a lie about the model.
 

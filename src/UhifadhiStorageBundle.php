@@ -28,12 +28,17 @@ use Uhifadhi\Bundle\ShellBundle\ShellBundle;
 use Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceInterface;
 use Uhifadhi\Storage\Controller\EvidenceController;
 use Uhifadhi\Storage\Controller\FilesController;
+use Uhifadhi\Storage\Controller\UploadController;
 use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
+use Uhifadhi\Storage\Service\UploadService;
 use Uhifadhi\Storage\Shell\FilesNavigation;
 use Uhifadhi\Storage\Twig\FilesExtension;
+use Uhifadhi\Storage\Twig\UploadExtension;
+use Uhifadhi\Storage\Twig\UploadRuntime;
+use Uhifadhi\Storage\Upload\UploadTargetInterface;
 use Uhifadhi\Storage\Widget\FilesWidgets;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -269,6 +274,33 @@ final class UhifadhiStorageBundle extends AbstractBundle
                     service('security.token_storage'),
                 ])
                 ->public();
+
+            /*
+             * THE UPLOAD FEATURE — the service, and the ONE endpoint every file
+             * in the product arrives through.
+             *
+             * Behind the same guard as the serving route, for a stronger reason:
+             * this one WRITES. Without SecurityBundle there is no token storage
+             * to read a person from, so no target could be asked whether that
+             * person may attach anything — and a host in that state gets no
+             * endpoint at all rather than one that accepts files from strangers.
+             */
+            $services->set('storage.upload_service', UploadService::class)
+                ->args([
+                    service('storage.upload_targets'),
+                    service('storage.evidence_storage'),
+                    service('storage.evidence_constraints'),
+                    service('router'),
+                ]);
+            $services->alias(UploadService::class, 'storage.upload_service');
+
+            $services->set(UploadController::class)
+                ->args([
+                    service('storage.upload_service'),
+                    service('security.csrf.token_manager'),
+                    service('security.token_storage'),
+                ])
+                ->public();
         }
 
         /*
@@ -306,6 +338,36 @@ final class UhifadhiStorageBundle extends AbstractBundle
         if ($hasTwig) {
             $services->set('storage.twig_extension', FilesExtension::class)
                 ->tag('twig.extension');
+        }
+
+        /*
+         * `render_upload()` — the ONE Twig line a module writes to gain uploads.
+         *
+         * Twig AND security, because the function mints a CSRF token and names
+         * routes that only exist behind the security guard above; a host without
+         * either would get a function that renders a box with no endpoint behind it.
+         * NOT conditional on the four Files screens: the upload component is the
+         * other thing this bundle shares, and a host that runs modules with no
+         * hub still needs a way to receive a file.
+         *
+         * The extension declares; the runtime builds. Twig constructs every
+         * extension as soon as the `twig` service is built — which an image build
+         * does, with no request behind it — so anything holding a router, a token
+         * manager and a registry belongs in a runtime, constructed on the first
+         * render. The core's ShellExtension states the same reasoning.
+         */
+        if ($hasTwig && $hasSecurity) {
+            $services->set('storage.upload_twig_extension', UploadExtension::class)
+                ->tag('twig.extension');
+
+            $services->set('storage.upload_twig_runtime', UploadRuntime::class)
+                ->args([
+                    service('twig'),
+                    service('storage.upload_service'),
+                    service('router'),
+                    service('security.csrf.token_manager'),
+                ])
+                ->tag('twig.runtime');
         }
 
         if ($screens) {
@@ -381,6 +443,12 @@ final class UhifadhiStorageBundle extends AbstractBundle
         // tags its source by hand. See FileSourceInterface.
         $container->registerForAutoconfiguration(FileSourceInterface::class)
             ->addTag(FileSourceInterface::TAG);
+
+        // And for the upload contribution point, with the same caveat once more:
+        // a MODULE shipped as a reusable bundle is not autoconfigured and tags
+        // its target by hand. See UploadTargetInterface.
+        $container->registerForAutoconfiguration(UploadTargetInterface::class)
+            ->addTag(UploadTargetInterface::TAG);
     }
 
     /**

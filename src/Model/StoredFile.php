@@ -23,19 +23,27 @@ namespace Uhifadhi\Storage\Model;
 final readonly class StoredFile
 {
     /**
-     * @param string      $key      relative key of the original, inside the evidence storage
-     * @param string      $mimeType the DETECTED type — never what the client claimed
-     * @param int         $byteSize size of the original, in bytes
-     * @param string|null $thumbKey relative key of the ~400px preview, or NULL when nothing
-     *                              on this machine could decode the source (typically HEIC
-     *                              without Imagick+libheif). Null means "there is no preview",
-     *                              stated plainly, rather than a key pointing at nothing.
+     * @param string      $key        relative key of the original, inside the evidence storage
+     * @param string      $mimeType   the DETECTED type — never what the client claimed
+     * @param int         $byteSize   size of the original, in bytes
+     * @param string|null $thumbKey   relative key of the ~400px preview, or NULL when nothing
+     *                                on this machine could decode the source (typically HEIC
+     *                                without Imagick+libheif). Null means "there is no preview",
+     *                                stated plainly, rather than a key pointing at nothing.
+     * @param string|null $clientName the NAME the file arrived under, carried across so the
+     *                                receiving module can print it without re-reading the
+     *                                request. A basename only — never a path, and never the
+     *                                extension that decided the stored key, which is derived
+     *                                from the bytes. Null where nothing offered one (an
+     *                                importer reading a stream). It is text somebody typed:
+     *                                print it, never build a path from it.
      */
     public function __construct(
         public string $key,
         public string $mimeType,
         public int $byteSize,
         public ?string $thumbKey = null,
+        public ?string $clientName = null,
     ) {
     }
 

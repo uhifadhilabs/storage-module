@@ -17,6 +17,7 @@ use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\UnableToReadFile;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Uhifadhi\Storage\Exception\EvidenceNotFoundException;
 use Uhifadhi\Storage\Exception\EvidenceRejectedException;
 use Uhifadhi\Storage\Exception\EvidenceStorageFailedException;
@@ -96,7 +97,25 @@ final class EvidenceStorage
             $mimeType ?? 'application/octet-stream',
             false === $size ? 0 : $size,
             $this->writeThumbnail($key, $sourcePath, $mimeType),
+            self::clientNameOf($file),
         );
+    }
+
+    /**
+     * What the file arrived called, so the module that receives it can print a
+     * name without re-reading the request.
+     *
+     * A BASENAME of the client's own name, because that is the only part of it
+     * ever shown. Nothing here builds a path from it — the stored key was
+     * decided from the BYTES, several lines above, and that ordering is the
+     * whole reason an upload directory cannot end up holding a ".php".
+     */
+    private static function clientNameOf(\SplFileInfo $file): ?string
+    {
+        $offered = $file instanceof UploadedFile ? $file->getClientOriginalName() : $file->getFilename();
+        $name = basename(trim($offered));
+
+        return '' === $name ? null : mb_substr($name, 0, 160);
     }
 
     /**

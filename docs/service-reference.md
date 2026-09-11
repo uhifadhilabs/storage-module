@@ -20,6 +20,10 @@
 | `storage.files_surface` | `FilesSurface` | The context every hub widget renders from. |
 | `storage.settings` | `StorageSettings` | "Where files go", from configuration only. |
 | `storage.twig_extension` | `FilesExtension` | Registered wherever there is a Twig. |
+| `storage.upload_targets` | `UploadTargetRegistry` | Collects the tagged upload targets. Registered unconditionally. |
+| `storage.upload_service` | `UploadService` | The whole of what happens when a file arrives. Security only. |
+| `storage.upload_twig_extension` | `UploadExtension` | Declares `render_upload()`. Twig + security only. |
+| `storage.upload_twig_runtime` | `UploadRuntime` | Builds it, lazily, on the first render. |
 | `storage.widget_surface` | `FilesWidgets` | The `files` dashboard. Hub screens only. |
 | `storage.navigation` | `FilesNavigation` | The sidebar's Files row. Hub screens only. |
 
@@ -29,12 +33,16 @@
 |---|---|
 | `uhifadhi.evidence_access_voter` | a module's voter, answering for its own key prefix |
 | `storage.file_source` | a module's `FileSourceInterface`, putting its files on the hub |
+| `storage.upload_target` | a module's `UploadTargetInterface`, saying what a file attached to its records may become |
 | `uhifadhi.widget_surface` | `storage.widget_surface` — the `files` dashboard, declared into `ShellBundle`'s widget registry |
 | `shell.nav_section` | `storage.navigation` — the sidebar row, declared into `ShellBundle`'s navigation |
 
 ## Routes
 
 `storage_evidence_show` — registered only when SecurityBundle is present.
+`storage_upload` (`POST /files/upload`) and `storage_upload_remove`
+(`DELETE /files/{key}`) — the upload endpoint, behind the same guard for a
+stronger reason: they write. See [uploads.md](uploads.md).
 The hub's own eleven (`storage_files`, `storage_files_widgets` and the eight
 writes behind it, `storage_files_show`, `storage_files_remove`,
 `storage_files_settings`) are registered only where SecurityBundle and TwigBundle

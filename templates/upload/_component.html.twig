@@ -1,0 +1,73 @@
+{# ═══════════════════════════════════════════════════════════════════════════
+   THE UPLOAD COMPONENT — one component, two presentations, one behaviour.
+
+   Every place a file enters the product wears one of these. Rendered by
+   `render_upload(target, presentation, attrs)`; its behaviour is
+   assets/controllers/upload_controller.js; its vocabulary is the SHELL's
+   `.upl-*`, shipped in shell.css ahead of this component for exactly this
+   reason — a file enters through more than one door, so the box belongs to the
+   frame rather than to whichever module needed it first. Nothing here defines a
+   class, a token or an inline style.
+
+   WHAT IS SERVER-RENDERED AND WHAT IS NOT. Only the IDLE state is markup: the
+   waiting zone, or the one add tile. Every other state — the queue, the
+   progress, the refusal, the finished chip, the removal question — is drawn by
+   the controller, because each of them is about a file that did not exist when
+   the page was rendered. The idle state is snapshotted on connect and restored,
+   so its wording lives in one place and is the template's.
+
+   THE PICKER IS NOT HERE, DELIBERATELY. An `<input type="file">` cannot sit
+   inside the add tile (a `<button>` may not contain form controls) and must not
+   sit beside it (it would take a cell of the grid). The controller creates it,
+   which also means this template never ships a control that does nothing.
+
+   THE TILE'S SIBLINGS ARE THE GRID'S. In the tile presentation this element is
+   ONE CELL of the module's own evidence grid, and the tiles the controller draws
+   while a file is in flight are inserted beside it, in that same grid — which is
+   why `.upl-tile` states its box once and no state changes its size or radius.
+   ═════════════════════════════════════════════════════════════════════════ #}
+
+{%- set kinds = constraints.extensions|join(' · ') -%}
+{%- set sizeLabel = constraints.maxBytes|storage_bytes -%}
+
+{#- Everything the controller was told, spelled from Uhifadhi\Storage\Upload\UploadDom
+    so the same string appears in the PHP, in this template and in the asset.
+    UploadSeamTest is what keeps the three the same. -#}
+{%- set wiring -%}
+    data-controller="uhifadhi--storage-module--upload"
+    data-upl-root
+    data-upl-target="{{ target }}"
+    data-upl-token="{{ token }}"
+    data-upl-upload-url="{{ uploadUrl }}"
+    data-upl-remove-url="{{ removeUrl }}"
+    data-upl-accept="{{ constraints.accept }}"
+    data-upl-max-files="{{ constraints.maxFiles }}"
+    data-upl-presentation="{{ presentation }}"
+    {%- if attrs.input is defined %} data-upl-input-name="{{ attrs.input }}"{% endif -%}
+    {%- for name, value in attrs|filter((value, name) => name not in ['input', 'label']) %} {{ name }}="{{ value }}"{% endfor -%}
+{%- endset -%}
+
+{% if presentation == 'tile' %}
+    {#- ONE CELL OF AN EVIDENCE GRID. Dashed, the plus, the label — and it is a
+        real <button>, so the keyboard reaches it without a line of ours. -#}
+    <button type="button" class="upl-tile idle" {{ wiring }}>
+        {{ ux_icon('storage:plus', {width: 15, height: 15}) }}
+        <span class="lbl">{{ attrs.label|default('Add evidence') }}</span>
+    </button>
+{% else %}
+    {#- RECEIVING THE FILE IS THE STEP, so the component takes the width it needs
+        and states its own rules. -#}
+    <div class="upl-zone" {{ wiring }}>
+        {{ ux_icon('storage:upload', {width: 26, height: 26}) }}
+        <span class="lead" data-upl-lead>{{ attrs.label|default('Drop files here, or') }}
+            <a href="#" data-upl-browse>browse</a></span>
+        {#- The queue. Empty and hidden until there is a file in it: an empty box
+            with a border would be a state the design does not have. -#}
+        <div class="upl-list" data-upl-list hidden></div>
+        {#- THE RULE, STATED UP FRONT. The design is explicit that the allowed
+            kinds and the size limit are read here and never discovered by being
+            refused — so both figures come from the very constraints the endpoint
+            enforces, and neither is typed. -#}
+        <span class="upl-kinds">{{ kinds }} &nbsp;·&nbsp; up to {{ sizeLabel }} each · {{ constraints.maxFiles }} files at a time</span>
+    </div>
+{% endif %}

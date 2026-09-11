@@ -7,6 +7,7 @@
 
 - [patrol-module](#patrol-module)
 - [incident-module](#incident-module)
+- [Letting people put a file there](#letting-people-put-a-file-there)
 
 ## patrol-module
 
@@ -110,3 +111,19 @@ design drives the data model. When it is:
 `EvidenceKindEnum` already exists in incidents and is orthogonal to this: it
 classifies what a piece of evidence *is*, while the key prefix records who owns
 the bytes.
+
+## Letting people put a file there
+
+Everything above is about a module that already HAS the bytes and needs somewhere
+to keep them. Letting a person attach one from a page is a separate contract and
+a much shorter one: implement
+[`UploadTargetInterface`](uploads.md), tag it, and write
+
+```twig
+{{ render_upload('incident:' ~ incident.uuid, 'tile') }}
+```
+
+No controller, no route, no JavaScript, no stylesheet. The component, the
+endpoint, the progress, the refusal sentences and the removal question are all
+this bundle's — see [uploads.md](uploads.md) for the contract and a worked
+module.

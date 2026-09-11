@@ -1,0 +1,29 @@
+{# A HOST PAGE THAT USES THE COMPONENT — the stand-in installation's one screen.
+
+   It is deliberately bare: no shell frame, no stylesheet, nothing but the Twig
+   line a module writes. What the suite asserts about it is therefore about the
+   COMPONENT and never about a page that happened to surround it.
+
+   Both presentations, and a target that does not resolve, because "draws
+   nothing" is a state of the component like any other. #}
+<!doctype html>
+<html lang="en">
+<body>
+<div class="c" data-stub="zone">{{ render_upload(target, 'zone') }}</div>
+
+<div class="i-evgrid" data-stub="tile">
+    {# The tiles a module server-rendered. They gain a working remove from the
+       component beside them, without the module writing a line of JavaScript. #}
+    <span class="i-ph" data-stub="kept">
+        <i>IMG_1204.jpg · 11:02</i>
+        <button type="button" class="rm" data-upl-remove data-upl-key="stub/open/kept.jpg"
+                aria-label="Remove this evidence">&times;</button>
+    </span>
+    {{ render_upload(target, 'tile', {label: 'Add evidence'}) }}
+</div>
+
+<div data-stub="unknown">{{ render_upload('nobody:0199abcd', 'tile') }}</div>
+
+<div data-stub="form">{{ render_upload(target, 'zone', {input: 'evidence[]'}) }}</div>
+</body>
+</html>

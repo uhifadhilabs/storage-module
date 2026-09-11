@@ -9,6 +9,7 @@ authenticated route by which any of it comes back out.
 - [What it is](#what-it-is)
 - [Installation](#installation)
 - [Getting started](#getting-started)
+- [Uploads: one interface, one Twig line](#uploads-one-interface-one-twig-line)
 - [Learn more](#learn-more)
 - [License](#license)
 
@@ -20,10 +21,16 @@ allowlist and size cap, thumbnail generation, and the authenticated serving
 route. Which record a file hangs off, and who may read it, stays with the module
 that wrote the key — see [the charter](docs/charter.md).
 
+It also owns the whole **upload feature** — the component, one endpoint and a
+target contract — because a file used to enter the product through five doors
+that each drew their own box, their own error and their own missing progress
+bar. See [Uploads](#uploads-one-interface-one-twig-line).
+
 On top of that machinery it ships one optional cross-module screen, the **Files
 hub** (`/files`), which is a dashboard on the widget machinery `ShellBundle`
 ships — which is why the core, `uhifadhi/uhifadhi`, is a hard requirement rather
-than a suggestion.
+than a suggestion. The hub itself has no upload: a file arrives by being attached
+to a record, never by being put in a folder.
 
 ## Installation
 
@@ -96,12 +103,51 @@ claims it and agrees.
 Configuration (a different adapter, a narrower allowlist, the Files hub) is
 optional and layered on from there.
 
+## Uploads: one interface, one Twig line
+
+A module that wants people to be able to attach a file somewhere does not write
+a controller, a route, a stylesheet or a line of JavaScript. It implements
+`UploadTargetInterface`, tags it, and writes one line in its template.
+
+```php
+final readonly class SightingEvidenceTarget implements UploadTargetInterface
+{
+    public function kind(): string { return 'sighting'; }                      // the key prefix
+    public function accepts(string $targetId): ?object { /* the record, or null */ }
+    public function mayUpload(object $record, UserInterface $user): bool { /* … */ }
+    public function constraints(object $record): UploadConstraints { /* kinds, size, how many */ }
+    public function received(object $record, StoredFile $file, UserInterface $user): UploadReceipt
+    {
+        /* write your row; say what the file became */
+    }
+    public function mayRemove(string $key, UserInterface $user): bool { /* … */ }
+    public function removed(string $key, UserInterface $user): void { /* unpick your row */ }
+}
+```
+
+```php
+$services->set('sighting.upload_target', SightingEvidenceTarget::class)
+    ->args([/* … */])
+    ->tag(UploadTargetInterface::TAG);
+```
+
+```twig
+{{ render_upload('sighting:' ~ sighting.uuid, 'tile') }}
+```
+
+Two presentations — `zone`, a dropzone card where receiving the file IS the
+step, and `tile`, one cell of a grid of things already attached — one endpoint
+(`POST /files/upload`, `DELETE /files/{key}`), and every refusal a sentence
+written by whoever refused. The full contract, the worked example, the events and
+the `controllers.json` entry are in [docs/uploads.md](docs/uploads.md).
+
 ## Learn more
 
 - [docs/charter.md](docs/charter.md) — what belongs in this bundle and what stays in the owning module.
 - [docs/configuration.md](docs/configuration.md) — the full `storage.yaml` reference: local and S3-compatible object storage, and why visibility is not a setting.
 - [docs/evidence-api.md](docs/evidence-api.md) — `EvidenceStorage`, the key rules, the three exceptions, validation and thumbnails.
 - [docs/serving-and-permissions.md](docs/serving-and-permissions.md) — the serving route and the permission contribution point: voters, deny-by-default, and enumeration.
+- [docs/uploads.md](docs/uploads.md) — the upload component and `UploadTargetInterface`: the contract, a worked module, the endpoint, the refusal sentences and the events.
 - [docs/files-hub.md](docs/files-hub.md) — the cross-module `/files` screens: what an installation wires, the widgets, `FileSourceInterface`, and removal.
 - [docs/adopting-in-a-module.md](docs/adopting-in-a-module.md) — step-by-step adoption for patrol-module and incident-module.
 - [docs/service-reference.md](docs/service-reference.md) — service ids, classes, the tag and the route.

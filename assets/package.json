@@ -1,11 +1,16 @@
 {
     "name": "@uhifadhi/storage-module",
-    "description": "Front-end assets of the Storage module — the file preview every surface opens a file in. Mapped into hosts via AssetMapper/StimulusBundle.",
+    "description": "Front-end assets of the Storage module — the file preview every surface opens a file in, and the upload component every file enters the product through. Mapped into hosts via AssetMapper/StimulusBundle.",
     "license": "AGPL-3.0-or-later",
     "symfony": {
         "controllers": {
             "preview": {
                 "main": "controllers/preview_controller.js",
+                "fetch": "eager",
+                "enabled": true
+            },
+            "upload": {
+                "main": "controllers/upload_controller.js",
                 "fetch": "eager",
                 "enabled": true
             }

@@ -16,6 +16,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
 use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\Registry\UploadTargetRegistry;
 use Uhifadhi\Storage\Security\EvidenceAccessDecider;
 use Uhifadhi\Storage\Service\EvidenceStorage;
 use Uhifadhi\Storage\Service\FilesSurface;
@@ -23,6 +24,7 @@ use Uhifadhi\Storage\Service\StorageSettings;
 use Uhifadhi\Storage\Thumbnail\GdThumbnailer;
 use Uhifadhi\Storage\Thumbnail\ImagickThumbnailer;
 use Uhifadhi\Storage\Thumbnail\ThumbnailGenerator;
+use Uhifadhi\Storage\Upload\UploadTargetInterface;
 
 /*
  * The bundle's static service wiring.
@@ -131,4 +133,20 @@ return static function (ContainerConfigurator $container): void {
     $services->set('storage.files_surface', FilesSurface::class)
         ->args([service('storage.file_registry'), service('storage.settings')]);
     $services->alias(FilesSurface::class, 'storage.files_surface');
+
+    /*
+     * THE UPLOAD CONTRIBUTION POINT — the third of this bundle's three, and the
+     * same shape as the other two: an iterator of whatever the installed modules
+     * tagged, empty on a host that has installed none. An empty registry answers
+     * for no target, and `render_upload()` then draws nothing at all rather than
+     * a door that cannot open.
+     *
+     * Registered unconditionally, unlike the service and the endpoint that use
+     * it: knowing WHICH modules can receive a file is a question about the
+     * installation, and it has the same answer on a host that never mounted the
+     * write endpoint.
+     */
+    $services->set('storage.upload_targets', UploadTargetRegistry::class)
+        ->args([tagged_iterator(UploadTargetInterface::TAG)]);
+    $services->alias(UploadTargetRegistry::class, 'storage.upload_targets');
 };
