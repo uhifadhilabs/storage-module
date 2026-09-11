@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Twig;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
 use Twig\Extension\RuntimeExtensionInterface;
@@ -28,11 +30,12 @@ use Uhifadhi\Storage\Upload\UploadDom;
  * token, the allowed kinds, the size cap, the queue cap — is the storage's, and
  * a module that had to pass any of it would be a module that could get it wrong.
  *
- * A TARGET THAT DOES NOT RESOLVE DRAWS NOTHING. Not a broken box and not an
- * error: a template naming a record that is not there, or a kind no installed
- * module claims, is a page that should simply not offer an upload. The endpoint
- * would refuse it anyway, and offering a door that cannot open is worse than no
- * door.
+ * A TARGET THAT WILL NOT OPEN DRAWS NOTHING. Not a broken box, not an error and
+ * not a greyed-out one: a template naming a record that is not there, a kind no
+ * installed module claims, and a person this record will not take a file from
+ * are all pages that should simply not offer an upload. The endpoint asks all
+ * three again on every call, so nothing is being guarded here — a door that
+ * cannot open is just worse than no door.
  */
 final readonly class UploadRuntime implements RuntimeExtensionInterface
 {
@@ -45,6 +48,7 @@ final readonly class UploadRuntime implements RuntimeExtensionInterface
         private UploadService $uploads,
         private UrlGeneratorInterface $urls,
         private CsrfTokenManagerInterface $csrf,
+        private TokenStorageInterface $tokens,
     ) {
     }
 
@@ -59,7 +63,7 @@ final readonly class UploadRuntime implements RuntimeExtensionInterface
      */
     public function render(string $target, string $presentation = self::ZONE, array $attrs = []): string
     {
-        $constraints = $this->uploads->constraintsFor($target);
+        $constraints = $this->uploads->constraintsFor($target, $this->currentUser());
         if (null === $constraints) {
             return '';
         }
@@ -80,5 +84,12 @@ final readonly class UploadRuntime implements RuntimeExtensionInterface
             // module's screen must not depend on it.
             'token' => $this->csrf->getToken(UploadService::CSRF_TOKEN_ID)->getValue(),
         ]);
+    }
+
+    private function currentUser(): ?UserInterface
+    {
+        $user = $this->tokens->getToken()?->getUser();
+
+        return $user instanceof UserInterface ? $user : null;
     }
 }

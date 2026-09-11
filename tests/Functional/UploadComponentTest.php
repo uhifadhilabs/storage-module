@@ -120,6 +120,16 @@ final class UploadComponentTest extends FilesTestCase
         self::assertSame('', trim($this->page()->filter('[data-stub=unknown]')->html()));
     }
 
+    /**
+     * A record that will not take a file from THIS person gets no component
+     * either — and for the same reason. A greyed-out dropzone would tell a
+     * reader that a screen exists and they are not trusted with it.
+     */
+    public function testARecordThatWillNotTakeAFileFromThisPersonDrawsNothing(): void
+    {
+        self::assertSame('', trim($this->page()->filter('[data-stub=locked]')->html()));
+    }
+
     /** The classic-form door, for a page that posts rather than listens. */
     public function testAPageMayNameAHiddenInputForTheKey(): void
     {

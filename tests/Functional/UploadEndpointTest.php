@@ -187,11 +187,27 @@ final class UploadEndpointTest extends FilesTestCase
         self::assertSame([], $this->target()->received);
     }
 
+    /**
+     * A VISITOR WHO IS NOT SIGNED IN IS OFFERED NO UPLOAD AND CANNOT MAKE ONE.
+     *
+     * Both halves, because the first is what makes the second unreachable: the
+     * component draws nothing for them, so no page ever mints them a token, so
+     * there is no way for such a request to get past the token check to the
+     * user check behind it.
+     */
     public function testNobodySignedInMayUploadAnything(): void
     {
         $client = self::createClient();
 
-        $this->upload($client, 'stub:open', self::PHOTO, 'IMG_1204.jpg');
+        $page = $client->request('GET', '/stub/upload/stub:open');
+        self::assertCount(0, $page->filter('[data-upl-token]'), 'no component, so no token to send');
+
+        $client->request(
+            'POST',
+            '/files/upload',
+            ['target' => 'stub:open'],
+            ['file' => self::file(self::PHOTO, 'IMG_1204.jpg')],
+        );
 
         self::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         self::assertSame([], $this->target()->received);

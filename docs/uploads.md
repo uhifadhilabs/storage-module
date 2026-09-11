@@ -174,9 +174,13 @@ presentation, attrs)`:
   `input` (the name of a hidden input a finished upload writes its key into, for
   a page that posts a classic form rather than listening for the event).
 
-**A target that does not resolve draws nothing** — not a broken box and not an
-error. A template naming a record that is not there, or a kind no installed
-module claims, is a page that should simply not offer an upload.
+**A target that will not open draws nothing** — not a broken box, not an error
+and not a greyed-out one. A kind no installed module claims, a record that is not
+there, and a person the record will not take a file from are all pages that
+should simply not offer an upload; `mayUpload()` is asked at render time as well
+as at the endpoint. A greyed-out dropzone would tell a reader that a screen
+exists and they are not trusted with it, which is a worse product than not
+mentioning it.
 
 ## The two presentations
 

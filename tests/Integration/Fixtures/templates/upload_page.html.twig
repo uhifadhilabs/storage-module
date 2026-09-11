@@ -24,6 +24,10 @@
 
 <div data-stub="unknown">{{ render_upload('nobody:0199abcd', 'tile') }}</div>
 
+{# A record that will not take a file from this person. The component draws
+   nothing rather than a door that cannot open. #}
+<div data-stub="locked">{{ render_upload('stub:locked', 'tile') }}</div>
+
 <div data-stub="form">{{ render_upload(target, 'zone', {input: 'evidence[]'}) }}</div>
 </body>
 </html>

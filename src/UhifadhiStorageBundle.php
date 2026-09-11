@@ -366,6 +366,7 @@ final class UhifadhiStorageBundle extends AbstractBundle
                     service('storage.upload_service'),
                     service('router'),
                     service('security.csrf.token_manager'),
+                    service('security.token_storage'),
                 ])
                 ->tag('twig.runtime');
         }

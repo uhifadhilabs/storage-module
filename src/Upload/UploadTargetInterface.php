@@ -103,7 +103,7 @@ interface UploadTargetInterface
     /**
      * MAY THIS PERSON ATTACH A FILE HERE?
      *
-     * $record is what {@see accepts()} returned. The user is never null: the
+     * $record is what {@see accepts()} returned. $user is never null: the
      * endpoint refuses an anonymous upload before any target is asked, because
      * no module should have to remember to.
      */

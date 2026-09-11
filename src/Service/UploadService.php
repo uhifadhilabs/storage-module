@@ -77,16 +77,31 @@ final readonly class UploadService
     }
 
     /**
-     * What this target takes, for the component to state up front — or null
-     * where the target does not resolve, which is a template naming a record
-     * that is not there and must not draw a droppable box.
+     * WHAT THIS TARGET TAKES FROM THIS PERSON — for the component to state up
+     * front — or null where it should not be drawn at all.
+     *
+     * Null covers three cases and they are the same page: a kind no installed
+     * module claims, a record that is not there, and a person this record will
+     * not take a file from. The endpoint asks all three again on every call, so
+     * this is not the guard; it is the component refusing to draw a door it
+     * knows will not open. A greyed-out dropzone would tell a reader that a
+     * screen exists and they are not trusted with it, which is a worse product
+     * than not mentioning it.
      */
-    public function constraintsFor(string $target): ?UploadConstraints
+    public function constraintsFor(string $target, ?UserInterface $user): ?UploadConstraints
     {
+        if (null === $user) {
+            return null;
+        }
+
         $module = $this->targets->forTarget($target);
         $record = $module?->accepts(UploadTargetRegistry::idOf($target));
 
-        return null === $module || null === $record ? null : $module->constraints($record);
+        if (null === $module || null === $record || !$module->mayUpload($record, $user)) {
+            return null;
+        }
+
+        return $module->constraints($record);
     }
 
     /**
