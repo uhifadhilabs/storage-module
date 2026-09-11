@@ -27,6 +27,7 @@ the modules that own them, through [one interface](#putting-a-modules-files-on-t
 - [What an installation wires](#what-an-installation-wires)
 - [The sidebar row](#the-sidebar-row)
 - [The screens](#the-screens)
+- [The filter contract](#the-filter-contract)
 - [Putting a module's files on the hub](#putting-a-modules-files-on-the-hub)
 - [Removal — remove, never delete](#removal--remove-never-delete)
 - [The design this hub is a port of](#the-design-this-hub-is-a-port-of)
@@ -134,6 +135,61 @@ Two deviations from the design's own URL sketch, both deliberate:
   repeat the guard. What may be done to a file is a per-person answer the owning
   record gives, and it is rendered where it is authoritative — an overlay that
   cached a permission would eventually repeat it wrongly.
+
+## The filter contract
+
+**One GET drives the whole surface.** The filter row is eight query parameters and
+nothing more, so the grid, the list and the count can never disagree and a
+narrowed hub is a URL somebody can send:
+
+```
+GET /files?module=&area=&kind=&day=&backend=&thumb=&q=&view=
+```
+
+| Parameter | Control | Values | Narrows by |
+|---|---|---|---|
+| `module` | dropdown chip | a module slug | the owning module |
+| `area` | dropdown chip | an area slug | the area the record belongs to |
+| `day` | dropdown chip | `YYYY-MM-DD` | the day the **handset** took it, never the day it uploaded |
+| `backend` | dropdown chip | a named storage's id | where the bytes are |
+| `kind` | pill | `photo` · `document` · `track` | the **detected** type, never the file's name |
+| `thumb` | pill | `made` · `!made` | whether the one small picture exists |
+| `q` | search box | free text | the file name and the owning record's reference — never the caption, which is the record's |
+| `view` | shape toggle | `grid` · `list` | nothing — one result set in two shapes |
+
+**Four dropdowns and two pill runs, and the difference is a rule.** Module, area,
+day and backend are things a deployment DEFINES and they grow without bound, so
+each collapses into one chip carrying its own counts — the platform's
+grouped-dropdown filter convention. Kind and thumbnail are fixed sets of three or
+four a person clicks constantly, so they stay open as pills. The design draws the
+pills without counts and they carry none.
+
+**A panel's counts respect every other chip.** Each option is counted by running
+the whole filter with that one key replaced, so a panel never promises files
+another choice has already excluded. An option that would leave nothing reads `0`
+rather than vanishing — a filter row that rearranges itself as you use it is one
+nobody can learn.
+
+**Every option is an ordinary link.** A panel option, a pill and the shape toggle
+are all `<a href>` carrying the merged query, so the row filters with scripting
+off; the only script involved is the one that opens a panel
+(`assets/controllers/files_filters_controller.js`). An unreadable parameter is
+IGNORED rather than an error: a filter from a stale bookmark must narrow the hub
+or leave it alone, never take it down.
+
+**`view` is not a narrowing.** It rides in the query so a list survives pressing a
+chip, but it is absent from `FileFilter::isEmpty()` and never decides which files
+answer.
+
+**Where the bytes are is answered ABOUT a file, not BY it.** A `FileEntry` has no
+idea; the installation's module→storage map does, so `FilesSurface` hands that map
+to `FileRegistry::filter()` beside the filter. A deployment with one configured
+storage draws one option, which is the honest answer rather than an invented
+second.
+
+**One row, one copy.** `templates/files/_filters.html.twig` is the row; any widget
+that draws filters includes it and none types a second, because two rows drift
+into two different filter bars.
 
 ## Putting a module's files on the hub
 
