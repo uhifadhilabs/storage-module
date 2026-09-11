@@ -1,0 +1,80 @@
+{# THE FILTER ROW — one convention, one copy (FL·01).
+
+   STATIC TWIN of the `.f-filters` row in files.widgets.js's `browse` entry.
+   Any widget that draws filters INCLUDES THIS FILE; none of them types a second
+   row, because two rows drift into two different filter bars.
+
+   ANYTHING A DEPLOYMENT CAN DEFINE IS A DROPDOWN. Modules, areas, days and
+   storages all grow without bound, so each is one `.i-dd` chip carrying its own
+   counts — and a panel's counts respect every OTHER chip, so it never promises
+   files another choice has already excluded. Only the two fixed sets a person
+   clicks constantly stay open as `.f-fchip` pills, and the design draws those
+   without counts.
+
+   EVERY OPTION IS AN ORDINARY LINK. Unlike the design's visual mock, which
+   filtered the grid client-side, each option is this hub's query with ONE key
+   replaced, so one GET drives the grid, the list and the count together and a
+   narrowed hub is a URL somebody can send. The only thing scripting does here is
+   open a panel — the files-filters controller, which closes on Escape or an
+   outside click and never touches the query.
+
+   The search box is the form itself: the current choices ride along as hidden
+   fields, so pressing Enter on a query never drops the chips.
+
+   → GET /files?module=&area=&kind=&day=&backend=&thumb=&q=&view= #}
+
+{% macro dropdown(head, aria, key, options) %}
+    {%- set picked = options|filter(o => o.on)|first|default(options|first) -%}
+    <span class="i-dd" data-dd>
+        <button type="button" class="mchip i-ddt" data-dd-trigger aria-haspopup="listbox" aria-expanded="false"
+                data-action="uhifadhi--storage-module--files-filters#toggle"><span>{{ picked.label }}</span><span class="i-ddcaret">&#9662;</span></button>
+        <div class="i-ddmenu" data-dd-menu role="listbox" aria-label="{{ aria }}">
+            <span class="i-ddhead">{{ head }}</span>
+            {%- for option in options -%}
+                {%- if loop.index == 2 %}<span class="i-ddsep"></span>{% endif -%}
+                <a class="i-ddopt{{ option.on ? ' on' }}" role="option" aria-selected="{{ option.on ? 'true' : 'false' }}"
+                   data-dd-opt data-dd-label="{{ option.label }}" data-f-filter="{{ key }}" data-f-value="{{ option.value }}"
+                   href="{{ path('storage_files', option.query) }}"><span class="i-dot"></span><span class="i-ddopt-l">{{ option.label }}</span><span class="i-ddopt-n">{{ option.count }}</span></a>
+            {%- endfor -%}
+        </div>
+    </span>
+{% endmacro %}
+
+{% macro pills(label, key, options) %}
+    <span class="lbl">{{ label }}</span>
+    {%- for option in options -%}
+        <a class="f-fchip{{ option.on ? ' on' }}" data-f-filter="{{ key }}" data-f-value="{{ option.value }}"
+           href="{{ path('storage_files', option.query) }}">{{ option.label }}</a>
+    {%- endfor -%}
+{% endmacro %}
+
+{% import _self as row %}
+<form class="f-filters" data-f-filters method="get" action="{{ path('storage_files') }}"
+      data-controller="uhifadhi--storage-module--files-filters">
+    {#- Every choice already made, so the search box carries them rather than
+        clearing them. The shape rides along too: a list is still a list after a
+        search. -#}
+    {%- for name, value in filter.toQuery|filter((v, k) => k != 'q') -%}
+        <input type="hidden" name="{{ name }}" value="{{ value }}">
+    {%- endfor -%}
+
+    {{ row.dropdown('module', 'Filter by module', 'module', facets.module) }}
+    {{ row.dropdown('area', 'Filter by area', 'area', facets.area) }}
+    <span class="sep"></span>
+    {{ row.pills('What', 'kind', facets.kind) }}
+    <span class="sep"></span>
+    {{ row.pills('Thumbnail', 'thumb', facets.thumb) }}
+    <span class="sep"></span>
+    {{ row.dropdown('taken', 'Filter by the day it was taken', 'day', facets.day) }}
+    {{ row.dropdown('where the bytes are', 'Filter by storage', 'backend', facets.backend) }}
+    <span class="sep"></span>
+    {#- The search runs over the FILE NAME and the OWNING RECORD's reference,
+        because those are the two things a person actually remembers. It does not
+        search captions; a caption is the record's, not the file's. -#}
+    <span class="f-search">{{ ux_icon('shell:search') }}<input type="search" name="q" placeholder="A file name, or a record" aria-label="Search files" value="{{ filter.q }}" autocomplete="off" data-f-search></span>
+    <span class="f-shape" role="group" aria-label="Grid or list">
+        <a{{ filter.view == 'grid' ? ' class="on"'|raw }} data-f-shape="grid" title="Thumbnails" aria-label="Thumbnails" href="{{ path('storage_files', filter.withView('grid').toQuery) }}">{{ ux_icon('shell:layout-grid') }}</a>
+        <a{{ filter.view == 'list' ? ' class="on"'|raw }} data-f-shape="list" title="A list" aria-label="A list" href="{{ path('storage_files', filter.withView('list').toQuery) }}">{{ ux_icon('storage:list') }}</a>
+    </span>
+    <span class="f-count" data-f-count><b>{{ files|length }}</b> of {{ total|number_format(0, '.', ' ') }}</span>
+</form>

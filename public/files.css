@@ -131,20 +131,62 @@
 .f-list .num{text-align:right;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px}
 
 /* ── THE FILTER BAR ───────────────────────────────────────────────────────
-   ONE row of controls driving the whole surface, in the same shape the
-   workflow board's filter row uses — labelled runs of chips, a search field
-   and the shape toggle, with the result count on the right. Every chip is a
-   query parameter and nothing more.
-   → GET /files?module=&area=&kind=&from=&to=&thumb=&storage=&q= */
+   ONE row of controls driving the whole surface — two dropdown chips, the two
+   fixed pill runs, two more dropdown chips, a search field and the shape
+   toggle, with the result count on the right. Every chip is a query parameter
+   and nothing more.
+   → GET /files?module=&area=&kind=&day=&backend=&thumb=&q=&view= */
 .f-filters{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 13px;margin:0 0 14px;
   border:1px solid var(--ln);border-radius:11px;background:color-mix(in srgb,var(--fog) 5%,transparent)}
 .f-filters .lbl{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:8.5px;font-weight:700;
   letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-right:-3px}
 .f-filters .sep{width:1px;height:16px;background:var(--ln2);margin:0 3px}
+
+/* THE FILTER DROPDOWNS — module, area, the day it was taken, and where the
+   bytes are. Each is a .mchip trigger (.i-ddt, the shell's chip) opening a
+   floating .i-ddmenu, hidden until the .i-dd carries .open (the files-filters
+   controller toggles it, one at a time). PORTED VERBATIM from the design's
+   uhifadhi.css onto this sheet's token bridge, because THE SHELL SHIPS NO
+   DROPDOWN: its design-system sheet has .mchip but no .i-dd* family, so a module
+   that wants the platform's grouped-dropdown filter bar has to carry the chrome
+   itself, exactly as the incidents module does. HOIST DEBT: two modules now hold
+   identical copies; the third asks for it in the shell instead.
+   The two changes on the way in are the ones a LINK needs that a button does
+   not — text-decoration on .i-ddopt and its hover, since every option here is a
+   real href rather than a script target. */
+.i-dd{position:relative;display:inline-flex}
+.i-ddt{cursor:pointer;background:none}
+.i-ddt .i-ddcaret{font-size:9px;line-height:1;opacity:.7;transition:transform .12s}
+.i-dd.open .i-ddt .i-ddcaret{transform:rotate(180deg)}
+.i-ddmenu{position:absolute;top:calc(100% + 6px);left:0;z-index:50;display:none;
+  flex-direction:column;min-width:196px;padding:5px;gap:1px;
+  background:var(--p1);border:1px solid var(--ln2);border-radius:11px;box-shadow:var(--shadow)}
+.i-dd.open .i-ddmenu{display:flex}
+.i-ddhead{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:8.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--dim);padding:6px 9px 4px}
+.i-ddopt{display:flex;align-items:center;gap:9px;width:100%;text-align:left;cursor:pointer;
+  border:0;background:none;color:var(--tx);font-family:inherit;font-size:12px;
+  padding:7px 9px;border-radius:7px;text-decoration:none}
+.i-ddopt:hover{background:var(--raised);text-decoration:none}
+.i-ddopt.on{background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.i-ddopt-l{flex:1;white-space:nowrap}
+.i-ddopt-n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;color:var(--dim);
+  font-variant-numeric:tabular-nums}
+.i-ddopt.on .i-ddopt-n{color:var(--acc)}
+.i-ddsep{height:1px;background:var(--ln);margin:4px 2px}
+/* The option's hue mark. The hub has no module palette — a file's colour is its
+   picture — so it is drawn transparent and keeps the labels on one rail, which
+   is what the design does for every option it gives no hue. */
+.i-dot{width:8px;height:8px;border-radius:2px;flex:none;background:transparent}
+
+/* THE TWO FIXED PILL RUNS — what a file is, and whether it has a small picture.
+   Three or four values each, clicked constantly, so they stay open where the
+   four unbounded ones collapsed into dropdowns. They are LINKS rather than the
+   design's buttons, which is the only reason text-decoration appears here. */
 .f-fchip{display:inline-flex;align-items:center;gap:6px;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
   font-size:10px;font-weight:600;color:var(--fog);background:none;border:1px solid var(--ln2);
-  border-radius:7px;padding:4px 9px 3px;cursor:pointer;line-height:1.3}
-.f-fchip:hover{color:var(--tx);border-color:var(--fog)}
+  border-radius:7px;padding:4px 9px 3px;cursor:pointer;line-height:1.3;text-decoration:none}
+.f-fchip:hover{color:var(--tx);border-color:var(--fog);text-decoration:none}
 .f-fchip.on{color:var(--accT);background:var(--acc);border-color:var(--acc)}
 /* PORTED: keyed by module slug, like the owner tag's dot above. */
 .f-fchip i{width:6px;height:6px;border-radius:2px;flex:none;font-style:normal}
@@ -154,12 +196,16 @@
 .f-search svg{width:13px;height:13px;color:var(--fog);flex:none}
 .f-search input{border:0;background:none;font-family:inherit;font-size:11.5px;color:var(--tx);width:190px;outline:none}
 .f-search input::placeholder{color:var(--dim)}
+/* The shape toggle is TWO LINKS, not two buttons: which shape is showing rides
+   in the same query as the chips, so a list survives pressing one. The design's
+   values, on the element actually emitted. */
 .f-shape{display:inline-flex;border:1px solid var(--ln2);border-radius:8px;overflow:hidden}
-.f-shape button{border:0;background:none;color:var(--fog);padding:5px 10px;cursor:pointer;display:grid;
-  place-items:center;font-family:inherit}
-.f-shape button+button{border-left:1px solid var(--ln2)}
-.f-shape button svg{width:14px;height:14px;display:block}
-.f-shape button.on{background:var(--acc);color:var(--accT)}
+.f-shape a{border:0;background:none;color:var(--fog);padding:5px 10px;cursor:pointer;display:grid;
+  place-items:center;font-family:inherit;text-decoration:none}
+.f-shape a:hover{text-decoration:none}
+.f-shape a+a{border-left:1px solid var(--ln2)}
+.f-shape a svg{width:14px;height:14px;display:block}
+.f-shape a.on{background:var(--acc);color:var(--accT)}
 .f-count{margin-left:auto;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:10px;color:var(--dim)}
 .f-count b{color:var(--tx)}
 /* Nothing matched. A filter that finds nothing must say which filter to undo. */

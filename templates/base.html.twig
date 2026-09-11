@@ -38,11 +38,11 @@
 
 {% block javascripts %}
     {{ parent() }}
-    {# The hub's OWN behaviour: the filter row, the shape toggle and the removal
-       form. Plain DOM — these run on the hub's four screens only and nothing
-       outside this bundle asks for them. The preview's behaviour is a Stimulus
-       controller instead, because other modules' pages consume it and it has to
-       arm itself wherever it is included. #}
+    {# The hub's OWN behaviour: the removal form, and nothing else. Plain DOM —
+       it runs on the file page only and nothing outside this bundle asks for it.
+       The filter row's dropdowns and the preview are Stimulus controllers
+       instead: both are included into surfaces this file does not render, so
+       each has to arm itself wherever it lands. #}
     <script src="{{ asset('bundles/uhifadhistorage/files.js') }}" defer></script>
 {% endblock %}
 
