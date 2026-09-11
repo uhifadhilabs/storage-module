@@ -80,8 +80,16 @@ export default class extends Controller {
         this.tile = 'tile' === this.attr('presentation');
         /* The tiles this component draws are SIBLINGS in the module's grid, so
            the grid is what is listened to. In the zone presentation everything
-           it draws is inside it. */
-        this.scope = this.tile ? this.element.parentElement || this.element : this.element;
+           it draws is inside it.
+
+           THE NAME IS NOT AN ACCIDENT. Stimulus's Controller defines "scope" as
+           a GETTER, and a module is strict mode, so assigning to that name
+           throws inside connect() and kills the whole component — a box that
+           draws perfectly and swallows every drop. The same holds for element,
+           application, context, identifier, targets, outlets, classes, data and
+           dispatch; UploadControllerNamesTest reads this file and refuses any
+           assignment to one of them. */
+        this.uploadScope = this.tile ? this.element.parentElement || this.element : this.element;
         /* The idle state, remembered rather than re-typed: the wording is the
            template's and returning to it must not invent a second copy. */
         this.idle = this.element.innerHTML;
@@ -105,7 +113,7 @@ export default class extends Controller {
         this.onDrop = this.handleDrop.bind(this);
 
         this.picker.addEventListener('change', this.onPick);
-        this.scope.addEventListener('click', this.onClick);
+        this.uploadScope.addEventListener('click', this.onClick);
         this.element.addEventListener('dragover', this.onOver);
         this.element.addEventListener('dragleave', this.onLeave);
         this.element.addEventListener('drop', this.onDrop);
@@ -117,7 +125,7 @@ export default class extends Controller {
         this.jobs.forEach((xhr) => xhr.abort());
         this.jobs.clear();
         this.picker.removeEventListener('change', this.onPick);
-        this.scope.removeEventListener('click', this.onClick);
+        this.uploadScope.removeEventListener('click', this.onClick);
         this.element.removeEventListener('dragover', this.onOver);
         this.element.removeEventListener('dragleave', this.onLeave);
         this.element.removeEventListener('drop', this.onDrop);
