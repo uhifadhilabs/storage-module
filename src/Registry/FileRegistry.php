@@ -75,11 +75,20 @@ final class FileRegistry
     }
 
     /**
+     * @param array<string, string> $placeByModule which named storage each module's bytes
+     *                                             go to. A FILE DOES NOT KNOW — the
+     *                                             installation's configuration does, and
+     *                                             whoever holds that configuration hands
+     *                                             the map in
+     *
      * @return list<FileEntry>
      */
-    public function filter(FileFilter $filter): array
+    public function filter(FileFilter $filter, array $placeByModule = []): array
     {
-        return array_values(array_filter($this->all(), static fn (FileEntry $file): bool => $filter->keeps($file)));
+        return array_values(array_filter(
+            $this->all(),
+            static fn (FileEntry $file): bool => $filter->keeps($file, $placeByModule[$file->moduleSlug] ?? null),
+        ));
     }
 
     public function find(string $key): ?FileEntry

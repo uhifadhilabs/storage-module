@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Service;
 
 use Uhifadhi\Storage\Enum\FileKindEnum;
+use Uhifadhi\Storage\Model\FileFacet;
 use Uhifadhi\Storage\Model\FileFilter;
+use Uhifadhi\Storage\Model\StoragePlace;
 use Uhifadhi\Storage\Registry\FileRegistry;
 
 /**
@@ -49,6 +51,7 @@ final readonly class FilesSurface
      *     areas: list<array{slug: string, label: string}>,
      *     days: list<string>,
      *     kinds: list<FileKindEnum>,
+     *     facets: array{module: list<FileFacet>, area: list<FileFacet>, day: list<FileFacet>, backend: list<FileFacet>, kind: list<FileFacet>, thumb: list<FileFacet>},
      *     byOwner: list<array{ref: string, label: string, url: string|null, moduleSlug: string, moduleLabel: string, areaLabel: string|null, day: string, files: list<\Uhifadhi\Storage\Model\FileEntry>}>,
      *     byDay: list<array{day: string, files: list<\Uhifadhi\Storage\Model\FileEntry>}>,
      *     byKind: list<array{kind: FileKindEnum, files: int, bytes: int, share: float}>,
@@ -58,7 +61,7 @@ final readonly class FilesSurface
      *     recent: list<\Uhifadhi\Storage\Model\FileEntry>,
      *     biggest: list<\Uhifadhi\Storage\Model\FileEntry>,
      *     waiting: list<\Uhifadhi\Storage\Model\FileEntry>,
-     *     places: list<\Uhifadhi\Storage\Model\StoragePlace>,
+     *     places: list<StoragePlace>,
      *     thumbnailLongEdge: int,
      *     now: \DateTimeImmutable
      * }
@@ -68,7 +71,8 @@ final readonly class FilesSurface
         // "now" is injected rather than read from a clock inside the groupings,
         // so a test can state which week "this week" is.
         $now ??= new \DateTimeImmutable();
-        $files = $this->registry->filter($filter);
+        $placeByModule = $this->placeByModule();
+        $files = $this->registry->filter($filter, $placeByModule);
 
         return [
             'filter' => $filter,
@@ -79,6 +83,7 @@ final readonly class FilesSurface
             'areas' => $this->registry->areas(),
             'days' => $this->registry->days(),
             'kinds' => FileKindEnum::cases(),
+            'facets' => $this->facets($filter, $placeByModule),
             'byOwner' => $this->registry->byOwner($files),
             'byDay' => $this->registry->byDay($files),
             'byKind' => $this->registry->byKind($files),
@@ -92,5 +97,134 @@ final readonly class FilesSurface
             'thumbnailLongEdge' => $this->settings->thumbnailLongEdge(),
             'now' => $now,
         ];
+    }
+
+    /**
+     * THE FILTER ROW, AS DATA.
+     *
+     * Four dropdowns and two pill sets, each a list of options that are this
+     * filter with ONE key replaced — so the row draws as plain links and one GET
+     * moves the grid, the list and the count together.
+     *
+     * A DROPDOWN'S COUNTS RESPECT EVERY OTHER CHIP. Each option is counted by
+     * running the whole filter with that one key replaced, which is the only way
+     * a panel can promise a number the grid will actually show. The pills carry
+     * no count because the design draws none on them.
+     *
+     * @param array<string, string> $placeByModule
+     *
+     * @return array{module: list<FileFacet>, area: list<FileFacet>, day: list<FileFacet>, backend: list<FileFacet>, kind: list<FileFacet>, thumb: list<FileFacet>}
+     */
+    private function facets(FileFilter $filter, array $placeByModule): array
+    {
+        $counted = fn (FileFilter $chosen): int => \count($this->registry->filter($chosen, $placeByModule));
+
+        return [
+            'module' => self::options(
+                $filter,
+                'Every module',
+                array_map(static fn (array $m): array => [$m['slug'], $m['label']], $this->registry->modules()),
+                static fn (FileFilter $f, ?string $v): FileFilter => $f->withModule($v),
+                $filter->module,
+                $counted,
+            ),
+            'area' => self::options(
+                $filter,
+                'Every area',
+                array_map(static fn (array $a): array => [$a['slug'], $a['label']], $this->registry->areas()),
+                static fn (FileFilter $f, ?string $v): FileFilter => $f->withArea($v),
+                $filter->area,
+                $counted,
+            ),
+            'day' => self::options(
+                $filter,
+                'Any day',
+                array_map(static fn (string $d): array => [$d, self::dayLabel($d)], $this->registry->days()),
+                static fn (FileFilter $f, ?string $v): FileFilter => $f->withDay($v),
+                $filter->day,
+                $counted,
+            ),
+            'backend' => self::options(
+                $filter,
+                'Anywhere',
+                array_map(static fn (StoragePlace $p): array => [$p->id, $p->label], $this->settings->places()),
+                static fn (FileFilter $f, ?string $v): FileFilter => $f->withBackend($v),
+                $filter->backend,
+                $counted,
+            ),
+            'kind' => self::options(
+                $filter,
+                'Anything',
+                array_map(static fn (FileKindEnum $k): array => [$k->value, $k->pill()], FileKindEnum::cases()),
+                static fn (FileFilter $f, ?string $v): FileFilter => $f->withKind(null === $v ? null : FileKindEnum::from($v)),
+                $filter->kind?->value,
+                null,
+            ),
+            'thumb' => self::options(
+                $filter,
+                'Either way',
+                [[FileFilter::THUMB_MADE, 'Has one'], [FileFilter::THUMB_MISSING, 'Has none']],
+                static fn (FileFilter $f, ?string $v): FileFilter => $f->withThumb($v),
+                $filter->thumb,
+                null,
+            ),
+        ];
+    }
+
+    /**
+     * One run of options: the one that LETS THE FILTER GO first, then every
+     * value there is, each carrying the query that chooses it.
+     *
+     * @param list<array{string, string}>               $values
+     * @param callable(FileFilter, ?string): FileFilter $choose
+     * @param callable(FileFilter): int|null            $count  null for a run the design draws without counts
+     *
+     * @return list<FileFacet>
+     */
+    private static function options(FileFilter $filter, string $anyLabel, array $values, callable $choose, ?string $current, ?callable $count): array
+    {
+        $facet = static function (string $value, string $label) use ($filter, $choose, $current, $count): FileFacet {
+            $chosen = $choose($filter, '' === $value ? null : $value);
+
+            return new FileFacet($value, $label, $current === ('' === $value ? null : $value), $chosen->toQuery(), null !== $count ? $count($chosen) : null);
+        };
+
+        $options = [$facet('', $anyLabel)];
+        foreach ($values as [$value, $label]) {
+            $options[] = $facet($value, $label);
+        }
+
+        return $options;
+    }
+
+    /**
+     * A day in the words the chip prints — "21 aug", never "2026-08-21". The
+     * value stays the calendar date, because that is what the query carries.
+     */
+    private static function dayLabel(string $day): string
+    {
+        return mb_strtolower(new \DateTimeImmutable($day)->format('j M'));
+    }
+
+    /**
+     * WHICH NAMED STORAGE EACH MODULE'S BYTES GO TO.
+     *
+     * A module never names a place: it asks for "the place my files go" and the
+     * installation answers. This is that answer, keyed by module, and it is the
+     * only thing that can decide the "where the bytes are" chip — a file itself
+     * has no idea.
+     *
+     * @return array<string, string>
+     */
+    private function placeByModule(): array
+    {
+        $map = [];
+        foreach ($this->settings->map() as $row) {
+            if (null !== $row['place']) {
+                $map[$row['slug']] = $row['place']->id;
+            }
+        }
+
+        return $map;
     }
 }

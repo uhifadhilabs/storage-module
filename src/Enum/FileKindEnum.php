@@ -52,6 +52,23 @@ enum FileKindEnum: string
     }
 
     /**
+     * The shorter word the WHAT pills print.
+     *
+     * A pill sits in a crowded row and is read at a glance, so it says "Photos"
+     * where the widget heading a table of them says "Photographs". Two words for
+     * one kind because two places need different lengths of it, and the design
+     * writes both.
+     */
+    public function pill(): string
+    {
+        return match ($this) {
+            self::Photo => 'Photos',
+            self::Document => 'Documents',
+            self::Track => 'Tracks',
+        };
+    }
+
+    /**
      * Read the kind off a detected mime type.
      *
      * Anything not recognised is a document: a file that got past the storage's
