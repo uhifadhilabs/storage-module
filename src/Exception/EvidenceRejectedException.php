@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Exception;
 
 use Uhifadhi\Storage\Enum\RejectionReasonEnum;
+use Uhifadhi\Storage\Model\Bytes;
 
 /**
  * The file is not acceptable evidence. Retrying it unchanged will fail again,
@@ -39,6 +40,22 @@ final class EvidenceRejectedException extends \RuntimeException
             RejectionReasonEnum::UploadIncomplete,
             'That upload did not arrive intact.',
             ['reason' => $why],
+        );
+    }
+
+    /**
+     * PHP ITSELF REFUSED IT, at `upload_max_filesize` / `post_max_size`, and
+     * handed over a truncated file. The same distinction
+     * {@see UploadRefusedException::forFailedUpload()}
+     * draws, made here too because a caller validating before it uploads reads
+     * this class and would otherwise be told a transfer had broken.
+     */
+    public static function exceedsServerLimit(int $serverMaxBytes): self
+    {
+        return new self(
+            RejectionReasonEnum::ExceedsServerLimit,
+            \sprintf('That file is larger than this server accepts (%s).', Bytes::human($serverMaxBytes)),
+            ['serverMaxBytes' => $serverMaxBytes],
         );
     }
 

@@ -12,6 +12,7 @@ around the permission contribution point entirely.
 ## Contents
 
 - [Local (default)](#local-default)
+- [The two size limits](#the-two-size-limits)
 - [S3-compatible object storage](#s3-compatible-object-storage)
 
 ## Local (default)
@@ -55,6 +56,33 @@ widened type is stored under its own extension and simply gets no thumbnail
 unless an engine can read it. A type nothing can name an extension for is refused
 by `store()` rather than stored under a guessed one; see
 [the evidence API](evidence-api.md#validation).
+
+## The two size limits
+
+`max_bytes` is this module's cap. PHP's `upload_max_filesize` and `post_max_size`
+are the machine's, applied before the module is asked anything, and the stock
+production `php.ini` (2M and 8M) is far below the shipped 12 MiB — so the ini
+values have to be raised to at least `max_bytes`:
+
+```ini
+upload_max_filesize = 16M
+post_max_size = 20M
+```
+
+`post_max_size` must stay the larger: it carries the whole multipart body, of
+which the file is only a part.
+
+Where the server accepts less, PHP truncates the upload and reports it through
+the same failed check as a broken transfer. Two things follow from that, and both
+are deliberate:
+
+- **The refusal names the limit that actually refused** — "That file is larger
+  than this server accepts (2.1 MB)." — never `max_bytes`, which is the larger
+  number and enforced nothing.
+- **The installation is told once per process**, as a `warning` in the
+  application log naming both numbers and both ini keys, at the moment an upload
+  is received. Not at compile time: a container warmed by the CLI reads a
+  different php.ini than the one the web SAPI will truncate a photograph under.
 
 ## S3-compatible object storage
 

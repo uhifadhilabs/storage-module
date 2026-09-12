@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Uhifadhi\Storage\Controller\UploadController;
 use Uhifadhi\Storage\Exception\UploadRefusedException;
+use Uhifadhi\Storage\Model\Bytes;
 use Uhifadhi\Storage\Service\EvidenceStorage;
 use Uhifadhi\Storage\Service\UploadService;
 use Uhifadhi\Storage\Tests\Integration\Fixtures\StubUploadTarget;
@@ -186,6 +187,38 @@ final class UploadEndpointTest extends FilesTestCase
             'Larger than the 64 B limit this storage accepts. Nothing was written.',
             $this->field($client, 'error'),
         );
+    }
+
+    /**
+     * THE REFUSAL A MISCONFIGURED SERVER GETS, AND THE BUG IT COST.
+     *
+     * php.ini accepting less than `storage.evidence.max_bytes` made PHP truncate
+     * a phone photograph before this module saw a byte of it, and the endpoint
+     * answered "that upload did not arrive intact" — a sentence about a phone or
+     * a network, for a server-side cap. The number in the sentence is the limit
+     * that actually refused it, so whoever reads it can act on it.
+     */
+    public function testAFileOverTheServersOwnLimitNamesThatLimit(): void
+    {
+        $client = $this->ranger(self::createClient());
+
+        $client->request(
+            'POST',
+            '/files/upload',
+            ['target' => 'stub:open'],
+            ['file' => new UploadedFile(self::PHOTO, 'IMG_1204.jpg', 'image/jpeg', \UPLOAD_ERR_INI_SIZE, test: true)],
+            ['HTTP_X-CSRF-Token' => $this->token($client)],
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        self::assertSame(
+            \sprintf(
+                'That file is larger than this server accepts (%s). Nothing was written.',
+                Bytes::human((int) min(UploadedFile::getMaxFilesize(), \PHP_INT_MAX)),
+            ),
+            $this->field($client, 'error'),
+        );
+        self::assertSame([], $this->target()->received);
     }
 
     public function testARecordThatWillNotTakeAFileFromThisPersonRefuses(): void

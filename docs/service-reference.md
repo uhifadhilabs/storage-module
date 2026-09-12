@@ -22,6 +22,7 @@
 | `storage.twig_extension` | `FilesExtension` | Registered wherever there is a Twig. |
 | `storage.upload_targets` | `UploadTargetRegistry` | Collects the tagged upload targets. Registered unconditionally. |
 | `storage.upload_service` | `UploadService` | The whole of what happens when a file arrives. Security only. |
+| `storage.server_upload_limit` | `ServerUploadLimitService` | What php.ini accepts, and one warning where that is less than `max_bytes`. Security only. |
 | `storage.upload_twig_extension` | `UploadExtension` | Declares `render_upload()`. Twig + security only. |
 | `storage.upload_twig_runtime` | `UploadRuntime` | Builds it, lazily, on the first render. |
 | `storage.widget_surface` | `FilesWidgets` | The `files` dashboard. Hub screens only. |

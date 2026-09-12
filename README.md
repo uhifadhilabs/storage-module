@@ -61,6 +61,24 @@ Uhifadhi\Storage\UhifadhiStorageBundle::class => ['all' => true],
 The bundle **prepends** its own `flysystem` block, so an installation never
 writes `config/packages/flysystem.yaml` to get an evidence store.
 
+### php.ini has to accept what this module accepts
+
+PHP applies its own upload ceiling before a line of this bundle runs, and the
+stock production `php.ini` sits well under the 12 MiB the module accepts by
+default — so a phone photograph arrives truncated and is refused. Raise both
+values, in the ini the web SAPI actually loads, to at least
+`storage.evidence.max_bytes`:
+
+```ini
+upload_max_filesize = 16M
+post_max_size = 20M
+```
+
+`post_max_size` carries the whole multipart body, so keep it the larger of the
+two. Where the server accepts less than the configured cap, the bundle writes one
+`warning` per process naming both numbers, and a file PHP cut short is refused
+with the server's limit in the sentence rather than with "did not arrive intact".
+
 `ShellBundle` keeps its widget layouts in two tables of its own, so after
 installing run your own `doctrine:migrations:diff` and `migrate`. It answers
 `Uhifadhi\Contracts\Entity\UserInterface` from `TeamBundle`, in the same

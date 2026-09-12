@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Uhifadhi\Storage\Exception;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Uhifadhi\Storage\Model\Bytes;
+use Uhifadhi\Storage\Service\ServerUploadLimitService;
 
 /**
  * THE REFUSAL SENTENCES, WRITTEN ONCE.
@@ -70,6 +72,44 @@ final class UploadRefusedException extends \RuntimeException
     public static function incomplete(): self
     {
         return new self('That upload did not arrive intact.'.self::NOTHING);
+    }
+
+    /**
+     * THE SERVER'S OWN CEILING, NAMED. PHP truncates anything over
+     * `upload_max_filesize` / `post_max_size` and reports it through the same
+     * failed isValid() as a broken transfer, so reading the codes alike answered
+     * a server-side cap with a sentence about a phone and a network. The number
+     * is the one that actually refused — never the configured
+     * `storage.evidence.max_bytes`, which a person in this situation cannot act
+     * on, because it is the LARGER of the two and nothing enforced it.
+     */
+    public static function exceedsServerLimit(int $serverMaxBytes): self
+    {
+        return new self(\sprintf('That file is larger than this server accepts (%s).%s', Bytes::human($serverMaxBytes), self::NOTHING));
+    }
+
+    /**
+     * THE SENTENCE FOR A FAILED UPLOAD, CHOSEN THE WAY SYMFONY CHOOSES ITS OWN.
+     *
+     * `UploadedFile::getErrorMessage()` splits the codes exactly here: the two
+     * size codes name a limit, everything else describes a transfer that did not
+     * finish. `UPLOAD_ERR_FORM_SIZE` joins the ini cap because to whoever is
+     * holding the file the two are one fact, and because the form field that
+     * raises it is generated from the same ceiling.
+     *
+     * @see UploadedFile::getErrorMessage()
+     *
+     * $serverMaxBytes is passed in so the decision is testable without an ini
+     * that cannot be changed at runtime; null means "whatever PHP is running
+     * with", which is the only answer a request can give.
+     */
+    public static function forFailedUpload(UploadedFile $file, ?int $serverMaxBytes = null): self
+    {
+        return match ($file->getError()) {
+            \UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE => self::exceedsServerLimit($serverMaxBytes ?? ServerUploadLimitService::phpAccepts()),
+            \UPLOAD_ERR_NO_FILE => self::noFile(),
+            default => self::incomplete(),
+        };
     }
 
     public static function noFile(): self

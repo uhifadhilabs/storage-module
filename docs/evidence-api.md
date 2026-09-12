@@ -54,6 +54,13 @@ order, the same five default types, the same "detected type, never the
 filename" rule, and the same tolerance of a file whose type cannot be detected
 at all. Patrol can adopt this class and reject exactly what it rejected before.
 
+`validate()` also splits the two size limits the way
+`UploadedFile::getErrorMessage()` does: an `UPLOAD_ERR_INI_SIZE` /
+`UPLOAD_ERR_FORM_SIZE` upload is refused with reason `exceeds_server_limit` and a
+sentence naming php.ini's own ceiling, while a truncated transfer keeps
+`upload_incomplete`. A caller that reads them alike blames the network for
+[a php.ini line](configuration.md#the-two-size-limits).
+
 The extension is derived from the detected type because a filename is
 attacker-controlled text, and letting it choose is how an upload directory ends
 up holding a `.php`. It is looked up in `symfony/mime`'s table, so a deployment

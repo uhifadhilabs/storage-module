@@ -74,6 +74,7 @@ final readonly class UploadService
         private EvidenceStorage $storage,
         private EvidenceConstraints $deployment,
         private UrlGeneratorInterface $urls,
+        private ServerUploadLimitService $serverLimit,
     ) {
     }
 
@@ -114,6 +115,11 @@ final readonly class UploadService
      */
     public function receive(string $target, ?UploadedFile $file, ?UserInterface $user): array
     {
+        // BEFORE ANYTHING IS JUDGED, the one thing this module cannot enforce:
+        // where php.ini accepts less than it was configured to, PHP has already
+        // truncated whatever a ranger sent, and the log says so once.
+        $this->serverLimit->warnIfNarrowerThanConfigured();
+
         if (null === $user) {
             throw UploadRefusedException::notPermitted();
         }
@@ -121,7 +127,10 @@ final readonly class UploadService
             throw UploadRefusedException::noFile();
         }
         if (!$file->isValid()) {
-            throw UploadRefusedException::incomplete();
+            // WHICH failure, in the server's own words where it was the server's
+            // own limit. Answering every PHP error code with "did not arrive
+            // intact" blamed a phone and a network for an ini line.
+            throw UploadRefusedException::forFailedUpload($file, $this->serverLimit->maxBytes());
         }
 
         $module = $this->targets->forTarget($target);

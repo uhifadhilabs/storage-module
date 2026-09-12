@@ -258,6 +258,7 @@ in the tile that caused it. The component never invents an error message.
 | kind not allowed | `That file is not a GPX track. Nothing was written.` | 422 |
 | kind not allowed, inside one kind | `That file is not one of png · webp. Nothing was written.` | 422 |
 | too large | `Larger than the 12.6 MB limit this storage accepts. Nothing was written.` | 422 |
+| over the SERVER's limit | `That file is larger than this server accepts (2.1 MB). Nothing was written.` | 422 |
 | upload truncated | `That upload did not arrive intact. Nothing was written.` | 422 |
 | no file at all | `No file arrived with that upload. Nothing was written.` | 422 |
 | target unknown | `Nothing on this platform answers for that target. Nothing was written.` | 404 |
@@ -269,6 +270,15 @@ in the tile that caused it. The component never invents an error message.
 
 Every upload refusal ends with *what did not happen*, because the thing a person
 needs to know after a failure is whether they now have half a record.
+
+**A size refusal names the limit that actually refused.** There are two, and only
+one of them is this module's: PHP's own `upload_max_filesize` / `post_max_size`
+truncate an upload before a line of this bundle runs, and report it through the
+same failed check as a broken transfer. Reading the two alike told a ranger their
+upload had been damaged when the truth was an ini line — so a size code names the
+server's ceiling, everything else keeps *did not arrive intact*, and the
+installation is told once per process in the application log. See
+[the two size limits](configuration.md#the-two-size-limits).
 
 **A kind refusal names what the TARGET takes, never what the file is.** Somebody
 holding a file that did not work needs to know which one would have. The noun is

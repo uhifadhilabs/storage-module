@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Mime\MimeTypes;
 use Uhifadhi\Storage\Enum\FileKindEnum;
 use Uhifadhi\Storage\Exception\EvidenceRejectedException;
+use Uhifadhi\Storage\Service\ServerUploadLimitService;
 
 /**
  * What this deployment accepts as evidence — and the guard that enforces it.
@@ -87,8 +88,17 @@ final readonly class EvidenceConstraints
     {
         // Order matters and matches patrol's: an upload that did not arrive is
         // refused before anything is asked about bytes that may not be there.
+        //
+        // WHICH FAILURE IT WAS, THOUGH, IS TWO DIFFERENT FACTS. PHP reports its
+        // own `upload_max_filesize` / `post_max_size` refusal through the same
+        // failed isValid() as a truncated transfer, and reading them alike blames
+        // the network for an ini line. The split is the one
+        // UploadedFile::getErrorMessage() draws.
         if ($file instanceof UploadedFile && !$file->isValid()) {
-            throw EvidenceRejectedException::uploadIncomplete($file->getErrorMessage());
+            throw match ($file->getError()) {
+                \UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE => EvidenceRejectedException::exceedsServerLimit(ServerUploadLimitService::phpAccepts()),
+                default => EvidenceRejectedException::uploadIncomplete($file->getErrorMessage()),
+            };
         }
 
         $size = $file->getSize();

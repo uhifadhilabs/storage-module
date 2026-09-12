@@ -33,6 +33,7 @@ use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
+use Uhifadhi\Storage\Service\ServerUploadLimitService;
 use Uhifadhi\Storage\Service\UploadService;
 use Uhifadhi\Storage\Shell\FilesNavigation;
 use Uhifadhi\Storage\Twig\FilesExtension;
@@ -41,6 +42,7 @@ use Uhifadhi\Storage\Twig\UploadRuntime;
 use Uhifadhi\Storage\Upload\UploadTargetInterface;
 use Uhifadhi\Storage\Widget\FilesWidgets;
 
+use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 /**
@@ -285,12 +287,24 @@ final class UhifadhiStorageBundle extends AbstractBundle
              * person may attach anything — and a host in that state gets no
              * endpoint at all rather than one that accepts files from strangers.
              */
+            /*
+             * THE SERVER'S OWN CEILING, beside the configured one. The logger is
+             * nullOnInvalid() because a host may have none, and a missing logger
+             * must not be the thing that stops an upload.
+             */
+            $services->set('storage.server_upload_limit', ServerUploadLimitService::class)
+                ->args([
+                    service('logger')->nullOnInvalid(),
+                    param('storage.evidence.max_bytes'),
+                ]);
+
             $services->set('storage.upload_service', UploadService::class)
                 ->args([
                     service('storage.upload_targets'),
                     service('storage.evidence_storage'),
                     service('storage.evidence_constraints'),
                     service('router'),
+                    service('storage.server_upload_limit'),
                 ]);
             $services->alias(UploadService::class, 'storage.upload_service');
 

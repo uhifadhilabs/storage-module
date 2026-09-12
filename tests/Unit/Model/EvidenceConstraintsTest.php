@@ -104,6 +104,33 @@ final class EvidenceConstraintsTest extends TestCase
     }
 
     /**
+     * A SIZE CODE IS NOT A BROKEN TRANSFER. PHP truncates an upload that is over
+     * its own ceiling and reports it through the same isValid() as a failed one,
+     * so reading every code alike told a person their upload had been damaged
+     * when in fact the server had a limit nobody had mentioned. The limit that
+     * did the refusing is the one in the sentence.
+     */
+    public function testItNamesTheServersOwnLimitWhenPhpCutTheUploadShort(): void
+    {
+        $truncated = new UploadedFile(
+            self::IMAGES.'/landscape-800x600.jpg',
+            'photo.jpg',
+            'image/jpeg',
+            \UPLOAD_ERR_INI_SIZE,
+            test: true,
+        );
+
+        try {
+            EvidenceConstraints::default()->validate($truncated);
+            self::fail('An upload PHP had already truncated was accepted.');
+        } catch (EvidenceRejectedException $exception) {
+            self::assertSame(RejectionReasonEnum::ExceedsServerLimit, $exception->reason);
+            self::assertSame((int) min(UploadedFile::getMaxFilesize(), \PHP_INT_MAX), $exception->details['serverMaxBytes'] ?? null);
+            self::assertStringContainsString('larger than this server accepts', $exception->getMessage());
+        }
+    }
+
+    /**
      * The type is read from the BYTES, so a lying Content-Type buys nothing.
      * patrol's guard has always worked this way; this pins that it still does.
      */

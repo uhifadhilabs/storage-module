@@ -28,6 +28,17 @@ enum RejectionReasonEnum: string
     /** Bigger than this deployment accepts. */
     case TooLarge = 'too_large';
 
+    /**
+     * Bigger than the SERVER accepts. PHP refused it at `upload_max_filesize` /
+     * `post_max_size` before this module was asked, so the limit that did the
+     * refusing is not the one a deployment configured here — and telling anybody
+     * about the configured one would name a number that had nothing to do with
+     * it. Distinct from {@see self::UploadIncomplete}, which PHP reports through
+     * the same failed isValid(): a caller that reads them alike tells a person
+     * their connection broke when the answer is an ini line.
+     */
+    case ExceedsServerLimit = 'exceeds_server_limit';
+
     /** The DETECTED type is not on the allowlist. Not a photograph. */
     case UnsupportedType = 'unsupported_type';
 }
