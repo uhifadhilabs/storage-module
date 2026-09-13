@@ -15,7 +15,7 @@
     {% for file in waiting|slice(0, 8) %}
         <div class="rln">
             <span style="display:flex;align-items:center;gap:9px">{{ ui.owner(file) }}<span class="f-note">{{ file.name }}</span></span>
-            <span style="display:flex;align-items:center;gap:8px">{{ ui.thumb(file) }}<span class="f-note">{{ file.thumbState.value == 'failed' ? 'the original is a ' ~ file.mimeType : 'arrived ' ~ file.arrivedAt|date('D j M Y')|lower }}</span></span>
+            <span style="display:flex;align-items:center;gap:8px">{{ ui.thumb(file) }}<span class="f-note">{% if file.thumbState.value == 'failed' %}the original is a {{ file.mimeType }}{% else %}arrived <time datetime="{{ file.arrivedAt|date('c') }}" data-localtime-format="daylong">{{ file.arrivedAt|date('D j M Y')|lower }}</time>{% endif %}</span></span>
         </div>
     {% else %}
         <div class="use" style="margin-bottom:0">Every photograph this organisation holds has its small picture. Nothing is waiting.</div>

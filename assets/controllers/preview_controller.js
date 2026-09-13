@@ -56,6 +56,25 @@ function get(el, name) {
     return el.getAttribute('data-f-' + name) || '';
 }
 
+/* An instant, for the reader's own timezone.
+ *
+ * The overlay's side panel is written here rather than rendered by a template,
+ * so it must emit the element the frame's scanner localises — a `<time>` with
+ * the machine instant and the shape it wants — and not the server's wall-clock
+ * as text. The frame watches for added nodes, so a row written after the page
+ * loaded is localised like any other.
+ *
+ * The contract's formatted string stays the text inside it: that is what a
+ * reader sees where the trigger carries no instant, or where Intl refuses. */
+function instant(iso, reading, shape) {
+    const text = esc(reading) || '&mdash;';
+    if (!iso) {
+        return text;
+    }
+
+    return '<time datetime="' + esc(iso) + '" data-localtime-format="' + shape + '">' + text + '</time>';
+}
+
 export default class extends Controller {
     connect() {
         this.openedFrom = null;
@@ -203,8 +222,8 @@ export default class extends Controller {
     side(el) {
         const rows = [
             ['Owner', this.owner(el)],
-            ['Taken', '<span class="mono val">' + esc(get(el, 'taken')) + '</span>'],
-            ['Arrived', '<span class="mono val">' + esc(get(el, 'uploaded')) + '</span>'],
+            ['Taken', '<span class="mono val">' + instant(get(el, 'taken-at'), get(el, 'taken'), 'daystamp') + '</span>'],
+            ['Arrived', '<span class="mono val">' + instant(get(el, 'uploaded-at'), get(el, 'uploaded'), 'daystamp') + '</span>'],
             ['Size', '<span class="mono val">' + esc(get(el, 'size')) + '</span>'],
             ['Type', '<span class="mono val">' + esc(get(el, 'mime')) + '</span>'],
             ['Its key', '<span class="mono val">' + esc(get(el, 'key')) + '</span>'],

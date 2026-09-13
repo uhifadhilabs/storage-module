@@ -53,7 +53,10 @@
      moduleSlug   the owning module, e.g. "patrols" — also keys its colour dot
      moduleLabel  that module in the words a warden reads, e.g. "Patrols"
      takenAt      the HANDSET's own clock, already formatted
+     takenAtIso   the same instant, machine-readable — the overlay prints it in
+                  the reader's own timezone and falls back to takenAt without it
      arrivedAt    when it reached the platform, already formatted
+     arrivedAtIso the same instant, machine-readable
      thumbState   made | wait | failed | none
      caption      the caption belongs to the RECORD; shown here, never edited here
      kind         photo | track | document — the hub filters on it
@@ -73,7 +76,9 @@
     data-f-mod="{{ f.moduleSlug|default('') }}"
     data-f-modlabel="{{ f.moduleLabel|default('') }}"
     data-f-taken="{{ f.takenAt|default('—') }}"
+    data-f-taken-at="{{ f.takenAtIso|default('') }}"
     data-f-uploaded="{{ f.arrivedAt|default('—') }}"
+    data-f-uploaded-at="{{ f.arrivedAtIso|default('') }}"
     data-f-thumb="{{ f.thumbState|default('none') }}"
     data-f-caption="{{ f.caption|default('') }}"
     data-f-kind="{{ f.kind|default('') }}"
@@ -102,7 +107,9 @@
         moduleSlug: file.moduleSlug,
         moduleLabel: file.moduleLabel,
         takenAt: file.takenAt ? (file.takenAt|date('D j M Y')|lower ~ ' · ' ~ file.takenAt|date('H:i')) : '—',
+        takenAtIso: file.takenAt ? file.takenAt|date('c') : '',
         arrivedAt: file.arrivedAt|date('D j M Y')|lower ~ ' · ' ~ file.arrivedAt|date('H:i'),
+        arrivedAtIso: file.arrivedAt|date('c'),
         thumbState: file.thumbState.value,
         caption: file.caption,
         kind: file.kind.value,

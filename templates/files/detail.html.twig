@@ -68,8 +68,8 @@
     <div class="c">
         <span class="tab">What this file is</span>
         <div class="rln"><span>Owner</span><span>{{ ui.owner(file) }}</span></div>
-        <div class="rln"><span>Taken</span><span class="mono" style="font-size:11px">{{ file.takenAt ? (file.takenAt|date('D j M Y')|lower ~ ' · ' ~ file.takenAt|date('H:i')) : '—' }}</span></div>
-        <div class="rln"><span>Arrived</span><span class="mono" style="font-size:11px">{{ file.arrivedAt|date('D j M Y')|lower }} &middot; {{ file.arrivedAt|date('H:i') }}</span></div>
+        <div class="rln"><span>Taken</span><span class="mono" style="font-size:11px">{% if file.takenAt %}<time datetime="{{ file.takenAt|date('c') }}" data-localtime-format="daystamp">{{ file.takenAt|date('D j M Y')|lower }} &middot; {{ file.takenAt|date('H:i') }}</time>{% else %}&mdash;{% endif %}</span></div>
+        <div class="rln"><span>Arrived</span><span class="mono" style="font-size:11px"><time datetime="{{ file.arrivedAt|date('c') }}" data-localtime-format="daystamp">{{ file.arrivedAt|date('D j M Y')|lower }} &middot; {{ file.arrivedAt|date('H:i') }}</time></span></div>
         {% if file.areaLabel %}<div class="rln"><span>Area</span><span class="mono" style="font-size:11px">{{ file.areaLabel }}</span></div>{% endif %}
         <div class="rln"><span>Size</span><span class="mono" style="font-size:11px">{{ file.byteSize|storage_bytes }}</span></div>
         <div class="rln"><span>Type</span><span class="mono" style="font-size:11px">{{ file.mimeType }}</span></div>
@@ -85,7 +85,7 @@
            owning module's audit to keep; the hub does not invent lines it cannot
            stand behind. #}
         <div class="f-trail">
-            <div class="f-trailrow"><i class="acc"></i><div class="bd"><b>Arrived</b><span>{{ file.arrivedAt|date('D j M Y')|lower }} &middot; {{ file.arrivedAt|date('H:i') }} &middot; one request per file</span></div></div>
+            <div class="f-trailrow"><i class="acc"></i><div class="bd"><b>Arrived</b><span><time datetime="{{ file.arrivedAt|date('c') }}" data-localtime-format="daystamp">{{ file.arrivedAt|date('D j M Y')|lower }} &middot; {{ file.arrivedAt|date('H:i') }}</time> &middot; one request per file</span></div></div>
             <div class="f-trailrow"><i></i><div class="bd"><b>Type detected: {{ file.mimeType }}</b><span>checked against the allowlist &mdash; the name is not evidence of anything</span></div></div>
             {% if file.thumbState.value == 'made' %}
                 <div class="f-trailrow"><i></i><div class="bd"><b>Small picture made</b><span>~{{ thumbnailLongEdge }}px on the long side &middot; the original was not touched</span></div></div>
