@@ -50,6 +50,24 @@ const GLYPH = {
         '<circle cx="12" cy="13" r="3"/></svg>',
 };
 
+/* THE KEPT TILE'S FOUR STATES, one per ThumbStateEnum case: the class the sheet
+   draws, and the pill's word where there is something to explain. A made
+   thumbnail needs no pill — the picture is the explanation — and a document
+   never had a picture to make, so it gets neither.
+   → templates/upload/_tile.html.twig draws exactly these, server-side
+   → Uhifadhi\Storage\Enum\ThumbStateEnum::label() owns the words */
+const THUMB_SHAPE = {
+    made: 'shot',
+    wait: 'making',
+    failed: 'nothumb',
+    none: 'doc',
+};
+
+const THUMB_PILL = {
+    wait: 'making',
+    failed: 'no thumbnail',
+};
+
 /* Decimal units, matching Uhifadhi\Storage\Model\Bytes: the number on a queue row
    and the number on the same file's page must agree, and the invoice for object
    storage is in decimal terabytes. */
@@ -418,9 +436,22 @@ export default class extends Controller {
     keepIt(shape, receipt) {
         const label = receipt.label || (shape.file ? shape.file.name : '');
         if (this.tile) {
-            shape.el.className = 'upl-tile done';
+            /* THE FRESH TILE IS THE KEPT TILE. It stands in a grid of tiles the
+               server drew from the macro, so it draws what the macro draws: the
+               picture where the storage made one, and otherwise the glyph with
+               the pill that says why there is none. Without this, one cell of
+               the grid showed a camera outline until the page was reloaded. */
+            /* A made state with no URL to draw is the same tile as one whose
+               picture could not be made — the macro says so too. */
+            const told = THUMB_SHAPE[receipt.thumbState] ? receipt.thumbState : 'none';
+            const picture = 'made' === told && receipt.thumbnail;
+            const state = 'made' === told && !picture ? 'failed' : told;
+            shape.el.className = `upl-tile done ${THUMB_SHAPE[state]}`;
             shape.el.innerHTML =
-                GLYPH.photo +
+                (picture
+                    ? `<span class="sh"><img src="${esc(receipt.thumbnail)}" alt="${esc(label)}" loading="lazy"></span>`
+                    : ('none' === state ? GLYPH.file : GLYPH.photo) +
+                      (THUMB_PILL[state] ? `<span class="th">${THUMB_PILL[state]}</span>` : '')) +
                 `<span class="fn">${esc(label)}</span>` +
                 `<button type="button" class="rm" data-upl-remove data-upl-key="${esc(receipt.key)}" ` +
                 'aria-label="Remove this evidence">&times;</button>';

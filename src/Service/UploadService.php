@@ -17,7 +17,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
+use Uhifadhi\Storage\Enum\FileKindEnum;
 use Uhifadhi\Storage\Enum\RejectionReasonEnum;
+use Uhifadhi\Storage\Enum\ThumbStateEnum;
 use Uhifadhi\Storage\Exception\EvidenceRejectedException;
 use Uhifadhi\Storage\Exception\EvidenceStorageFailedException;
 use Uhifadhi\Storage\Exception\InvalidEvidenceKeyException;
@@ -109,7 +111,7 @@ final readonly class UploadService
     /**
      * ONE FILE ONTO ONE TARGET.
      *
-     * @return array{key: string, label: string, href: string|null, kind: string, bytes: int, thumbnail: string|null}
+     * @return array{key: string, label: string, href: string|null, kind: string, bytes: int, thumbnail: string|null, thumbState: string}
      *
      * @throws UploadRefusedException with the sentence the component prints
      */
@@ -250,7 +252,7 @@ final readonly class UploadService
     }
 
     /**
-     * @return array{key: string, label: string, href: string|null, kind: string, bytes: int, thumbnail: string|null}
+     * @return array{key: string, label: string, href: string|null, kind: string, bytes: int, thumbnail: string|null, thumbState: string}
      *
      * @throws UploadRefusedException
      */
@@ -271,6 +273,16 @@ final readonly class UploadService
             ? $this->urls->generate('storage_evidence_show', ['key' => $stored->thumbKey])
             : null;
 
+        // WHY THE STATE TRAVELS AND NOT ONLY THE URL. A null thumbnail is three
+        // different facts — a document that never had a picture, a photograph
+        // nothing on this machine could decode, and a file whose bytes were not
+        // kept at all — and the tile the browser draws next has to say which.
+        // Read off the absence of a URL, every document would claim "no
+        // thumbnail", which is the drift the enum exists to prevent.
+        $thumbState = $receipt->keepsBytes
+            ? ThumbStateEnum::of(FileKindEnum::fromMimeType($stored->mimeType), $stored->thumbKey)
+            : ThumbStateEnum::Nothing;
+
         if (!$receipt->keepsBytes) {
             $this->forget($stored->key);
         }
@@ -282,6 +294,7 @@ final readonly class UploadService
             'kind' => $receipt->kind,
             'bytes' => $stored->byteSize,
             'thumbnail' => $thumbnail,
+            'thumbState' => $thumbState->value,
         ];
     }
 

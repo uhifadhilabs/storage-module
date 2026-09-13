@@ -1,0 +1,100 @@
+{# ═══════════════════════════════════════════════════════════════════════════
+   THE KEPT EVIDENCE TILE — the upload component's finished state, drawn once.
+
+   A file already attached and a file that arrived a second ago must be the same
+   box, or a record's card shows two kinds of tile for the same thing. That box
+   is the upload component's `.upl-tile.done`, and this file is the only place it
+   is written: a consuming module calls `kept()` rather than retyping the markup,
+   and the tile the controller draws after a POST draws the same states from the
+   same words.
+   → assets/controllers/upload_controller.js
+
+   TWO THINGS THIS FILE IS:
+
+     1. kept(f) — THE DATA CONTRACT. A hash, so a module with its own evidence
+        model fills it from whatever it has.
+
+     2. entry(file, detailUrl) — the same contract, filled from a FileEntry.
+
+   THE STATES. The storage makes ONE ~400px picture per photograph and serves it
+   through the permission check; a tile with that picture shows it, and a tile
+   without says which of the three reasons applies — in the storage's own words,
+   from ThumbStateEnum, never retyped here:
+
+     made   the picture fills the tile, and the tile opens the file
+     wait   the camera glyph and a pill saying the picture is being made
+     failed the same glyph and a pill saying none could be made — the original is
+            untouched and still downloadable
+     none   a document or a track: its own glyph and ground, and no pill, because
+            there was never a picture to make
+
+   A TILE WITH NOTHING TO LOOK AT IS NOT OPENABLE. Only a made thumbnail links,
+   which is also why the link is the `.sh` layer rather than the tile: a removal
+   is a <button> and may not sit inside an <a>. Where there is no removal the
+   whole cell is the link instead.
+
+   THE VOCABULARY IS THE SHELL'S `.upl-*`, shipped in shell.css. Nothing here
+   defines a class, a token or an inline style.
+   ═════════════════════════════════════════════════════════════════════════ #}
+
+{# THE DATA CONTRACT.
+
+   Required: name. Everything else is optional and the tile draws the honest
+   absence rather than a blank.
+
+   Keys:
+     name        the file's own name — the picture's alt text, and the default label
+     label       what to print under the tile; defaults to name
+     key         the storage key. Present ⇒ the removal is drawn and the tile is a
+                 <span>; absent ⇒ nothing may be removed and the cell is the link
+     thumbState  made | wait | failed | none — ThumbStateEnum's own values
+     thumbUrl    the ~400px picture through the serving route, or '' if none
+     detailUrl   the file's own page, or '' where the host ships no Files hub
+     title       the tile's own hover sentence, where a surface has one to add #}
+{% macro kept(f) %}
+    {%- set state = enum('Uhifadhi\\Storage\\Enum\\ThumbStateEnum').tryFrom(f.thumbState|default('none')) ?? enum('Uhifadhi\\Storage\\Enum\\ThumbStateEnum').Nothing -%}
+    {%- set picture = 'made' == state.value and f.thumbUrl|default('') -%}
+    {%- set label = f.label|default(f.name) -%}
+    {%- set page = picture ? f.detailUrl|default('') : '' -%}
+    {%- set removable = f.key|default('') -%}
+    {%- set shape = {'made': 'shot', 'wait': 'making', 'failed': 'nothumb', 'none': 'doc'}[state.value] -%}
+    {#- Only a picture earns the flat photo ground; a made state with no URL to
+        draw is the same tile as one whose picture could not be made. -#}
+    {%- set shape = 'shot' == shape and not picture ? 'nothumb' : shape -%}
+
+    {#- With a removal in the way the cell cannot be an <a>, so the picture layer
+        carries the link; with nothing to remove the whole cell carries it. -#}
+    {%- set tag = page and not removable ? 'a' : 'span' -%}
+    <{{ tag }} class="upl-tile done {{ shape }}"{% if 'a' == tag %} href="{{ page }}"{% endif %}
+        {%- if f.title|default('') %} title="{{ f.title }}"{% endif %}>
+        {%- if picture -%}
+            {%- set layer = page and 'span' == tag ? 'a' : 'span' -%}
+            <{{ layer }} class="sh"{% if 'a' == layer %} href="{{ page }}"{% endif %}><img src="{{ f.thumbUrl }}" alt="{{ f.name }}" loading="lazy"></{{ layer }}>
+        {%- elseif 'none' == state.value -%}
+            {{ ux_icon('storage:file', {width: 20, height: 20}) }}
+        {%- else -%}
+            {{ ux_icon('storage:camera', {width: 22, height: 22}) }}
+            <span class="th">{{ state.label }}</span>
+        {%- endif -%}
+        <span class="fn">{{ label }}</span>
+        {%- if removable -%}
+            <button type="button" class="rm" data-upl-remove data-upl-key="{{ f.key }}" aria-label="Remove this evidence">&times;</button>
+        {%- endif -%}
+    </{{ tag }}>
+{% endmacro %}
+
+{# The same contract, filled from a FileEntry.
+
+   detailUrl is PASSED rather than generated, for the reason the preview states:
+   the file's own page exists only where the host runs the Files hub.
+   → templates/overlay/_preview.html.twig #}
+{% macro entry(file, detailUrl) %}
+    {%- import _self as evidence -%}
+    {{- evidence.kept({
+        name: file.name,
+        key: file.key,
+        thumbState: file.thumbState.value,
+        thumbUrl: file.hasThumbnail ? path('storage_evidence_show', {key: file.thumbKey}) : '',
+        detailUrl: detailUrl,
+    }) -}}
+{% endmacro %}

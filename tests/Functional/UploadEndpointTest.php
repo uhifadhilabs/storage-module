@@ -18,6 +18,7 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Uhifadhi\Storage\Controller\UploadController;
+use Uhifadhi\Storage\Enum\ThumbStateEnum;
 use Uhifadhi\Storage\Exception\UploadRefusedException;
 use Uhifadhi\Storage\Model\Bytes;
 use Uhifadhi\Storage\Service\EvidenceStorage;
@@ -66,6 +67,9 @@ final class UploadEndpointTest extends FilesTestCase
         // A JPEG this suite can decode, so a preview was made and its URL comes
         // back — a page that draws thumbnails is handed one in the receipt.
         self::assertStringContainsString('/storage/evidence/', $this->field($client, 'thumbnail'));
+        // …and the state that URL is the evidence of, so the tile the browser
+        // draws next says the same word about this file as every other surface.
+        self::assertSame(ThumbStateEnum::Made->value, $this->field($client, 'thumbState'));
 
         self::assertTrue($this->storage()->exists($key), 'the bytes are in the private storage');
     }

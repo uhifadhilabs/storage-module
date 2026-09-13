@@ -127,3 +127,30 @@ No controller, no route, no JavaScript, no stylesheet. The component, the
 endpoint, the progress, the refusal sentences and the removal question are all
 this bundle's — see [uploads.md](uploads.md) for the contract and a worked
 module.
+
+## Drawing the files that are already there
+
+The tiles *beside* the add tile are the same box, and it is drawn from one macro
+rather than retyped: a file already attached and a file that arrived a second ago
+must look alike, or the card shows two kinds of tile for the same thing.
+
+```twig
+{% import '@UhifadhiStorage/upload/_tile.html.twig' as evidence %}
+
+{{ evidence.kept({
+    name: item.filename,
+    label: item.filename,
+    key: item.path,
+    thumbState: item.thumbState,
+    thumbUrl: item.thumbUrl,
+    detailUrl: path('storage_files_show', {key: item.path}),
+}) }}
+```
+
+`thumbState` is one of `made`, `wait`, `failed`, `none` — the values of
+`ThumbStateEnum`, whose `label()` supplies the pill's word. A made thumbnail
+shows the picture and opens the file; the other three say why there is no picture
+and are deliberately not openable. Pass no `key` and the tile draws no removal,
+which also makes the whole cell the link — the shape a read-only listing of
+recent evidence wants. A module holding a `FileEntry` already can call
+`evidence.entry(file, detailUrl)` instead and fill nothing by hand.

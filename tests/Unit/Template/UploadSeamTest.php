@@ -16,6 +16,7 @@ namespace Uhifadhi\Storage\Tests\Unit\Template;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Uhifadhi\Storage\Controller\UploadController;
+use Uhifadhi\Storage\Enum\ThumbStateEnum;
 use Uhifadhi\Storage\Upload\UploadDom;
 
 /**
@@ -227,6 +228,45 @@ final class UploadSeamTest extends TestCase
     public function testTheAssetDrawsTheDesignsOwnStates(string $class): void
     {
         self::assertStringContainsString($class, self::js());
+    }
+
+    /**
+     * A FRESH UPLOAD LOOKS LIKE A KEPT ONE, WITHOUT A RELOAD.
+     *
+     * The tile the controller draws the instant a POST comes back is the only
+     * evidence tile on the page nothing server-side rendered, so it is the one
+     * that drifts: it showed a camera glyph while every tile beside it showed a
+     * photograph. The receipt already carries the thumbnail URL and the state the
+     * storage is in, so the fresh tile draws exactly what the macro draws.
+     */
+    public function testTheFreshTileShowsThePictureTheReceiptCarries(): void
+    {
+        $js = self::js();
+
+        self::assertStringContainsString('receipt.thumbnail', $js, 'the receipt already carries the picture; use it');
+        self::assertStringContainsString('receipt.thumbState', $js, 'and the word for why there is none');
+
+        self::assertStringContainsString('upl-tile done ${THUMB_SHAPE[state]}', $js, 'the kept box is the shell\'s, one state class on it');
+        self::assertStringContainsString("made: 'shot'", $js, 'a picture gets the flat photo ground');
+        self::assertStringContainsString('class="sh"', $js, 'the picture sits in the same shell the macro gives it');
+        self::assertStringContainsString('loading="lazy"', $js);
+        self::assertStringContainsString('class="th"', $js, 'and the state pill is the same pill');
+    }
+
+    /**
+     * The pill's words are ThumbStateEnum's, not the asset's. Change the enum and
+     * this fails — which is the only thing keeping the fresh tile, the macro and
+     * the hub saying the same word about the same file.
+     */
+    public function testTheFreshTilesPillUsesTheStoragesOwnWords(): void
+    {
+        $js = self::js();
+
+        self::assertStringContainsString(\sprintf("wait: '%s'", ThumbStateEnum::Waiting->label()), $js);
+        self::assertStringContainsString(\sprintf("failed: '%s'", ThumbStateEnum::Failed->label()), $js);
+        self::assertStringContainsString("wait: 'making'", $js, 'the queued tile is the design\'s .making');
+        self::assertStringContainsString("failed: 'nothumb'", $js);
+        self::assertStringContainsString("none: 'doc'", $js, 'a document never had a picture to make');
     }
 
     /** The dropzone's four leads, in the design's own words. */
