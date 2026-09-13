@@ -37,6 +37,17 @@ use PHPUnit\Framework\TestCase;
  * The shapes are the frame's, and a template asks for the one the design draws
  * for that element: `stamp`, `daystamp`, `clock`, `day`, `daylong`, or the
  * verbose `datetime` / `date` / `time`.
+ *
+ * A CALENDAR DAY IS NOT AN INSTANT, and is never localised. The day a group of
+ * files is filed under is a key the server grouped by; shifted into another zone
+ * it would name a different day from the one the rows underneath it belong to.
+ * Such a `<time>` carries a date-only `datetime` and asks for NO shape, which is
+ * the frame's own signal to leave it alone:
+ *
+ *     <time datetime="{{ group.day|date('Y-m-d') }}">wed 19 aug 2026</time>
+ *
+ * So the rule this pins has two halves: a full instant needs a shape, and a
+ * date-only value must not have one.
  */
 final class LocalTimeIdiomTest extends TestCase
 {
@@ -90,11 +101,22 @@ final class LocalTimeIdiomTest extends TestCase
 
         preg_match_all('/<time\b[^>]*>/s', $markup, $tags);
         foreach ($tags[0] as $tag) {
-            if (1 !== preg_match('/\sdatetime="/', $tag)) {
+            if (1 !== preg_match('/\sdatetime="([^"]*)"/', $tag, $value)) {
                 $offenders[] = 'no datetime attribute: '.$tag;
+                continue;
             }
-            if (1 !== preg_match('/\sdata-localtime-format="([^"]+)"/', $tag, $shape)) {
-                $offenders[] = 'no shape named: '.$tag;
+
+            $named = 1 === preg_match('/\sdata-localtime-format="([^"]+)"/', $tag, $shape);
+
+            if (self::isCalendarDay($value[1])) {
+                if ($named) {
+                    $offenders[] = 'a calendar day asking to be localised: '.$tag;
+                }
+                continue;
+            }
+
+            if (!$named) {
+                $offenders[] = 'an instant naming no shape: '.$tag;
             } elseif (!\in_array($shape[1], self::SHAPES, true)) {
                 $offenders[] = 'a shape the frame does not answer to: '.$shape[1];
             }
@@ -149,6 +171,16 @@ final class LocalTimeIdiomTest extends TestCase
         }
 
         return $spans;
+    }
+
+    /**
+     * A date-only `datetime` — either printed with the `Y-m-d` format or written
+     * as a literal day. Anything carrying a clock is an instant.
+     */
+    private static function isCalendarDay(string $value): bool
+    {
+        return 1 === preg_match('/^\{\{[^}]*\|\s*date\s*\(\s*[\'"]Y-m-d[\'"]\s*\)[^}]*\}\}$/', trim($value))
+            || 1 === preg_match('/^\d{4}-\d{2}-\d{2}$/', trim($value));
     }
 
     /** One macro's body, taken out of the scan. */

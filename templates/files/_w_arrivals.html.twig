@@ -11,6 +11,6 @@
             <div class="col{{ loop.last ? ' hot' }}"><em>{{ week.files }}</em><i style="height:{{ week.share }}%"></i></div>
         {% endfor %}
     </div>
-    <div class="f-sparkx">{% for week in arrivals %}<span><time datetime="{{ week.week|date('c') }}" data-localtime-format="day">{{ week.week|date('j M')|lower }}</time></span>{% endfor %}</div>
+    <div class="f-sparkx">{% for week in arrivals %}<span><time datetime="{{ week.week|date('Y-m-d') }}">{{ week.week|date('j M')|lower }}</time></span>{% endfor %}</div>
     <div class="use">Counted by the week a file <b>reached us</b>, which is the week it started costing space &mdash; the settings page turns this rate into a sentence about when the disk runs out.</div>
 </div>
