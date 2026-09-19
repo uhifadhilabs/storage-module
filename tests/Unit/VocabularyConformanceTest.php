@@ -60,6 +60,62 @@ final class VocabularyConformanceTest extends VocabularyConformanceTestCase
         ];
     }
 
+    /**
+     * A CLASS THE DESIGNS RETIRED IS FORBIDDEN BY NAME. `w-addtile` is the
+     * shell's tile for "Add widgets — open the library", the door at the foot
+     * of a surface: the designs removed it, and the library is reached only
+     * through the page head's quiet `Widget library` action. The shell is
+     * dropping the rule, so a template that still writes the class renders an
+     * unstyled anchor spanning the whole grid — and the base check would only
+     * notice it once that shell release lands. Naming it here fails the day
+     * somebody reintroduces it, in the repository where the fix is.
+     */
+    public function testNoTemplateWritesAClassTheDesignsRetired(): void
+    {
+        $retired = ['w-addtile'];
+
+        $offenders = [];
+        foreach (self::twigFiles() as $file) {
+            $markup = (string) preg_replace('/\{#.*?#\}/s', '', (string) file_get_contents($file));
+            preg_match_all('/class="([^"]*)"/', $markup, $attributes);
+            $written = [];
+            foreach ($attributes[1] as $attribute) {
+                $literal = (string) preg_replace('/\{[{%].*?[}%]\}/s', ' ', $attribute);
+                $written = [...$written, ...(preg_split('/\s+/', trim($literal)) ?: [])];
+            }
+
+            foreach ($retired as $class) {
+                if (\in_array($class, $written, true)) {
+                    $offenders[] = basename($file).': .'.$class;
+                }
+            }
+        }
+
+        self::assertSame([], $offenders, 'These write a retired class: the widget library is reached from the page head, not from a tile at the foot of the grid.');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function twigFiles(): array
+    {
+        $directory = self::bundlePath().'/templates';
+        if (!is_dir($directory)) {
+            return [];
+        }
+
+        $files = [];
+        /** @var \SplFileInfo $file */
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory)) as $file) {
+            if ($file->isFile() && 'twig' === $file->getExtension()) {
+                $files[] = $file->getPathname();
+            }
+        }
+        sort($files);
+
+        return $files;
+    }
+
     private static function shellPublicDir(): string
     {
         return \dirname(new \ReflectionClass(ShellBundle::class)->getFileName() ?: '').'/public';

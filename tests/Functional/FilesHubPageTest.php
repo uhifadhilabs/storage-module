@@ -172,7 +172,27 @@ final class FilesHubPageTest extends FilesTestCase
             ['kpis', 'browse', 'recent', 'nothumb'],
             $crawler->filter('.w-grid > .w-cell[data-widget-id]')->each(static fn ($n): string => (string) $n->attr('data-widget-id')),
         );
-        self::assertCount(1, $crawler->filter('.w-addtile'), 'the way to the library is on the dashboard, not hidden in a menu');
+    }
+
+    /**
+     * THE HUB HAS NO DOOR OF ITS OWN AT THE FOOT OF THE GRID. The tile that
+     * read "Add widgets — open the library" was removed from the designs: a
+     * surface ends with the last widget on it, and the library is reached
+     * through the one quiet action in the page head. Asserted, because the
+     * tile renders as a perfectly ordinary cell and nothing fails until
+     * somebody looks at the page.
+     */
+    public function testTheHubDrawsNoAddWidgetsDoorAtTheFootOfTheGrid(): void
+    {
+        $client = $this->ranger(static::createClient());
+        $crawler = $client->request('GET', '/files');
+
+        self::assertCount(0, $crawler->filter('.w-addtile'), 'the surface ends with its last widget, not with a door');
+        self::assertStringNotContainsString('open the library', (string) $client->getResponse()->getContent());
+
+        // …and the way there is still open, quietly, in the page head.
+        $library = $crawler->filter('.pgact a.w-act')->each(static fn ($n): string => trim($n->text()));
+        self::assertContains('Widget library', $library, 'the page head keeps the quiet Widget library action');
     }
 
     public function testTheFourCountsAreTheRegistrysOwn(): void
