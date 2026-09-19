@@ -11,9 +11,10 @@
    DOM nodes client-side; it is now four dropdown chips, two pill runs, a search
    and a shape toggle that are all ORDINARY LINKS driving one GET, so the server
    answers with the files that survived and the grid, the list and the count can
-   never disagree. The only scripting the row needs is opening a panel, which is
-   a Stimulus controller because it arms itself wherever the row is included.
-   → templates/files/_filters.html.twig · assets/controllers/files_filters_controller.js
+   never disagree. IT NEEDS NO SCRIPTING AT ALL NOW: a chip is the shell's
+   `<details class="i-dd">` and the browser opens it, so the row filters on a
+   page whose JavaScript never arrived.
+   → templates/files/_filters.html.twig
 
    THE FILE OVERLAY IS NOT HERE EITHER. It is the bundle's one SHAREABLE
    component — an observation's photos card opens the same overlay this hub does

@@ -170,10 +170,13 @@ another choice has already excluded. An option that would leave nothing reads `0
 rather than vanishing — a filter row that rearranges itself as you use it is one
 nobody can learn.
 
-**Every option is an ordinary link.** A panel option, a pill and the shape toggle
-are all `<a href>` carrying the merged query, so the row filters with scripting
-off; the only script involved is the one that opens a panel
-(`assets/controllers/files_filters_controller.js`). An unreadable parameter is
+**Every option is an ordinary link, and nothing in the row is scripted.** A panel
+option, a pill and the shape toggle are all `<a href>` carrying the merged query,
+and a chip is the shell's `<details class="i-dd">`, which the browser opens by
+itself — so the row filters on a page whose JavaScript never arrived. The
+`files-filters` controller that used to open the panels is a deprecated no-op
+kept only so an installation's `assets/controllers.json` still resolves; it is
+removed in the next release. An unreadable parameter is
 IGNORED rather than an error: a filter from a stale bookmark must narrow the hub
 or leave it alone, never take it down.
 

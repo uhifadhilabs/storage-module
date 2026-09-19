@@ -142,42 +142,14 @@
   letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-right:-3px}
 .f-filters .sep{width:1px;height:16px;background:var(--ln2);margin:0 3px}
 
-/* THE FILTER DROPDOWNS — module, area, the day it was taken, and where the
-   bytes are. Each is a .mchip trigger (.i-ddt, the shell's chip) opening a
-   floating .i-ddmenu, hidden until the .i-dd carries .open (the files-filters
-   controller toggles it, one at a time). PORTED VERBATIM from the design's
-   uhifadhi.css onto this sheet's token bridge, because THE SHELL SHIPS NO
-   DROPDOWN: its design-system sheet has .mchip but no .i-dd* family, so a module
-   that wants the platform's grouped-dropdown filter bar has to carry the chrome
-   itself, exactly as the incidents module does. HOIST DEBT: two modules now hold
-   identical copies; the third asks for it in the shell instead.
-   The two changes on the way in are the ones a LINK needs that a button does
-   not — text-decoration on .i-ddopt and its hover, since every option here is a
-   real href rather than a script target. */
-.i-dd{position:relative;display:inline-flex}
-.i-ddt{cursor:pointer;background:none}
-.i-ddt .i-ddcaret{font-size:9px;line-height:1;opacity:.7;transition:transform .12s}
-.i-dd.open .i-ddt .i-ddcaret{transform:rotate(180deg)}
-.i-ddmenu{position:absolute;top:calc(100% + 6px);left:0;z-index:50;display:none;
-  flex-direction:column;min-width:196px;padding:5px;gap:1px;
-  background:var(--p1);border:1px solid var(--ln2);border-radius:11px;box-shadow:var(--shadow)}
-.i-dd.open .i-ddmenu{display:flex}
-.i-ddhead{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:8.5px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--dim);padding:6px 9px 4px}
-.i-ddopt{display:flex;align-items:center;gap:9px;width:100%;text-align:left;cursor:pointer;
-  border:0;background:none;color:var(--tx);font-family:inherit;font-size:12px;
-  padding:7px 9px;border-radius:7px;text-decoration:none}
-.i-ddopt:hover{background:var(--raised);text-decoration:none}
-.i-ddopt.on{background:color-mix(in srgb,var(--acc) 12%,transparent)}
-.i-ddopt-l{flex:1;white-space:nowrap}
-.i-ddopt-n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;color:var(--dim);
-  font-variant-numeric:tabular-nums}
-.i-ddopt.on .i-ddopt-n{color:var(--acc)}
-.i-ddsep{height:1px;background:var(--ln);margin:4px 2px}
-/* The option's hue mark. The hub has no module palette — a file's colour is its
-   picture — so it is drawn transparent and keeps the labels on one rail, which
-   is what the design does for every option it gives no hue. */
-.i-dot{width:8px;height:8px;border-radius:2px;flex:none;background:transparent}
+/* THE FILTER DROPDOWNS ARE THE SHELL'S `.i-dd`, chrome and behaviour both —
+   the same grouped chip, the same panel and the same counts the rest of the
+   product filters with, opened by the browser because the control is a
+   `<details>`. This sheet carried the whole family itself while the shell
+   shipped none of it; now that the shell does, the copy is deleted rather than
+   kept in two places, where the later sheet would win by load order and drift
+   every other filter bar. The option's hue mark is the shell's `.i-dot` too,
+   and the hub gives it no colour to override: a file's colour is its picture.  */
 
 /* THE TWO FIXED PILL RUNS — what a file is, and whether it has a small picture.
    Three or four values each, clicked constantly, so they stay open where the

@@ -39,6 +39,33 @@ final class FilesFilterRowTest extends FilesTestCase
         );
     }
 
+    /**
+     * THE CHIP IS THE SHELL'S CONTROL, CHROME AND BEHAVIOUR BOTH. The grouped
+     * dropdown is a `<details class="i-dd">` whose `<summary>` is the chip: it
+     * opens, chooses and clears with NO SCRIPT OF THIS MODULE'S, which is what
+     * keeps the hub filterable on a page whose JavaScript never arrived.
+     *
+     * It used to be a `<span>` a controller toggled with an `.open` class, and
+     * this module carried the whole `.i-dd*` family in its own sheet to hide the
+     * panel until then. The shell ships that family now, keyed on `[open]`, so a
+     * second copy here would win by load order and drift every other filter bar
+     * in the product. Asserted, because a panel stuck open renders as a page
+     * that merely looks untidy.
+     */
+    public function testEveryDropdownIsTheShellsScriptlessDetails(): void
+    {
+        $row = $this->row();
+
+        self::assertCount(4, $row->filter('details.i-dd'));
+        self::assertCount(4, $row->filter('details.i-dd > summary.mchip.i-ddt'));
+        self::assertCount(0, $row->filter('.i-dd[data-dd]'), 'no panel is toggled by a class any more');
+        self::assertStringNotContainsString(
+            'files-filters',
+            (string) $row->html(),
+            'the row wires no dropdown controller: the browser opens a details',
+        );
+    }
+
     public function testEachPanelNamesTheChoiceItHoldsAndCountsEveryOption(): void
     {
         $panel = $this->row()->filter('.i-dd')->eq(1);

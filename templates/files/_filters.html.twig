@@ -14,9 +14,15 @@
    EVERY OPTION IS AN ORDINARY LINK. Unlike the design's visual mock, which
    filtered the grid client-side, each option is this hub's query with ONE key
    replaced, so one GET drives the grid, the list and the count together and a
-   narrowed hub is a URL somebody can send. The only thing scripting does here is
-   open a panel — the files-filters controller, which closes on Escape or an
-   outside click and never touches the query.
+   narrowed hub is a URL somebody can send.
+
+   AND NOTHING HERE IS SCRIPTED. A chip is the shell's `<details class="i-dd">`
+   with the chip as its `<summary>`: the browser opens it, an option is a link,
+   so the row filters on a page whose JavaScript never arrived. This module once
+   toggled an `.open` class from a controller of its own and carried the whole
+   `.i-dd*` family in its sheet to hide the panel until then — the shell ships
+   both now, and a second copy of either would win by load order and drift every
+   other filter bar in the product.
 
    The search box is the form itself: the current choices ride along as hidden
    fields, so pressing Enter on a query never drops the chips.
@@ -25,9 +31,8 @@
 
 {% macro dropdown(head, aria, key, options) %}
     {%- set picked = options|filter(o => o.on)|first|default(options|first) -%}
-    <span class="i-dd" data-dd>
-        <button type="button" class="mchip i-ddt" data-dd-trigger aria-haspopup="listbox" aria-expanded="false"
-                data-action="uhifadhi--storage-module--files-filters#toggle"><span>{{ picked.label }}</span><span class="i-ddcaret">&#9662;</span></button>
+    <details class="i-dd">
+        <summary class="mchip i-ddt" data-dd-trigger><span>{{ picked.label }}</span><span class="i-ddcaret">&#9662;</span></summary>
         <div class="i-ddmenu" data-dd-menu role="listbox" aria-label="{{ aria }}">
             <span class="i-ddhead">{{ head }}</span>
             {%- for option in options -%}
@@ -37,7 +42,7 @@
                    href="{{ path('storage_files', option.query) }}"><span class="i-dot"></span><span class="i-ddopt-l">{{ option.label }}</span><span class="i-ddopt-n">{{ option.count }}</span></a>
             {%- endfor -%}
         </div>
-    </span>
+    </details>
 {% endmacro %}
 
 {% macro pills(label, key, options) %}
@@ -49,8 +54,7 @@
 {% endmacro %}
 
 {% import _self as row %}
-<form class="f-filters" data-f-filters method="get" action="{{ path('storage_files') }}"
-      data-controller="uhifadhi--storage-module--files-filters">
+<form class="f-filters" data-f-filters method="get" action="{{ path('storage_files') }}">
     {#- Every choice already made, so the search box carries them rather than
         clearing them. The shape rides along too: a list is still a list after a
         search. -#}
