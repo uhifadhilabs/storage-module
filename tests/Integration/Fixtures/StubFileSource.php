@@ -57,6 +57,11 @@ final class StubFileSource implements FileSourceInterface, FileRemovalInterface
         return 'Fieldwork';
     }
 
+    public function fileWord(): string
+    {
+        return 'a record’s photographs and its own track';
+    }
+
     public function attachesTo(): string
     {
         return 'a record’s photographs · a record’s own track';

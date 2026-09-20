@@ -54,16 +54,30 @@
      resolves var(--ok|warn|fail) to nothing and falls back to the inherited
      colour — a green callout goes grey, a red pill loses its warning. */
   --ok:rgb(var(--c-ok)); --warn:rgb(var(--c-warn)); --fail:rgb(var(--c-fail));
-  --shadow:0 18px 40px rgba(0,0,0,.28);
+  /* --shadow IS NOT BRIDGED HERE, and the line that did is gone. The shell
+     defines it, themed, in BOTH palettes; a sheet that restated it with a
+     dark-only value gave every plate on every Files screen the night shadow
+     under the day palette — and restating a shared token is how one module
+     redecorates the house by load order. */
 }
 
-/* THE KPI STRIP — PORTED FROM THE DESIGN'S `.dp-kstrip` (its widgets.css).
-   The four counts are ONE widget whose inner `.grid` must lay them out four
-   across — as many equal columns as fit, each at least 168px, wrapping below
-   that. The shell's `.grid` is display:grid with a gap and NO columns, so it
-   defaults to a single column and the four counts stack full-width. Without
-   this the KPI strip is four stacked bands instead of a row. */
-.dp-kstrip{grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
+/* THE KPI STRIP IS THE SHELL'S `.kstrip` NOW. This sheet carried a copy of it
+   under the design's own name, and two rules laying out one strip is how the
+   same row ends up two widths apart on two surfaces. The widget writes
+   `.grid kstrip`; the shell owns what that means.
+
+   ── THE CHART PRIMITIVES — ON LOAN, and they belong in the shell.
+   A plotted figure is house vocabulary: the design workspace keeps `.ch` and
+   its parts in the vendor sheet every screen is written against, and three
+   surfaces now draw one. The shell does not ship them yet, so they are
+   restated here EXACTLY as team.css restates them — same rules, same names,
+   nobody's module — so the block hoists unchanged the day the shell collects
+   the loan. Every rule spends a token and names no colour, which is what
+   makes the same chart correct under both palettes. */
+.ch { width: 100%; height: auto; display: block; }
+.ch text { font-family: var(--font-mono); font-size: 7.5px; fill: var(--fog); }
+.ch line.grid { stroke: color-mix(in srgb, var(--fog) 22%, transparent); stroke-width: .6; }
+.ch line.ax { stroke: color-mix(in srgb, var(--fog) 55%, transparent); stroke-width: .8; }
 
 /* THE PREVIEW'S OWN VOCABULARY IS NOT HERE. The owner tag, the storage pills,
    the action links and the overlay moved to preview.css, which every surface
@@ -102,7 +116,7 @@
    controls in uhifadhi.css are fixed. The overlay's step arrows below follow
    the same rule for the same reason. */
 .f-tile .sh .lock{position:absolute;right:5px;top:5px;width:19px;height:19px;border-radius:6px;
-  display:grid;place-items:center;background:rgba(10,14,11,.62);color:#EAF2EC}
+  display:grid;place-items:center;background:var(--plate-veil);color:var(--plate-ink)}
 .f-tile .sh .lock svg{width:11px;height:11px}
 .f-tile .bd{display:flex;flex-direction:column;gap:5px;min-width:0;padding:0 2px 2px}
 .f-tile .nm{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:9.5px;color:var(--fog);

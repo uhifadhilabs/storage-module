@@ -7,7 +7,7 @@
    that is removed stops being counted because it is gone, not because a number
    was decremented. #}
 {% set space = counts.bytes|storage_bytes_split %}
-<div class="grid w-flush dp-kstrip" data-w="kpis">
+<div class="grid w-flush kstrip" data-w="kpis">
     <div class="c kpi">
         <span class="tab">Files kept</span>
         <b class="disp">{{ counts.files|number_format(0, '.', ' ') }}</b>

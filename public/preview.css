@@ -37,17 +37,27 @@
      pills (made/queued/failed) and the danger action all spend these. Unaliased,
      they render with a broken colour on the host. */
   --ok:rgb(var(--c-ok)); --warn:rgb(var(--c-warn)); --fail:rgb(var(--c-fail));
-  --f-shadow:0 18px 40px rgba(0,0,0,.28);
+  /* THE OVERLAY'S OWN DEPTH, spent from the PLATE palette rather than written
+     as a colour: the overlay sits over a photograph, and a photograph is dark
+     whichever way the interface is turned, so this depth must not flip with
+     the theme — and a literal would be wrong in one of the two palettes
+     anyway. */
+  --f-shadow:0 18px 40px color-mix(in srgb, var(--plate-ring) 55%, transparent);
 }
 
-/* A MODULE'S COLOUR, one line per module — the same rule nav.css states for the
-   sidebar's identity dots: the module bundle declares its colour once and every
-   host surface renders it. Permits has no module yet, so it is the quiet token
-   and it is never drawn as a live colour. */
+/* A MODULE HAS NO HUE. Ruled: there are no module identity colours on this
+   platform — only the palette's own tokens and the department hues, and a
+   colour keyed to a module slug is a fourth vocabulary nobody can read. The
+   owner dot is therefore the house accent on every module, and a module the
+   installation does not have is the quiet token because "absent" IS a
+   palette meaning.
+
+   The block was a per-module colour list, one line each, with a hex for
+   incidents. It went with the ruling, and the selectors below keep their
+   names only so a template that still writes the slug renders the same dot
+   as every other. */
 :root, html.light {
   --f-mod: var(--acc);
-  --f-patrol: var(--acc);
-  --f-inc: #E05B41;
   --f-permit: var(--dim);
 }
 
@@ -73,8 +83,6 @@
    in the accent, until its own bundle declares a colour of its own. */
 .f-owner i,.f-fchip i,.f-dotc,.f-map .cellL i{background:var(--f-mod)}
 .f-owner i{width:7px;height:7px;border-radius:2px;flex:none;font-style:normal}
-.f-owner i.patrols,.f-fchip i.patrols,.f-dotc.patrols,.f-map .cellL i.patrols{background:var(--f-patrol)}
-.f-owner i.incidents,.f-fchip i.incidents,.f-dotc.incidents,.f-map .cellL i.incidents{background:var(--f-inc)}
 .f-owner i.permits,.f-fchip i.permits,.f-dotc.permits,.f-map .cellL i.permits{background:var(--f-permit)}
 /* An owner whose module is not built yet: named, not a link. */
 .f-owner.off{border-style:dashed;color:var(--dim);cursor:default}
@@ -140,9 +148,9 @@
    photograph does not flip with the theme — so neither may the chrome over it.
    Same reason the tile's private mark in files.css is fixed. */
 .f-ovnav{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;
-  display:grid;place-items:center;border:1px solid rgba(234,242,236,.22);background:rgba(10,14,11,.6);
-  color:#EAF2EC;cursor:pointer;padding:0}
-.f-ovnav:hover{background:rgba(10,14,11,.85)}
+  display:grid;place-items:center;border:1px solid var(--plate-edge);background:var(--plate-veil);
+  color:var(--plate-ink);cursor:pointer;padding:0}
+.f-ovnav:hover{background:color-mix(in srgb, var(--plate-ring) 88%, transparent)}
 .f-ovnav svg{width:16px;height:16px}
 .f-ovnav.prev{left:12px}
 .f-ovnav.next{right:12px}

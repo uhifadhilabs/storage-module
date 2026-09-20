@@ -467,6 +467,11 @@ final class StubSource implements FileSourceInterface
         return $this->slug;
     }
 
+    public function fileWord(): string
+    {
+        return 'this stand-in module’s files';
+    }
+
     public function moduleLabel(): string
     {
         return $this->label;
@@ -507,6 +512,11 @@ final class BrokenSource implements FileSourceInterface
     public function moduleSlug(): string
     {
         throw new \RuntimeException('down');
+    }
+
+    public function fileWord(): string
+    {
+        return 'this stand-in module’s files';
     }
 
     public function moduleLabel(): string
