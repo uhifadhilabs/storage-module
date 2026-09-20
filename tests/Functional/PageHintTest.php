@@ -73,15 +73,25 @@ final class PageHintTest extends FilesTestCase
         self::assertCount(0, $register->filter('.f-say'), 'the module draws no hint of its own, under any name');
     }
 
-    /** And the Storage tab carries the words the owner ruled, verbatim. */
-    public function testTheStorageTabCarriesTheOneHint(): void
+    /**
+     * AND THE STORAGE TAB CARRIES THE REGISTER'S OWN WORDS, verbatim.
+     *
+     * They are the text the owner ruled on, pointing at the register's lead,
+     * and the ruling was to MOVE it rather than to write a new one — so the
+     * sentence is pinned here whole rather than by a phrase, because a
+     * paraphrase is exactly what a move is not.
+     */
+    public function testTheStorageTabCarriesTheRegistersWordsVerbatim(): void
     {
         $hint = $this->open('/files/storage')->filter('.pghint');
 
         self::assertCount(1, $hint);
-        self::assertStringContainsString('Every file belongs to a record', $hint->text());
-        self::assertStringContainsString('the owning record’s answer', $hint->text());
-        self::assertStringContainsString('never overrules', $hint->text());
+        self::assertSame(
+            'Every file belongs to a record. Browse, find, check, tidy — never upload. '
+            .'A file arrives by being attached to a record. Originals sit outside the website '
+            .'and are handed over only after a permission check.',
+            (string) preg_replace('/\s+/u', ' ', trim($hint->text())),
+        );
     }
 
     /**
