@@ -40,10 +40,10 @@ seeing something about every file at once, so it rides on the same permission as
             <div class="rln"><span>Holding</span><span class="mono" style="font-size:11px">{{ counts.files|number_format(0, '.', ' ') }} files &middot; {{ counts.bytes|storage_bytes }}</span></div>
             <div class="rln"><span>What is on it</span><span class="mono" style="font-size:11px">{{ place.current ? 'everything this platform keeps' : 'nothing new goes here' }}</span></div>
             <div class="rln"><span>Reachable without the app</span><span><span class="chip fail">never</span></span></div>
-            <div class="use" style="margin-bottom:0"><b>Nothing here is public.</b> Originals live <b>outside the web
-            root</b>, so there is no address anybody can guess or share by accident; the storage is private by
-            construction &mdash; there is no visibility setting and no public-URL setting to get wrong &mdash; and the
-            app hands each file over itself, after asking the owning module whether you may see the record.</div>
+            {# Private by CONSTRUCTION: there is no visibility setting and no public-URL
+               setting to get wrong, because there is no public URL. The app hands each
+               file over itself, after asking the owning module about the record. #}
+            <div class="use" style="margin-bottom:0"><b>Nothing here is public.</b> Originals live outside the web root &mdash; no address anybody can guess.</div>
         </div>
     {% endfor %}
 </div>
@@ -64,9 +64,10 @@ seeing something about every file at once, so it rides on the same permission as
             <div class="cellR"><span class="chip idle">no module yet</span></div>
         {% endfor %}
     </div>
-    <div class="use"><b>A module never names a place.</b> It asks for &ldquo;the place my files go&rdquo; and the host
-    answers. That is what lets one deployment run on a disk, another on object storage, and a third on something nobody
-    has written yet, without a single change inside the modules.</div>
+    {# Which is what lets one deployment run on a disk, another on object storage,
+       and a third on something nobody has written yet, with no change inside any
+       module. #}
+    <div class="use"><b>A module never names a place.</b> It asks for its place; the installation answers.</div>
 </div>
 
 <h2 class="zone">How long things are kept, and what is allowed in</h2>
@@ -78,9 +79,9 @@ seeing something about every file at once, so it rides on the same permission as
         <div class="rln"><span>When a record is removed</span><span class="mono" style="font-size:11px">its files go with it, in the same breath</span></div>
         <div class="rln"><span>When a file is removed</span><span class="mono" style="font-size:11px">the record keeps a line saying so</span></div>
         <div class="rln"><span>Who decides a removal</span><span class="mono" style="font-size:11px">the owning record, never this page</span></div>
-        <div class="use" style="margin-bottom:0"><b>Nothing expires by itself.</b> There is no sweeper deleting old
-        photographs at midnight, and there will not be one until somebody writes a retention rule down and an
-        administrator switches it on. Until then, kept means kept.</div>
+        {# No sweeper deletes old photographs at midnight, and none will until somebody
+           writes a retention rule down and an administrator switches it on. #}
+        <div class="use" style="margin-bottom:0"><b>Nothing expires by itself.</b> Kept means kept.</div>
     </div>
     <div class="c">
         <span class="tab">What is allowed in</span>
@@ -91,10 +92,10 @@ seeing something about every file at once, so it rides on the same permission as
         <div class="rln"><span>How the type is decided</span><span class="mono acc" style="font-size:11px">by reading the file, not its name</span></div>
         <div class="rln"><span>Biggest one file</span><span class="mono" style="font-size:11px">{{ maxBytes|storage_bytes }}</span></div>
         <div class="rln"><span>Small picture</span><span class="mono" style="font-size:11px">one, ~{{ thumbnailLongEdge }}px on the long side</span></div>
-        <div class="use" style="margin-bottom:0"><b>The name is not evidence of anything.</b> Anyone can call a program
-        &ldquo;photo.jpg&rdquo;. The platform looks at what the file actually is and refuses it if that is not on the
-        list &mdash; which is also why a HEIC is kept even though no small picture could be made from it: it really is a
-        photograph, it is simply one this machine cannot read.</div>
+        {# Anyone can call a program "photo.jpg". It is also why a HEIC is kept even
+           where no small picture could be made from it: it really is a photograph,
+           simply one this machine cannot read. #}
+        <div class="use" style="margin-bottom:0"><b>The name is evidence of nothing.</b> The type is detected, then checked against the list.</div>
     </div>
 </div>
 
@@ -114,7 +115,7 @@ seeing something about every file at once, so it rides on the same permission as
             <div class="rln"><span>See a file whose record they cannot see</span><span class="chip fail">never</span></div>
         </div>
     </div>
-    <div class="use"><b>Read the right-hand column as the promise.</b> Administering where bytes live is not the same
-    as being allowed to read them, and this page never becomes a back door into evidence.</div>
+    {# This page never becomes a back door into evidence. #}
+    <div class="use"><b>Administering where bytes live is not being allowed to read them.</b></div>
 </div>
 {% endblock %}

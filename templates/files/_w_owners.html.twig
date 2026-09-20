@@ -22,5 +22,8 @@
             <tr><td colspan="5" class="f-note">No module on this platform has put its files on the hub yet. <span class="chip idle">no module yet</span></td></tr>
         {% endfor %}
     </table>
-    <div class="use"><b>The hub grows by modules, never by folders.</b> A module appears in this table the day it ships a file source &mdash; its files arrive here without one line of work on this page. A module that is installed but holds nothing is still listed, because &ldquo;we have that and it is empty&rdquo; is a different fact from &ldquo;we do not have it&rdquo;.</div>
+    {# A module appears here the day it ships a file source, with no work on this
+       page. One that is installed and holds nothing is still listed: "we have that
+       and it is empty" is a different fact from "we do not have it". #}
+    <div class="use"><b>The hub grows by modules, never by folders.</b></div>
 </div>

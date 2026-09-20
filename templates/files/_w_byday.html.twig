@@ -16,5 +16,8 @@
     {% else %}
         {{ ui.empty(true) }}
     {% endfor %}
-    <div class="use"><b>A patrol out for three days syncs on the third.</b> Grouping by the upload would pile all of it onto one day and lose the three; grouping by the handset&rsquo;s own clock keeps the field record honest. A document has no such clock, so it sits under the day it was filed and says so on its card.</div>
+    {# Grouping by the upload would pile three days onto one and lose the three;
+       the handset's own clock keeps the field record honest. A document has no such
+       clock, so it sits under the day it was filed and says so on its card. #}
+    <div class="use"><b>A patrol out for three days syncs on the third.</b> The day is the handset&rsquo;s, not ours.</div>
 </div>

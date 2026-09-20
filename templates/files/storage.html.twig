@@ -59,12 +59,11 @@
     <div class="grid g2">
         <div class="c">
             <span class="tab">How a file is kept<span class="src">&middot; the same for every module</span></span>
-            <div class="rln"><span>Where an original lives</span><span class="mono d">outside the web root, always</span></div>
-            <div class="rln"><span>How it is reached</span><span class="mono acc">a request the app answers after a permission check</span></div>
-            <div class="rln"><span>Small pictures per file</span><span class="mono d">exactly one &mdash; never a set of sizes</span></div>
-            <div class="rln"><span>Small picture size</span><span class="mono d">~{{ thumbnailLongEdge }} px on the long side</span></div>
-            <div class="rln"><span>What decides the type</span><span class="mono d">detection, never the file&rsquo;s name</span></div>
-            <p class="use" style="margin-bottom:0">Browsing costs one small picture per file. The original is fetched when, and only when, somebody asks for it.</p>
+            {# ONE ROW. This was five stated rows and a closing sentence, which
+               is a paragraph wearing a table: the reader of a Storage tab is
+               here to see how full a target is, and the way a file is kept is
+               one fact they check in passing. #}
+            <div class="rln"><span>Every file, every module</span><span class="mono d">originals outside the site &middot; one ~{{ thumbnailLongEdge }}px picture per file &middot; type by detection &middot; a refusal reads as not found</span></div>
         </div>
 
         <div class="c">
@@ -73,7 +72,7 @@
             <div class="rln"><span>Retention</span><span class="mono d">none &mdash; a file lives as long as its record</span></div>
             <div class="rln"><span>Quota warning</span><span class="mono {{ nearQuota ? 'r' : 'w' }}">at {{ warningPercent }} % of what was bought &middot; {{ nearQuota ? 'a target has passed it' : 'no target is near it' }}</span></div>
             <div class="rln"><span>What happens at the quota</span><span class="mono r">the attach fails on the record&rsquo;s own page, with the reason</span></div>
-            <p class="use">Quota is not in the model: it is what was bought, typed here so the bar above can be drawn. A target with no quota typed draws no bar rather than a full one.</p>
+            <p class="use">A target with no quota typed draws no bar, never a full one.</p>
             <div class="sxfoot">
                 <span>Editing any of these is the configure page</span>
                 <span class="sp"></span>

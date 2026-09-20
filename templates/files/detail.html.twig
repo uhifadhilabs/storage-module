@@ -57,8 +57,7 @@
             {% endif %}
         </div>
         {% if file.caption %}
-            <div class="use"><b>{{ file.caption }}</b> &mdash; the caption belongs to the record, not to the file; it is written on
-            {{ file.ownerLabel }} and shown here.</div>
+            <div class="use"><b>{{ file.caption }}</b> &mdash; written on {{ file.ownerLabel }}, not on the file.</div>
         {% else %}
             <div class="use">No caption &mdash; a caption belongs to the record, not to the file, and this one has none.</div>
         {% endif %}
@@ -66,8 +65,7 @@
         {% if siblings is not empty %}
             <h2 class="zone" style="margin-top:26px">The rest of {{ file.ownerLabel }}&rsquo;s files</h2>
             <div class="f-grid">{%- for sibling in siblings -%}{{ ui.tile(sibling) }}{%- endfor -%}</div>
-            <div class="use">These hang off the same record. They are its evidence, and they move with it &mdash; if the
-            record is ever merged into another, they go along.</div>
+            <div class="use">These hang off the same record and move with it.</div>
         {% endif %}
     </div>
 
@@ -157,9 +155,10 @@
         </div>
 
         {% if guard.offersRemoval and not removable %}
-            <div class="use" style="margin-bottom:0">{{ file.moduleLabel }} allows this file to be removed but has not yet
-            said how it would record the removal on {{ file.ownerLabel }}. Until it does, the hub will not remove it:
-            <b>removing a file is a line on its record</b>, and a removal nobody wrote down is not one.</div>
+            {# {{ file.moduleLabel }} allows the removal but ships no hook to write the
+               trail line on {{ file.ownerLabel }}, so the hub refuses: removing a file
+               IS a line on its record, and a removal nobody wrote down is not one. #}
+            <div class="use" style="margin-bottom:0">{{ file.moduleLabel }} cannot yet write the removal onto {{ file.ownerLabel }}, so it stays.</div>
         {% endif %}
     </div>
 </div>

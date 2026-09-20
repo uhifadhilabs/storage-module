@@ -10,5 +10,6 @@
     <span class="tab">The file ledger<span class="src">&middot; every fact, none of the pictures</span></span>
     <table class="f-list" data-f-list>{{ ui.listhead() }}<tbody>{%- for file in files -%}{{ ui.row(file, places) }}{%- endfor -%}</tbody></table>
     {% if files is empty %}{{ ui.empty(true) }}{% endif %}
-    <div class="use">The only shape that answers the storage questions in one look: <b>which files have no small picture</b>, <b>what is kept where</b>, and <b>what a record is actually costing</b>. Click any row for the picture.</div>
+    {# The only shape that answers all three storage questions in one look. #}
+    <div class="use">No small picture, kept where, costing what &mdash; click any row for the picture.</div>
 </div>

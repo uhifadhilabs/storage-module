@@ -18,5 +18,8 @@
             <div class="use" style="margin-bottom:0">No files yet, so nothing to divide up.</div>
         {% endfor %}
     </div>
-    <div class="use"><b>Only photographs get a small picture.</b> A PDF and a GPX have nothing to shrink, so their tiles say what they are instead of pretending to be broken images. The allowlist is on the <b>detected</b> type, never on the file&rsquo;s name &mdash; renaming a thing does not change what it is.</div>
+    {# A PDF and a GPX have nothing to shrink, so their tiles say what they are
+       instead of pretending to be broken images. The allowlist is on the detected
+       type, never the name — renaming a thing does not change what it is. #}
+    <div class="use"><b>Only photographs get a small picture</b>, and the kind is detected, never read off the name.</div>
 </div>

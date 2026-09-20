@@ -74,30 +74,4 @@
     {% endfor %}
 </div>
 
-<h2 class="zone">What the hub knows that a module page does not</h2>
-<div class="grid g2">
-    <div class="c">
-        <span class="tab">How a file is kept</span>
-        <div class="rln"><span>Where an original lives</span><span class="mono" style="font-size:11px">outside the web root, always</span></div>
-        <div class="rln"><span>How it is reached</span><span class="mono acc" style="font-size:11px">a request the app answers after a permission check</span></div>
-        <div class="rln"><span>What browsing costs</span><span class="mono" style="font-size:11px">one ~{{ thumbnailLongEdge }}px picture per file</span></div>
-        <div class="rln"><span>Small pictures per file</span><span class="mono" style="font-size:11px">exactly one &mdash; never a set of sizes</span></div>
-        <div class="rln"><span>What decides the type</span><span class="mono" style="font-size:11px">detection, never the file&rsquo;s name</span></div>
-        <div class="use" style="margin-bottom:0">A refusal is a <b>not found</b>, never a <b>not allowed</b> &mdash; being
-        told you may not see something confirms it exists, and evidence must not confirm itself to a stranger.</div>
-    </div>
-    <div class="c">
-        <span class="tab">Who owns what</span>
-        <p class="use" style="margin-top:2px">The hub <b>browses and manages</b>; it never overrules. Whether a file may be removed is the <b>owning record&rsquo;s</b> answer. Open any file and it says which, in the module&rsquo;s own words.</p>
-        {% for module in modules %}
-            <div class="rln"><span>{{ module.label }}</span><span class="f-note">{{ module.attachesTo }}</span></div>
-        {% else %}
-            <div class="rln"><span>Modules holding files</span><span class="f-note">none installed yet</span></div>
-        {% endfor %}
-        <div class="rln"><span>Who may see a file</span><span class="mono" style="font-size:11px">whoever may see its record</span></div>
-        <div class="rln"><span>Who may remove one</span><span class="mono" style="font-size:11px">whoever the record says</span></div>
-        <div class="use" style="margin-bottom:0">A module puts its files here by shipping a file source; nothing on this
-        page has to know what an observation or an incident is, and it does not.</div>
-    </div>
-</div>
 {% endblock %}

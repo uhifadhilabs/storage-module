@@ -27,5 +27,8 @@
         <div data-f-listwrap{{ filter.view == 'list' ? '' : ' hidden' }}><table class="f-list" data-f-list>{{ ui.listhead() }}<tbody>{%- for file in files -%}{{ ui.row(file, places) }}{%- endfor -%}</tbody></table></div>
     </div>
     {{ ui.empty(files is empty) }}
-    <div class="use"><b>Every tile says who owns it.</b> A file on this platform belongs to a record in a module &mdash; this is a way of looking across all of them at once, not a shelf you put things on. There is no upload button here for the same reason: a file arrives by being attached to an observation, an incident or (later) a permit, on that record&rsquo;s own page.</div>
+    {# A way of looking across every module's files at once, not a shelf you put
+       things on — which is also why there is no upload button: a file arrives by
+       being attached to a record, on that record's own page. #}
+    <div class="use"><b>Every tile says who owns it.</b> A file belongs to a record in a module.</div>
 </div>

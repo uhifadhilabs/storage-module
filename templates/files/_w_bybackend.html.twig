@@ -17,5 +17,8 @@
             </div>
         {% endfor %}
     </div>
-    <div class="use"><b>Wherever they are, they are not inside the website.</b> Originals live outside the web root, so there is no address anybody can guess &mdash; a file is reached through a request the app answers only after it has checked that you may see the record it belongs to. <a href="{{ path('storage_files_settings') }}">Where files go &rarr;</a></div>
+    {# Outside the web root, so there is no address anybody can guess: a file is
+       reached through a request the app answers only after checking that you may
+       see the record it belongs to. #}
+    <div class="use"><b>Wherever they are, they are not inside the website.</b> <a href="{{ path('storage_files_settings') }}">Where files go &rarr;</a></div>
 </div>

@@ -65,7 +65,7 @@
             </div>
             {# AN ABSENT SERIES IS A MODULE THAT DECLARES NO FILE STORE, not a
                module with no files, and the two must never look the same. #}
-            <p class="use" style="margin-bottom:0">A module that declares no file store draws no bar at all &mdash; that is a different fact from a module whose bar is nought.</p>
+            <p class="use" style="margin-bottom:0">No file store, no bar &mdash; which is not the same as a bar at nought.</p>
             <div class="sxmore"><span>{{ periodTotal|number_format }} of {{ total|number_format }} &middot; the rest is older than {{ periods|length }} periods</span><span class="sp"></span><a href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::REGISTER')) }}">The register &rarr;</a></div>
         </div>
 
@@ -118,7 +118,7 @@
         {% for line in outstanding %}
             <div class="rln"><span>{{ line.label }}</span><span class="mono {{ line.tone }}">{{ line.note }}</span></div>
         {% endfor %}
-        <p class="use">Every photograph gets <b>one</b> small picture, about {{ thumbnailLongEdge }} pixels on the long side, and that small picture is the only thing browsing ever fetches.</p>
+        <p class="use">One ~{{ thumbnailLongEdge }}px picture per photograph, and it is all browsing fetches.</p>
         <div class="sxfoot">
             <span>{% if failed > 0 %}{{ failed }} {{ failed == 1 ? 'failure is' : 'failures are' }} a file problem, not a queue problem{% else %}No picture has failed to be made{% endif %}</span>
             <span class="sp"></span>
