@@ -29,10 +29,11 @@ use PHPUnit\Framework\TestCase;
  * for a card's closing sentence, and it is where every essay this section ever
  * grew was written. Two neighbours are deliberately NOT held to it:
  *
- *   `.f-say`   the page lead — the settled designs draw it as a run of short
- *              fragments on one band, and it is measured as a band rather than
- *              as a sentence.
- *   `.sxlead`  a card's lead, same shape and same reason.
+ *   `.sxlead`  a card's lead — the settled designs draw it as a run of short
+ *              fragments on one band, and it is measured as a band rather
+ *              than as a sentence.
+ *   `.pghint`  the house page hint, which is the shell's markup and the
+ *              shell's to measure.
  *
  * Holding those two to a sentence bar would not shorten the product; it would
  * delete components the designs draw. If the ruling is meant to reach them,

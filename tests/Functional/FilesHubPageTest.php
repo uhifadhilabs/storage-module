@@ -81,7 +81,10 @@ final class FilesHubPageTest extends FilesTestCase
 
         self::assertCount(0, $crawler->filter('input[type=file]'));
         self::assertCount(0, $crawler->filter('form[enctype*=multipart]'));
-        self::assertStringContainsString('never upload', $crawler->filter('.f-say')->text());
+        // THE REGISTER KEEPS NOTHING. Its lead used to say so in words; the
+        // page now says it by having no upload control anywhere on it, and
+        // the one hint the Files pages carry lives on the Storage tab.
+        self::assertCount(0, $crawler->filter('.pghint'), 'a reader comes to a register to find a file, not to read about one');
     }
 
     public function testAThumbnailIsTheOnlyThingBrowsingEverFetches(): void

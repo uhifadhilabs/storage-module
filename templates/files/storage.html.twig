@@ -86,4 +86,14 @@
             </div>
         </div>
     </div>
+
+    {# THE ONE HINT THE FILES PAGES CARRY, and it is here rather than on the
+       register: a reader comes to a register to find a file, and this is what
+       they want after they have failed to. Words verbatim from the design's
+       own note of the same name. #}
+    {{ include('@Shell/_page_hint.html.twig', {
+        lead: 'Every file belongs to a record',
+        say: 'and whether it may be removed is the owning record’s answer. The hub browses and manages; it never overrules.',
+        icon: 'storage:lock',
+    }) }}
 {% endblock %}

@@ -29,8 +29,6 @@
 {% block storage_page %}
 
 
-<div class="f-say"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div><b>Only an administrator opens this page.</b> Seeing where files are kept is
-seeing something about every file at once, so it rides on the same permission as installing a module.</div></div>
 
 {% import '@UhifadhiStorage/files/_target.html.twig' as tgt %}
 
@@ -129,4 +127,13 @@ seeing something about every file at once, so it rides on the same permission as
     {# This page never becomes a back door into evidence. #}
     <div class="use"><b>Administering where bytes live is not being allowed to read them.</b></div>
 </div>
+
+    {# ONE HINT, AT THE BOTTOM, IN THE SHELL'S MARKUP. It used to be a lead
+       above the content, which is where everybody reads it on every visit
+       forever; the person still wondering who may open this page is the one
+       who has already read the page. #}
+    {{ include('@Shell/_page_hint.html.twig', {
+        lead: 'Only an administrator opens this page.',
+        say: 'Seeing where files are kept is seeing something about every file at once, so it rides on the same permission as installing a module.',
+    }) }}
 {% endblock %}
