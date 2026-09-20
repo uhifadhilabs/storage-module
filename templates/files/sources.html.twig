@@ -1,0 +1,83 @@
+{# FILES · SOURCES — which module puts a file here, and what it calls one.
+
+   THE TAB EXISTS BECAUSE THE REGISTER CANNOT ANSWER IT. Two installed modules
+   may store files and two may not, and the difference is invisible on a list
+   of files: a reader asking "why is Roster not here" has nowhere else to look.
+
+   IT READS. Whether a declared source is listed, and the word the hub prints
+   for it, are the configure page's Source modules section. #}
+{% extends '@UhifadhiStorage/base.html.twig' %}
+{% import '@UhifadhiStorage/files/_bits.html.twig' as bits %}
+
+{% block title %}Files &mdash; Sources{% endblock %}
+
+{% block shell_breadcrumbs %}<a href="/">uhifadhi</a> / files / sources{% endblock %}
+
+{% block shell_page_title %}Files{% endblock %}
+{% block shell_page_subtitle %}Which module puts a file here, and what it calls it.{% endblock %}
+
+{% block storage_page %}
+    {{ bits.band(facts, path(constant('Uhifadhi\\Storage\\Controller\\FilesConfigureController::SOURCES')), 'Source modules') }}
+
+    <div class="c" style="margin-bottom:20px">
+        <span class="tab">Where a file comes from<span class="src">&middot; {{ rows|length }} {{ rows|length == 1 ? 'module' : 'modules' }} &middot; {{ rows|filter(r => r.state == 'live')|length }} of them store</span></span>
+        <div class="sxlead">
+            <span class="t">{{ ux_icon('shell:info') }}<span><b>A file arrives by being attached to a record.</b> There is no upload into this hub and no import path: a module that stores files says so, and every file it stores carries the name of the record it belongs to for the rest of its life.</span></span>
+        </div>
+        <table class="tbl">
+            <thead><tr><th>Module</th><th>What it calls a file</th><th class="num">Files</th><th class="num">Size</th><th>State</th><th></th></tr></thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    {# THE SLUG, NOT THE COMPOSER PACKAGE. What the hub knows
+                       about a module is the name it registered under; nothing
+                       on this platform reads a package name, so printing one
+                       would be a guess dressed as a fact. #}
+                    <td><b>{{ row.label }}</b><div class="mono d" style="font-size:10.5px;margin-top:4px">{{ row.slug }}</div></td>
+                    <td>{% if row.fileWord %}<span class="fog">{{ row.fileWord }}</span>{% else %}<span class="fog">declares no file store</span>{% endif %}</td>
+                    <td class="num">{{ row.state == 'live' ? row.files|number_format : '&mdash;'|raw }}</td>
+                    <td class="num">{{ row.state == 'live' ? row.bytes|storage_bytes : '&mdash;'|raw }}</td>
+                    <td><span class="chip{{ row.state == 'live' ? ' ok' }}">{{ row.state }}</span></td>
+                    <td style="text-align:right">{% if row.state == 'live' and row.files > 0 %}<a class="sxq" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::REGISTER')) }}?module={{ row.slug }}">Its files</a>{% else %}<span class="mono d">&mdash;</span>{% endif %}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6"><span class="mono d">No module declares a file store, and none is installed that could.</span></td></tr>
+            {% endfor %}
+            {# UPLOADED IN THE HUB — NEVER, AND BY DESIGN. Drawn as a row so
+               that the one thing this surface will not do is stated where a
+               reader is already counting what it does. #}
+            <tr>
+                <td colspan="2"><span class="mono d">Uploaded in the hub</span></td>
+                <td class="num">&mdash;</td>
+                <td class="num">&mdash;</td>
+                <td><span class="chip">never</span></td>
+                <td style="text-align:right"><span class="mono d">by design</span></td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="sxfoot">
+            <span>Removing a module removes its source: its files stop being listed here and its bytes stay where they are until the module returns or somebody removes them deliberately.</span>
+            <span class="sp"></span>
+            <a class="tgl" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesConfigureController::SOURCES')) }}">Source modules</a>
+        </div>
+    </div>
+
+    <div class="grid g2">
+        <div class="c">
+            <span class="tab">Who may see a file<span class="src">&middot; the record decides</span></span>
+            <div class="rln"><span>Who may see it</span><span class="mono d">whoever may see its record</span></div>
+            <div class="rln"><span>Who may remove it</span><span class="mono d">whoever the record says</span></div>
+            <div class="rln"><span>A record still in progress</span><span class="mono d">will not let go of its evidence</span></div>
+            <div class="rln"><span>A refusal reads as</span><span class="mono acc">not found &mdash; never &ldquo;not allowed&rdquo;</span></div>
+            <p class="use" style="margin-bottom:0">Being told you may not see something confirms it exists, and evidence must not confirm itself to a stranger.</p>
+        </div>
+
+        <div class="c">
+            <span class="tab">What a source has to declare<span class="src">&middot; the seam</span></span>
+            {% for line in seam %}
+                <div class="rln"><span><span class="mono">{{ line.declaration }}</span></span><span class="mono {{ line.exists ? 'g' : 'w' }}">{{ line.exists ? 'yes' : 'no' }} &middot; {{ line.purpose }}</span></div>
+            {% endfor %}
+            <p class="use" style="margin-bottom:0">Without these the hub would have to know each module by name, which is the one thing it must not do.</p>
+        </div>
+    </div>
+{% endblock %}

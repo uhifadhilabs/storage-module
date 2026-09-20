@@ -14,6 +14,12 @@
    does not say why. #}
 {% extends '@UhifadhiStorage/base.html.twig' %}
 
+{# NOT ONE OF THE SECTION'S FOUR SCREENS. This page is inside the section
+   without being one of its places, so it carries no surface marker — and the
+   frame's fallback there is an AREA's strip, which would be this page
+   claiming a place it is not in. The sidebar's subtree says where you are. #}
+{% block shell_page_tabs %}{% endblock %}
+
 {% block title %}{{ file.name }}{% endblock %}
 
 {% block shell_breadcrumbs %}<a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / {{ file.name }}{% endblock %}

@@ -81,7 +81,7 @@ final class FilesHubPageTest extends FilesTestCase
 
         self::assertCount(0, $crawler->filter('input[type=file]'));
         self::assertCount(0, $crawler->filter('form[enctype*=multipart]'));
-        self::assertStringContainsString('not a shelf you upload onto', $crawler->filter('.f-say')->text());
+        self::assertStringContainsString('never upload', $crawler->filter('.f-say')->text());
     }
 
     public function testAThumbnailIsTheOnlyThingBrowsingEverFetches(): void

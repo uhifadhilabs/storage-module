@@ -29,7 +29,11 @@ final class FilesSettingsPageTest extends FilesTestCase
         $client->request('GET', '/files/settings');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('h1.pg', 'Where files go');
+        // THE HEADER IS THE SECTION'S ON EVERY SCREEN OF IT, configure
+        // sections included: the title is "Files" and the strip above says
+        // which screen you are on.
+        self::assertSelectorTextContains('h1.pg', 'Files');
+        self::assertSelectorTextContains('.atabs a.on', 'Storage targets');
     }
 
     public function testSomebodySignedInButNotAnAdministratorIsRefused(): void

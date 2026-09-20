@@ -14,17 +14,17 @@
 
 {% block shell_breadcrumbs %}<a href="/">uhifadhi</a> / <a href="{{ hubUrl }}">files</a> / where files go{% endblock %}
 
-{% block shell_page_title %}Where files go{% endblock %}
+{# THE HEADER IS THE SECTION'S, NOT THIS SCREEN'S — the title is "Files" on
+   every screen of the section and the strip says which one you are on. This
+   one is a configure SECTION (`Storage targets`), so the strip above it is
+   the section list rather than the four data tabs, written by the frame.
 
-{% block shell_page_subtitle %}
-    The organisation keeps its files in one or more <b>places it has named</b>. This page says which
-    places those are, which module&rsquo;s files go where, and what is allowed in. It is written for whoever
-    administers the platform &mdash; nothing on it changes what a ranger sees, only where the bytes end up.
-{% endblock %}
+   NO "BACK TO FILES" ACTION. The one Configure entry lights here and is the
+   way back; a module that typed a second door would be the only place in the
+   product with two. #}
+{% block shell_page_title %}Files{% endblock %}
 
-{% block shell_page_actions %}
-    <a class="tgl w-act" href="{{ hubUrl }}">{{ ux_icon('shell:chevron-left') }} Back to files</a>
-{% endblock %}
+{% block shell_page_subtitle %}Which named places the organisation keeps its files in, and what is allowed in.{% endblock %}
 
 {% block storage_page %}
 

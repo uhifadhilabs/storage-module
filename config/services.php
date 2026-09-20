@@ -19,7 +19,10 @@ use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Registry\UploadTargetRegistry;
 use Uhifadhi\Storage\Security\EvidenceAccessDecider;
 use Uhifadhi\Storage\Service\EvidenceStorage;
+use Uhifadhi\Storage\Service\FilesSectionOverview;
 use Uhifadhi\Storage\Service\FilesSurface;
+use Uhifadhi\Storage\Service\SourcesBoard;
+use Uhifadhi\Storage\Service\StorageBoard;
 use Uhifadhi\Storage\Service\StorageSettings;
 use Uhifadhi\Storage\Thumbnail\GdThumbnailer;
 use Uhifadhi\Storage\Thumbnail\ImagickThumbnailer;
@@ -133,6 +136,46 @@ return static function (ContainerConfigurator $container): void {
     $services->set('storage.files_surface', FilesSurface::class)
         ->args([service('storage.file_registry'), service('storage.settings')]);
     $services->alias(FilesSurface::class, 'storage.files_surface');
+
+    /*
+     * WHICH MODULE PUTS A FILE HERE — the Sources tab's whole supply.
+     *
+     * The registry's catalogue is nullOnInvalid() because it is a SERVICE of
+     * another bundle rather than a class: an installation may run this module
+     * without RegistryBundle (the hub is a screen, not a per-area capability),
+     * and the board then lists what declared itself and says nothing about
+     * what did not. A row invented for a module nobody can confirm is
+     * installed would be worse than a short list.
+     */
+    $services->set('storage.sources_board', SourcesBoard::class)
+        ->args([service('storage.file_registry'), service('registry.catalogue')->nullOnInvalid()]);
+    $services->alias(SourcesBoard::class, 'storage.sources_board');
+
+    /*
+     * WHERE THE BYTES ARE AND HOW MUCH IS LEFT. The quota is a parameter and
+     * not a model field, because no file knows what the organisation bought.
+     */
+    $services->set('storage.storage_board', StorageBoard::class)
+        ->args([
+            service('storage.file_registry'),
+            service('storage.settings'),
+            param('storage.files.storage_quota_bytes'),
+            param('storage.files.quota_warning_percent'),
+        ]);
+    $services->alias(StorageBoard::class, 'storage.storage_board');
+
+    /*
+     * THE SECTION'S FIRST TAB, which reads every one of the above and writes
+     * none of them.
+     */
+    $services->set('storage.section_overview', FilesSectionOverview::class)
+        ->args([
+            service('storage.file_registry'),
+            service('storage.sources_board'),
+            service('storage.storage_board'),
+            service('storage.settings'),
+        ]);
+    $services->alias(FilesSectionOverview::class, 'storage.section_overview');
 
     /*
      * THE UPLOAD CONTRIBUTION POINT — the third of this bundle's three, and the

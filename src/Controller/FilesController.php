@@ -36,6 +36,7 @@ use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Removal\FileRemovalInterface;
 use Uhifadhi\Storage\Service\FilesSurface;
 use Uhifadhi\Storage\Service\StorageSettings;
+use Uhifadhi\Storage\Shell\FilesSectionTabs;
 use Uhifadhi\Storage\Widget\FilesWidgets;
 
 /**
@@ -68,6 +69,18 @@ final class FilesController
      */
     private const string UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
+    /** The section's second tab: the register itself. */
+    public const string REGISTER = 'storage_files';
+
+    /** The first configure section, and what the one `Configure` action opens. */
+    public const string WIDGETS = 'storage_files_widgets';
+
+    /** The `Storage targets` configure section — the shipped "Where files go". */
+    public const string SETTINGS = 'storage_files_settings';
+
+    /** A file's own page. It is INSIDE the section, not one of its screens. */
+    public const string SHOW = 'storage_files_show';
+
     public function __construct(
         private readonly Environment $twig,
         private readonly FileRegistry $registry,
@@ -87,7 +100,7 @@ final class FilesController
      * The hub, on the widget framework: the person's own resolved layout,
      * in their own order, with the widgets they switched off simply absent.
      */
-    #[Route('/files', name: 'storage_files', methods: ['GET'])]
+    #[Route('/files', name: self::REGISTER, defaults: FilesSectionTabs::MARKER, methods: ['GET'])]
     public function index(Request $request): Response
     {
         $this->denyAnonymous();
@@ -108,7 +121,7 @@ final class FilesController
      * contract. Nothing about it is files-specific except the catalogue, the
      * partial format and the context every partial receives.
      */
-    #[Route('/files/widgets', name: 'storage_files_widgets', methods: ['GET'])]
+    #[Route('/files/widgets', name: self::WIDGETS, methods: ['GET'])]
     public function widgets(): Response
     {
         $this->denyAnonymous();
@@ -182,7 +195,7 @@ final class FilesController
      * administers the platform — nothing on it changes what a ranger sees, only
      * where the bytes end up.
      */
-    #[Route('/files/settings', name: 'storage_files_settings', methods: ['GET'])]
+    #[Route('/files/settings', name: self::SETTINGS, defaults: FilesSectionTabs::MARKER, methods: ['GET'])]
     public function settings(): Response
     {
         $this->denyAnonymous();
@@ -215,7 +228,7 @@ final class FilesController
      * under /files/{key}: a `.+` placeholder at the top level would swallow
      * /files/widgets and /files/settings whole.
      */
-    #[Route('/files/f/{key}', name: 'storage_files_show', requirements: ['key' => '.+'], methods: ['GET'])]
+    #[Route('/files/f/{key}', name: self::SHOW, requirements: ['key' => '.+'], methods: ['GET'])]
     public function show(string $key): Response
     {
         $this->denyAnonymous();

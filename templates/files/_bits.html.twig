@@ -1,0 +1,38 @@
+{# THE SECTION'S SHARED MARKS — the three fragments four screens each write,
+   in one place so they cannot drift apart by a middot.
+
+   THE ICONS ARE INLINE HERE AND NOWHERE ELSE. A movement pill's arrow is
+   part of the pill rather than an icon somebody chose, and it is drawn at
+   10px inside a 9.5px line; `ux_icon` is what a screen uses for every icon
+   that is an icon. The shell's own delta pill is drawn the same way. #}
+
+{# THE IDENTITY BAND — what this section IS, stated as fragments, above the
+   figures that say how it is doing. #}
+{% macro band(facts, url, label) %}
+    <div class="factband">
+        {% for fact in facts %}
+            <span class="f"><span class="k">{{ fact.label }}</span><span class="v">{{ fact.value }}{% if fact.qualifier %}<em>{{ fact.qualifier }}</em>{% endif %}</span></span>
+        {% endfor %}
+        <span class="sp"></span>
+        <a class="more" href="{{ url }}">{{ label }} &rarr;</a>
+    </div>
+{% endmacro %}
+
+{# ONE MOVEMENT PILL. Flat is a measurement too, and says so with a dash
+   rather than with nothing. #}
+{% macro delta(value, tone) %}<span class="delta {{ tone }}">{% if tone == 'good' %}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>{% elseif tone == 'bad' %}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m19 12-7 7-7-7"/><path d="M12 5v14"/></svg>{% else %}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>{% endif %}{{ value > 0 ? '+' }}{{ value }}</span>{% endmacro %}
+
+{# THE FIVE CARDS. Five or none — and a card whose figure nothing can measure
+   yet says so in its own line rather than printing a nought. #}
+{% macro kpis(kpis) %}
+    {% import _self as bits %}
+    <div class="grid kstrip" data-kpi>
+        {% for kpi in kpis %}
+            <div class="c kpi{{ kpi.hot ? ' hot' }}">
+                <span class="tab">{{ kpi.label }}</span>
+                <b class="disp">{{ kpi.value }}{% if kpi.of %}<em>{{ kpi.of }}</em>{% endif %}</b>
+                <span class="sub">{% if kpi.warn %}<span class="w">{{ kpi.warn }}</span>{% if kpi.qualifier %} &middot; {% endif %}{% endif %}{{ kpi.qualifier }}{% if kpi.delta is not null %} {{ bits.delta(kpi.delta, kpi.tone()) }}{% endif %}</span>
+            </div>
+        {% endfor %}
+    </div>
+{% endmacro %}

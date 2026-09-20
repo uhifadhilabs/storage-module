@@ -46,11 +46,17 @@
     <script src="{{ asset('bundles/uhifadhistorage/files.js') }}" defer></script>
 {% endblock %}
 
-{# THE HUB IS ORG-WIDE, so it fills the tab socket with nothing. The shell's
-   default there is an area's tab strip, and the Files hub is deliberately about
-   every area at once — a strip naming one of them would be the page claiming a
-   place it is not in. #}
-{% block shell_page_tabs %}{% endblock %}
+{# THE TAB SOCKET IS THE FRAME'S, AND IT IS FILLED. The section wears the area
+   idiom: its four screens are a strip in the same position an area's are, and
+   the frame resolves that strip from the surface marker each of the four
+   routes carries — Overview · Files · Sources · Storage, with Configure the
+   action at the right-hand end of the header rather than a tab.
+
+   A SCREEN THAT IS NOT ONE OF THE FOUR BLANKS IT ITSELF. A file's own page and
+   the widget library are inside the section without being screens of it; they
+   carry no marker, so the frame would fall back to an AREA's strip, and a
+   strip naming an area would be the page claiming a place it is not in. Each
+   of those two templates fills this socket with nothing. #}
 
 {% block shell_page %}
     {% block storage_page %}{% endblock %}

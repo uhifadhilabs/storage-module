@@ -33,6 +33,7 @@ use Uhifadhi\Bundle\TeamBundle\TeamBundle;
 use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Service\EvidenceStorage;
+use Uhifadhi\Storage\Tests\Integration\Fixtures\StubDeclaringSource;
 use Uhifadhi\Storage\Tests\Integration\Fixtures\StubEvidenceVoter;
 use Uhifadhi\Storage\Tests\Integration\Fixtures\StubFileSource;
 use Uhifadhi\Storage\Tests\Integration\Fixtures\StubUploadPageController;
@@ -228,6 +229,13 @@ final class TestKernel extends Kernel
             ->set(StubFileSource::class)
             ->tag(FileSourceInterface::TAG);
 
+        // A MODULE THAT DECLARES A FILE STORE AND HANDS NOTHING OVER — the
+        // other half of the Sources tab's whole question, and the reason the
+        // declaration and the supply are one tag rather than two.
+        $container->services()
+            ->set(StubDeclaringSource::class)
+            ->tag(FileSourceInterface::TAG);
+
         // THE OWNING MODULE OF AN UPLOAD, played by a fixture, tagged by hand for
         // the third time and for the third same reason. The endpoint's whole
         // behaviour is "ask the module", so a kernel with no target would
@@ -250,6 +258,9 @@ final class TestKernel extends Kernel
             EvidenceStorage::class => 'storage.evidence_storage',
             FileRegistry::class => 'storage.file_registry',
             StubFileSource::class => StubFileSource::class,
+            \Uhifadhi\Storage\Service\SourcesBoard::class => 'storage.sources_board',
+            \Uhifadhi\Storage\Service\StorageBoard::class => 'storage.storage_board',
+            \Uhifadhi\Storage\Service\FilesSectionOverview::class => 'storage.section_overview',
             StubUploadTarget::class => StubUploadTarget::class,
             \Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceRegistry::class => 'shell.widget.surfaces',
             \Uhifadhi\Bundle\ShellBundle\Widget\Service\WidgetService::class => 'shell.widget.service',

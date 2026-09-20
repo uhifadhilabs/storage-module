@@ -19,13 +19,12 @@
 
 {% block shell_page_title %}Files{% endblock %}
 
-{% block shell_page_subtitle %}
-    Every photograph, document and track this organisation holds &mdash; <b>across every module and
-    every area</b>, in one place. Each one is shown with the record it belongs to, because that is what a file is
-    here: an observation&rsquo;s photograph, an incident&rsquo;s evidence, later a permit&rsquo;s document. You can
-    find it, look at it, check that its small picture was made and see where its bytes are kept. You cannot upload
-    into it &mdash; a file arrives by being attached to a record.
-{% endblock %}
+{# ONE LINE. The strip says which tab you are on, and the argument behind the
+   page belongs in this comment rather than on the screen: a file is never
+   loose on this platform — it is an observation's photograph, an incident's
+   evidence, and one day a permit's document. This hub is the one place all of
+   them can be read at once, but it is not a shelf you upload onto. #}
+{% block shell_page_subtitle %}Every photograph, document and track, with the record it belongs to.{% endblock %}
 
 {% block shell_page_actions %}
     <a class="tgl w-act" href="{{ settingsUrl }}">{{ ux_icon('storage:settings') }} Where files go</a>
@@ -59,7 +58,9 @@
 
 
 
-<div class="f-say"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div><b>Every file here belongs to something.</b> A file is never loose on this platform: it is an observation&rsquo;s photograph, an incident&rsquo;s evidence, and one day a permit&rsquo;s document. This hub is the one place you can look across all of them at once &mdash; browse, find, check and tidy &mdash; but it is <b>not a shelf you upload onto</b>. A file arrives by being attached to a record, on that record&rsquo;s own page, and it carries that record&rsquo;s name for the rest of its life. Originals are private: they sit outside the website and are handed over only after the app has checked that you may see the record they belong to.</div></div>
+{# FRAGMENTS, NOT AN ESSAY. What a reader has to know to use this page is
+   four facts; the argument behind them is in the comment above. #}
+<div class="f-say">{{ ux_icon('shell:info') }}<div><b>Every file belongs to a record.</b> Browse, find, check, tidy &mdash; <b>never upload</b>. A file arrives by being attached to a record. Originals sit outside the website and are handed over only after a permission check.</div></div>
 
 {# The person's own resolved layout, in their own order, with the widgets they
    switched off simply absent. #}
@@ -77,11 +78,6 @@
 <div class="grid g2">
     <div class="c">
         <span class="tab">How a file is kept</span>
-        <p class="use" style="margin-top:2px">The bytes go to a <b>named storage</b> the organisation configured, and
-        they go <b>outside the website</b>, so there is no address anybody can guess or share by accident. Every
-        photograph also gets <b>one small picture</b>, about {{ thumbnailLongEdge }} pixels on the long side, and that
-        small picture is the only thing browsing ever fetches. The original is fetched when, and only when, somebody
-        asks for it.</p>
         <div class="rln"><span>Where an original lives</span><span class="mono" style="font-size:11px">outside the web root, always</span></div>
         <div class="rln"><span>How it is reached</span><span class="mono acc" style="font-size:11px">a request the app answers after a permission check</span></div>
         <div class="rln"><span>What browsing costs</span><span class="mono" style="font-size:11px">one ~{{ thumbnailLongEdge }}px picture per file</span></div>
@@ -92,10 +88,7 @@
     </div>
     <div class="c">
         <span class="tab">Who owns what</span>
-        <p class="use" style="margin-top:2px">The hub <b>browses and manages</b>; it never overrules. Whether a file may
-        be removed is the <b>owning record&rsquo;s</b> answer: an incident that is still in progress will not let go of
-        its evidence, a patrol will not let go of its own track, and a document uploaded by another department is not
-        yours to remove. Open any file below and it tells you which of those it is, in the module&rsquo;s own words.</p>
+        <p class="use" style="margin-top:2px">The hub <b>browses and manages</b>; it never overrules. Whether a file may be removed is the <b>owning record&rsquo;s</b> answer. Open any file and it says which, in the module&rsquo;s own words.</p>
         {% for module in modules %}
             <div class="rln"><span>{{ module.label }}</span><span class="f-note">{{ module.attachesTo }}</span></div>
         {% else %}

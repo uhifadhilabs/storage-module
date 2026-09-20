@@ -39,14 +39,51 @@ use PHPUnit\Framework\TestCase;
  */
 final class PageActionsDrawByNameTest extends TestCase
 {
-    /** @return iterable<string, array{string}> */
+    /**
+     * EVERY SCREEN THAT DRAWS ACTIONS, FOUND RATHER THAN LISTED — a hand-typed
+     * list stops covering the screen added after it was typed, and this is a
+     * rule about an idiom rather than about four files.
+     *
+     * A SCREEN WITH NO ACTIONS OF ITS OWN IS NOT AN OFFENDER. The frame writes
+     * one Configure entry on every surface, so a configure section, a reading
+     * tab and a register that adds nothing to it are all complete with an
+     * empty right-hand end. {@see testSomeScreenStillDrawsActions} is what
+     * keeps the absence from quietly becoming universal.
+     *
+     * @return iterable<string, array{string}>
+     */
     public static function templates(): iterable
     {
-        $dir = \dirname(__DIR__, 3).'/templates/files';
-
-        foreach (['index', 'detail', 'widgets', 'settings'] as $name) {
-            yield $name.'.html.twig' => [$dir.'/'.$name.'.html.twig'];
+        foreach (self::screens() as $name => $path) {
+            if (null !== self::pageActionsBlockOf($path)) {
+                yield $name => [$path];
+            }
         }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function screens(): array
+    {
+        $screens = [];
+        foreach (glob(\dirname(__DIR__, 3).'/templates/files/*.html.twig') ?: [] as $path) {
+            // A PARTIAL IS NOT A SCREEN. Only a page fills the frame's sockets.
+            if (!str_starts_with(basename($path), '_')) {
+                $screens[basename($path)] = $path;
+            }
+        }
+
+        return $screens;
+    }
+
+    /**
+     * The idiom has to be drawn SOMEWHERE, or a rule about how actions are
+     * drawn passes on a section that draws none at all.
+     */
+    public function testSomeScreenStillDrawsActions(): void
+    {
+        self::assertNotSame([], iterator_to_array(self::templates()), 'No screen in this section draws a page action, so nothing above is being checked.');
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('templates')]
@@ -81,12 +118,15 @@ final class PageActionsDrawByNameTest extends TestCase
         $twig = file_get_contents($path);
         self::assertIsString($twig, $path.' must ship.');
 
+        return self::pageActionsBlockOf($path) ?? '';
+    }
+
+    /** The block's body, or null for a screen that declares none. */
+    private static function pageActionsBlockOf(string $path): ?string
+    {
+        $twig = (string) file_get_contents($path);
         preg_match('/{%\s*block shell_page_actions\s*%}(.*?){%\s*endblock\s*%}/s', $twig, $matches);
 
-        if (!isset($matches[1])) {
-            self::fail(basename($path).' declares no shell_page_actions block.');
-        }
-
-        return $matches[1];
+        return $matches[1] ?? null;
     }
 }

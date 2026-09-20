@@ -18,8 +18,11 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Uhifadhi\Bundle\ShellBundle\Contract\NavigationSourceInterface;
+use Uhifadhi\Bundle\ShellBundle\Frame\Service\ModuleFrameService;
 use Uhifadhi\Bundle\ShellBundle\Model\NavItem;
 use Uhifadhi\Bundle\ShellBundle\Model\NavSection;
+use Uhifadhi\Storage\Controller\FilesController;
+use Uhifadhi\Storage\Controller\FilesSectionController;
 
 /**
  * THE ONE ROW THIS MODULE PUTS IN THE SIDEBAR.
@@ -97,14 +100,88 @@ final readonly class FilesNavigation implements NavigationSourceInterface
             return;
         }
 
-        yield new NavSection(self::SECTION, [
-            new NavItem(
-                label: 'Files',
-                url: $url,
-                icon: 'storage:image',
-                current: $this->viewerIsHere($url),
-            ),
-        ], position: self::POSITION);
+        yield new NavSection(self::SECTION, [$this->row($url)], position: self::POSITION);
+    }
+
+    /**
+     * THE ROW, AND THE SECTION SUBTREE UNDER IT.
+     *
+     * A SECTION WEARS THE AREA IDIOM, and an area's row opens into its
+     * screens. So does this one: the four the tab strip carries, in the same
+     * order, because the tree and the strip are two readings of one list and a
+     * reader who learns one has learnt the other.
+     *
+     * IT OPENS FOR THE WHOLE SECTION, not just for the register. Standing on
+     * Storage and seeing the tree collapse would say the section had one
+     * screen; the row is expanded wherever you are inside it.
+     *
+     * A FILE'S OWN PAGE IS INSIDE THE SECTION WITHOUT BEING ONE OF ITS
+     * SCREENS. It carries no surface marker and draws no strip, so the tree
+     * stays folded there and the row alone says where you are — exactly as the
+     * strip is absent.
+     */
+    private function row(string $url): NavItem
+    {
+        $screens = $this->viewerIsInTheSection() ? array_values(array_filter([
+            $this->screen('Overview', FilesSectionController::OVERVIEW),
+            $this->screen('Files', FilesController::REGISTER),
+            $this->screen('Sources', FilesSectionController::SOURCES),
+            $this->screen('Storage', FilesSectionController::STORAGE),
+        ])) : [];
+
+        return new NavItem(
+            label: 'Files',
+            url: $url,
+            icon: 'storage:image',
+            // THE SECTION'S ROW IS LIT ANYWHERE INSIDE THE SECTION, and the
+            // child says which screen. Two marks on one path is not two
+            // answers to "where am I": it is the path.
+            current: [] !== $screens || $this->viewerIsHere($url),
+            open: [] !== $screens,
+            children: $screens,
+            // THE CHILDREN ARE THIS SECTION'S OWN SCREENS, not places inside
+            // it, so they are drawn on the rung the strip's tabs are — there
+            // is no place rung between a section and its screens, and drawing
+            // one would give a reader two kinds of row for one kind of thing.
+            screens: true,
+        );
+    }
+
+    /** One screen of the section, or nothing where its address is not mounted. */
+    private function screen(string $label, string $route): ?NavItem
+    {
+        try {
+            $url = $this->urls->generate($route);
+        } catch (RouteNotFoundException) {
+            return null;
+        }
+
+        return new NavItem(label: $label, url: $url, current: $route === $this->routeHere());
+    }
+
+    /**
+     * WHETHER THE VIEWER IS ANYWHERE IN THE SECTION — read off the surface
+     * marker the section's routes carry, which is the same reading the shell's
+     * frame makes to draw the tab strip. Reading the marker rather than
+     * listing route names means a screen added to the section opens the tree
+     * without this class being told about it.
+     */
+    private function viewerIsInTheSection(): bool
+    {
+        return FilesSectionTabs::SURFACE === $this->requests->getCurrentRequest()?->attributes->get(ModuleFrameService::MODULE_ROUTE_ATTRIBUTE);
+    }
+
+    /**
+     * THE SCREENS ARE LIT BY ROUTE, NOT BY ADDRESS. `/files` is a PREFIX of
+     * every other screen's address, so the register's own row would light on
+     * all of them and the tree would answer "where am I" with two rows at
+     * once.
+     */
+    private function routeHere(): string
+    {
+        $route = $this->requests->getCurrentRequest()?->attributes->get('_route');
+
+        return \is_string($route) ? $route : '';
     }
 
     /**

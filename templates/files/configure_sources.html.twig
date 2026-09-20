@@ -1,0 +1,91 @@
+{# FILES · CONFIGURE · SOURCE MODULES — what a module stores, and what it
+   calls it.
+
+   THE WORD IS THE MODULE'S, PRINTED VERBATIM. The core's file-source contract
+   rules it: "the phrase is the module's… exactly as a configure section's
+   label is", and the reason is that the word has to be the same one the
+   module's own screens use. So this section states each declaration and
+   offers no box to retype it; an organisation that wants different words asks
+   the module for them, in one place, rather than keeping a second vocabulary
+   the module never sees.
+
+   IT NEVER DECIDES WHO MAY SEE A FILE. The owning record does, always.
+
+   THE SOURCES TAB READS WHO PUT WHAT HERE. This section reads the declaration
+   itself — what the seam carries, and what a module has to say before its
+   files can be listed at all. #}
+{% extends '@UhifadhiStorage/base.html.twig' %}
+
+{% block title %}Files &mdash; Source modules{% endblock %}
+
+{% block shell_breadcrumbs %}<a href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesSectionController::OVERVIEW')) }}">uhifadhi</a> / files / configure / source modules{% endblock %}
+
+{% block shell_page_title %}Files{% endblock %}
+{% block shell_page_subtitle %}Which module may put a file here, and what the hub calls it.{% endblock %}
+
+{% block storage_page %}
+    <div class="sxlead">
+        <span class="t">{{ ux_icon('shell:file-text') }}<span><b>What a module stores, and what it calls it.</b> A module declares that it keeps files and the word the hub shows for them; that declaration arrives with the package and leaves with it. It never decides who may see a file &mdash; the owning record does.</span></span>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+        <span class="tab">Declared sources<span class="src">&middot; {{ rows|length }} installed &middot; {{ rows|filter(r => r.state == 'live')|length }} store</span></span>
+        <table class="tbl">
+            <thead><tr><th>Module</th><th>Registered as</th><th>Word for one file</th><th class="num">Files</th><th>Listed in the hub</th><th></th></tr></thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td><b>{{ row.label }}</b></td>
+                    <td><span class="mono d" style="font-size:11px">{{ row.slug }}</span></td>
+                    <td>{% if row.fileWord %}<span class="fog">{{ row.fileWord }}</span>{% else %}<span class="mono d">&mdash;</span>{% endif %}</td>
+                    <td class="num">{{ row.state == 'live' ? row.files|number_format : '&mdash;'|raw }}</td>
+                    <td><span class="chip{{ row.state == 'live' ? ' ok' }}">{{ row.state == 'live' ? 'listed' : row.state }}</span></td>
+                    <td><span class="mono d" style="font-size:11px">{{ row.state == 'live' ? row.records|number_format ~ ' records hold one' : 'declares no file store' }}</span></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6"><span class="mono d">No module is installed that could declare a file store.</span></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="sxfoot"><span>Removing a module removes its source: its files stop being listed and its bytes stay where they are until somebody removes them deliberately.</span></div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+        <span class="tab">What the seam carries<span class="src">&middot; what a module has to declare</span></span>
+        <table class="tbl">
+            <thead><tr><th>Declaration</th><th>Exists</th><th>What it is for</th></tr></thead>
+            <tbody>
+            {% for line in seam %}
+                <tr>
+                    <td><span class="mono">{{ line.declaration }}</span></td>
+                    <td><span class="mono {{ line.exists ? 'g' : 'w' }}">{{ line.exists ? 'yes' : 'no' }}</span></td>
+                    <td>{{ line.purpose }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="sxfoot"><span>Without all four the hub would have to know each module by name, which is the one thing it must not do.</span></div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+        <span class="tab">Imports<span class="src">&middot; none &middot; no import path exists</span></span>
+        {# DRAWN WITH NO FIGURE BECAUSE THERE IS NOTHING TO COUNT. It is the one
+           place a future import would show. #}
+        <table class="tbl">
+            <thead><tr><th>Path</th><th>State</th><th>What it would do</th></tr></thead>
+            <tbody>
+            <tr>
+                <td><span class="mono d">bulk upload</span></td>
+                <td><span class="chip">never</span></td>
+                <td>a file arrives by being attached to a record, on that record&rsquo;s page</td>
+            </tr>
+            <tr>
+                <td><span class="mono d">migrate from another store</span></td>
+                <td><span class="chip warn">not built</span></td>
+                <td>the one import that would be legitimate, and the row it would appear in</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="sxfoot"><span>Drawn with no figure because there is nothing to count.</span></div>
+    </div>
+{% endblock %}

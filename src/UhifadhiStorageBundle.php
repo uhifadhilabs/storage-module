@@ -26,8 +26,12 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Uhifadhi\Bundle\ShellBundle\Contract\NavigationSourceInterface;
 use Uhifadhi\Bundle\ShellBundle\ShellBundle;
 use Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceInterface;
+use Uhifadhi\Contracts\Shell\ConfigurationSectionsInterface;
+use Uhifadhi\Contracts\Shell\ModuleTabsInterface;
 use Uhifadhi\Storage\Controller\EvidenceController;
+use Uhifadhi\Storage\Controller\FilesConfigureController;
 use Uhifadhi\Storage\Controller\FilesController;
+use Uhifadhi\Storage\Controller\FilesSectionController;
 use Uhifadhi\Storage\Controller\UploadController;
 use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
@@ -36,6 +40,8 @@ use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
 use Uhifadhi\Storage\Service\ServerUploadLimitService;
 use Uhifadhi\Storage\Service\UploadService;
 use Uhifadhi\Storage\Shell\FilesNavigation;
+use Uhifadhi\Storage\Shell\FilesSectionConfiguration;
+use Uhifadhi\Storage\Shell\FilesSectionTabs;
 use Uhifadhi\Storage\Twig\FilesExtension;
 use Uhifadhi\Storage\Twig\UploadExtension;
 use Uhifadhi\Storage\Twig\UploadRuntime;
@@ -202,6 +208,18 @@ final class UhifadhiStorageBundle extends AbstractBundle
         );
         $location = $files['storage_location'] ?? null;
         $builder->setParameter('storage.files.storage_location', \is_string($location) && '' !== $location ? $location : null);
+
+        /*
+         * WHAT WAS BOUGHT, AND WHEN TO WARN. Neither is a model field and
+         * neither can be: no file knows what the organisation pays for. A
+         * deployment that types no quota gets a Storage tab that draws no bar
+         * rather than an empty one — an unmeasured share and a full one are
+         * different facts.
+         */
+        $quota = $files['storage_quota_bytes'] ?? null;
+        $builder->setParameter('storage.files.storage_quota_bytes', \is_int($quota) && $quota > 0 ? $quota : null);
+        $warning = $files['quota_warning_percent'] ?? null;
+        $builder->setParameter('storage.files.quota_warning_percent', \is_int($warning) && $warning > 0 ? $warning : 80);
 
         // Static service wiring lives in a PHP config file (see config/services.php
         // for why PHP, not YAML). loadExtension keeps only the config-DRIVEN bits.
@@ -418,6 +436,41 @@ final class UhifadhiStorageBundle extends AbstractBundle
                     service('request_stack'),
                 ])
                 ->tag(ShellBundle::NAV_TAG);
+
+            /*
+             * THE SECTION'S SHAPE — the tab strip and the configure sections,
+             * both tagged by hand because a reusable bundle is not
+             * autoconfigured. Inside the `$screens` guard with everything
+             * else: a strip naming four screens an installation turned off
+             * would be four doors that do not open.
+             */
+            $services->set('storage.section_tabs', FilesSectionTabs::class)
+                ->tag(ModuleTabsInterface::TAG);
+            $services->set('storage.section_configuration', FilesSectionConfiguration::class)
+                ->tag(ConfigurationSectionsInterface::TAG);
+
+            $services->set(FilesSectionController::class)
+                ->args([
+                    service('twig'),
+                    service('storage.section_overview'),
+                    service('storage.sources_board'),
+                    service('storage.storage_board'),
+                    service('storage.settings'),
+                    service('security.token_storage'),
+                ])
+                ->public();
+
+            $services->set(FilesConfigureController::class)
+                ->args([
+                    service('twig'),
+                    service('storage.file_registry'),
+                    service('storage.sources_board'),
+                    service('storage.storage_board'),
+                    service('storage.settings'),
+                    service('security.authorization_checker'),
+                    \is_string($permission) && '' !== $permission ? $permission : 'ROLE_ADMIN',
+                ])
+                ->public();
 
             $services->set(FilesController::class)
                 ->args([

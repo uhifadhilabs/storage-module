@@ -1,0 +1,136 @@
+{# FILES · OVERVIEW — the section's first tab.
+
+   WHAT THIS ORGANISATION HOLDS, WHERE IT CAME FROM AND WHAT IT COSTS. Every
+   figure here is already on a file row; this page aggregates them and writes
+   none of them, which is why it carries no control that changes anything.
+
+   THE HEADER IS THE SECTION'S, NOT THIS TAB'S. The title is "Files" on every
+   tab and the strip says which one you are on; the subtitle is this tab's one
+   line. Both sockets belong to the shell's frame, and the strip and the one
+   Configure action are written by it. #}
+{% extends '@UhifadhiStorage/base.html.twig' %}
+{% import '@UhifadhiStorage/files/_bits.html.twig' as bits %}
+
+{% block title %}Files &mdash; Overview{% endblock %}
+
+{% block shell_breadcrumbs %}<a href="/">uhifadhi</a> / files / overview{% endblock %}
+
+{% block shell_page_title %}Files{% endblock %}
+{% block shell_page_subtitle %}What this organisation holds, where it came from and what it costs.{% endblock %}
+
+{% block shell_page_actions %}
+    <a class="tgl w-act" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::WIDGETS')) }}">{{ ux_icon('shell:layout-grid') }} Widget library</a>
+{% endblock %}
+
+{% block storage_page %}
+    {{ bits.band(facts, path(constant('Uhifadhi\\Storage\\Controller\\FilesConfigureController::SETTINGS')), 'Files settings') }}
+    {{ bits.kpis(kpis) }}
+
+    <div class="grid g2">
+        <div class="c">
+            <span class="tab">Files by module<span class="src">&middot; {{ periods|length }} periods &middot; {{ periods|first.label }} &ndash; {{ periods|last.label }}</span></span>
+            {# TWELVE PERIODS, BECAUSE THAT IS HOW AN ARRIVAL RATE IS READ. A
+               period is a month everywhere in this product. The card is bounded
+               by the chart's own height, never by the data. #}
+            <svg class="ch" viewBox="0 0 640 168" role="img" aria-label="Files by module, by period">
+                {% set top = periodPeak > 0 ? periodPeak : 1 %}
+                {% for step in [0, 1, 2] %}
+                    {% set y = 10 + step * 70 %}
+                    <line class="grid" x1="30" y1="{{ y }}" x2="636" y2="{{ y }}"/>
+                    <text x="25" y="{{ y + 2.6 }}" text-anchor="end">{{ (top * (2 - step) / 2)|round }}</text>
+                {% endfor %}
+                <line class="ax" x1="30" y1="150" x2="636" y2="150"/>
+                {% set slot = 606 / (periods|length) %}
+                {% for period in periods %}
+                    {% set x = 30 + slot * loop.index0 %}
+                    {% set wide = series|length > 0 ? (slot - 6) / (series|length) : slot - 6 %}
+                    {% for line in series %}
+                        {% set value = period.of(line.slug) %}
+                        {% set h = (value / top * 140)|round(3) %}
+                        {% if value > 0 %}
+                            <rect x="{{ (x + 4 + wide * loop.index0)|round(3) }}" y="{{ (150 - h)|round(3) }}"
+                                  width="{{ wide|round(3) }}" height="{{ h }}" rx="1.5"
+                                  fill="var({{ loop.first ? '--acc' : '--cat-' ~ loop.index0 }})"/>
+                        {% endif %}
+                    {% endfor %}
+                    <text x="{{ (x + slot / 2)|round(3) }}" y="163" text-anchor="middle">{{ period.label }}</text>
+                {% endfor %}
+            </svg>
+            <div class="sxmxkey">
+                {% for line in series %}
+                    <span><i class="sxdot" style="background:var({{ loop.first ? '--acc' : '--cat-' ~ loop.index0 }})"></i>{{ line.label }}</span>
+                {% else %}
+                    <span>No module declares a file store yet.</span>
+                {% endfor %}
+            </div>
+            {# AN ABSENT SERIES IS A MODULE THAT DECLARES NO FILE STORE, not a
+               module with no files, and the two must never look the same. #}
+            <p class="use" style="margin-bottom:0">A module that declares no file store draws no bar at all &mdash; that is a different fact from a module whose bar is nought.</p>
+            <div class="sxmore"><span>{{ periodTotal|number_format }} of {{ total|number_format }} &middot; the rest is older than {{ periods|length }} periods</span><span class="sp"></span><a href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::REGISTER')) }}">The register &rarr;</a></div>
+        </div>
+
+        <div class="c">
+            <span class="tab">Size by kind<span class="src">&middot; {{ bytes|storage_bytes }} &middot; {{ kinds|length }} {{ kinds|length == 1 ? 'kind' : 'kinds' }}</span></span>
+            <div class="sxbars">
+                {% for bar in kinds %}
+                    <div class="sxbar{{ bar.isQuiet() ? ' q' }}">
+                        <span class="l">{{ bar.label }}</span>
+                        <span class="t">{% if not bar.isQuiet() %}<i class="f" style="width:{{ bar.filledWidth }}%"></i>{% endif %}</span>
+                        <span class="n">{{ bar.note|raw }}</span>
+                    </div>
+                {% else %}
+                    <p class="use">Nothing is kept yet.</p>
+                {% endfor %}
+            </div>
+            {% for line in kindLines %}
+                <div class="rln"><span>{{ line.label }}</span><span class="mono {{ line.tone }}">{{ line.note }}</span></div>
+            {% endfor %}
+            <p class="use" style="margin-bottom:0">What decides the kind is <b>detection</b>, never the file&rsquo;s name.</p>
+        </div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+        <span class="tab">Latest uploads<span class="src">&middot; {{ arrived|number_format }} this period</span></span>
+        {# BOUNDED BY DESIGN: the latest six, then the register. A card that grew
+           with its data would be a register in the wrong place. #}
+        <table class="tbl">
+            <thead><tr><th>File</th><th>Kind</th><th>Belongs to</th><th class="num">Size</th><th>Arrived</th><th></th></tr></thead>
+            <tbody>
+            {% for file in latest %}
+                <tr>
+                    <td><span class="mono">{{ file.name }}</span></td>
+                    <td>{{ file.kind.label }}</td>
+                    <td><span class="fog">{{ file.moduleLabel }} &middot; {{ file.ownerLabel }}{% if file.areaLabel %} &middot; {{ file.areaLabel }}{% endif %}</span></td>
+                    <td class="num">{{ file.byteSize|storage_bytes }}</td>
+                    <td><time class="mono d" datetime="{{ file.arrivedAt|date('c') }}" data-localtime-format="daystamp">{{ file.arrivedAt|date('D j M Y')|lower }} &middot; {{ file.arrivedAt|date('H:i') }}</time></td>
+                    <td style="text-align:right"><a class="sxq" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::SHOW'), {key: file.key}) }}">Open</a></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6"><span class="mono d">Nothing has arrived yet.</span></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="sxmore"><span>{{ latest|length }} of {{ arrived|number_format }} &middot; newest first</span><span class="sp"></span><a href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::REGISTER')) }}">The register &rarr;</a></div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+        <span class="tab">Small pictures outstanding<span class="src">&middot; {{ outstandingTotal }} &middot; {{ outstandingTotal > 0 ? 'needs attention' : 'nothing outstanding' }}</span></span>
+        {% for line in outstanding %}
+            <div class="rln"><span>{{ line.label }}</span><span class="mono {{ line.tone }}">{{ line.note }}</span></div>
+        {% endfor %}
+        <p class="use">Every photograph gets <b>one</b> small picture, about {{ thumbnailLongEdge }} pixels on the long side, and that small picture is the only thing browsing ever fetches.</p>
+        <div class="sxfoot">
+            <span>{% if failed > 0 %}{{ failed }} {{ failed == 1 ? 'failure is' : 'failures are' }} a file problem, not a queue problem{% else %}No picture has failed to be made{% endif %}</span>
+            <span class="sp"></span>
+            <a class="tgl" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::REGISTER')) }}?thumb=missing">Find them</a>
+        </div>
+    </div>
+
+    <h2 class="zone">Where this goes on</h2>
+    <div class="sxdoors">
+        <a class="sxdoor" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::REGISTER')) }}"><b>The register<span class="ar">&rarr;</span></b><span>Every file, with the record it belongs to &mdash; find it, look at it, check it.</span></a>
+        <a class="sxdoor" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesSectionController::SOURCES')) }}"><b>Sources<span class="ar">&rarr;</span></b><span>Which module puts a file here, and what it calls it.</span></a>
+        <a class="sxdoor" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesSectionController::STORAGE')) }}"><b>Storage<span class="ar">&rarr;</span></b><span>Where the bytes actually are, what was bought and how much is left.</span></a>
+        <a class="sxdoor" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::SETTINGS')) }}"><b>Where files go<span class="ar">&rarr;</span></b><span>The named storages this installation configured, and what each of them takes.</span></a>
+    </div>
+{% endblock %}

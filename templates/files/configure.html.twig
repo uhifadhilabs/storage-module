@@ -1,0 +1,87 @@
+{# FILES · CONFIGURE — how the hub behaves, what a file may be, and who may
+   change either.
+
+   READ-ONLY, AND THAT IS THE DESIGN. Every line here is a fact about the model
+   or about who may do what. A control that let one of them be changed would be
+   a second place the rule lived: a limit is enforced where a file ARRIVES, on
+   the record, and a storage target is a deployment decision rather than a
+   form. The two lists that ARE editable have their own sections, and this page
+   hands over to them rather than inlining either.
+
+   A SCREEN DOES NOT NAME AN ACTION THAT DOES NOT EXIST: there is no row for
+   bulk upload and none for a recycle bin, because a file arrives on a record
+   and leaves through the record that owns it.
+
+   THE STRIP ABOVE IS THIS SURFACE'S SECTIONS, written by the shell's frame
+   from the sections contract — the same one position a data tab's strip
+   occupies. #}
+{% extends '@UhifadhiStorage/base.html.twig' %}
+
+{% block title %}Files &mdash; Configure{% endblock %}
+
+{% block shell_breadcrumbs %}<a href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesSectionController::OVERVIEW')) }}">uhifadhi</a> / files / configure{% endblock %}
+
+{% block shell_page_title %}Files{% endblock %}
+{% block shell_page_subtitle %}How the hub behaves, what a file may be, and who may change either.{% endblock %}
+
+{% block storage_page %}
+    <div class="grid g2">
+        <div class="c">
+            <span class="tab">Hub defaults<span class="src">&middot; organisation preference</span></span>
+            <div class="rln"><span>Tab on open</span><span class="mono d">Overview</span></div>
+            <div class="rln"><span>Default period</span><span class="mono d">the current month</span></div>
+            <div class="rln"><span>Register view</span><span class="mono d">grid of small pictures &middot; the person&rsquo;s last choice wins</span></div>
+            <div class="rln"><span>Register layout</span><span class="mono d">the person&rsquo;s own widget arrangement &middot; Widget library</span></div>
+            <div class="rln"><span>Sort</span><span class="mono d">newest first</span></div>
+            <div class="use" style="margin-bottom:0">A person&rsquo;s own last choice wins over these and is never written here.</div>
+        </div>
+
+        <div class="c">
+            <span class="tab">Limits<span class="src">&middot; per target</span></span>
+            <div class="rln"><span>Largest single file</span><span class="mono d">{{ maxBytes|storage_bytes }}</span></div>
+            <div class="rln"><span>Accepted types</span><span class="mono d">detected, not declared &mdash; {{ (allowed.photos|merge(allowed.documents)|merge(allowed.tracks))|join(', ') }}</span></div>
+            <div class="rln"><span>Quota warning</span><span class="mono d">at {{ warningPercent }} % of what was bought</span></div>
+            <div class="rln"><span>At the quota</span><span class="mono d">the attach fails on the record&rsquo;s own page, with the reason</span></div>
+            <div class="rln"><span>Retention</span><span class="mono d">none &mdash; a file lives as long as its record</span></div>
+            <div class="use" style="margin-bottom:0">A limit is enforced where the file arrives, on the record, not here &mdash; the hub is where it is typed.</div>
+        </div>
+    </div>
+
+    <div class="grid g2">
+        <div class="c">
+            <span class="tab">Small pictures<span class="src">&middot; thumbnails</span></span>
+            <div class="rln"><span>Per file</span><span class="mono d">exactly one &mdash; never a set of sizes</span></div>
+            <div class="rln"><span>Long side</span><span class="mono d">{{ thumbnailLongEdge }} px</span></div>
+            <div class="rln"><span>When it is made</span><span class="mono d">on arrival, in the background</span></div>
+            <div class="rln"><span>If it cannot be made</span><span class="mono d">the row draws a placeholder and says so &middot; {{ failedThumbnails }} today</span></div>
+            <div class="rln"><span>Remaking all of them</span><span class="mono d">a command, not a button</span></div>
+            <div class="use" style="margin-bottom:0">The small picture is the only thing browsing ever fetches, so its size is the cost of the whole register.</div>
+        </div>
+
+        <div class="c">
+            <span class="tab">Access<span class="src">&middot; permissions</span></span>
+            <div class="rln"><span>Who can see the hub</span><span class="mono d">anybody signed in</span></div>
+            <div class="rln"><span>Who can see a file</span><span class="mono d">whoever may see the record it belongs to</span></div>
+            <div class="rln"><span>Who can remove a file</span><span class="mono d">whoever the owning record says</span></div>
+            <div class="rln"><span>Who can change a storage target</span><span class="mono d"><span class="mono">{{ settingsPermission }}</span></span></div>
+            <div class="rln"><span>A refusal reads as</span><span class="mono d">not found &mdash; never &ldquo;not allowed&rdquo;</span></div>
+            <div class="use" style="margin-bottom:0">The hub browses and manages; it never overrules the record.</div>
+        </div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+        <span class="tab">Storage targets<span class="src">&middot; its own section</span></span>
+        <div class="sxlead">
+            <span class="t">{{ ux_icon('shell:file-text') }}<span><b>Where the bytes go.</b> {{ targets|length }} {{ targets|length == 1 ? 'target is' : 'targets are' }} configured and every one of them is outside the web root. The read view of the same ones &mdash; how full each is &mdash; is the <b>Storage</b> tab.</span></span>
+            <span class="a"><a class="tgl" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesSectionController::STORAGE')) }}">The Storage tab</a><a class="cta" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesConfigureController::SOURCES')) }}">Open Source modules</a></span>
+        </div>
+        {% for target in targets %}
+            <div class="rln"><span>{{ target.place.current ? 'Default target' : 'Target' }}</span><span class="mono d">{{ target.place.label }} &middot; {{ target.quotaBytes is null ? 'no quota typed' : target.quotaBytes|storage_bytes ~ ' bought' }}</span></div>
+        {% else %}
+            <div class="rln"><span class="d">No storage is configured, so nothing can be written.</span></div>
+        {% endfor %}
+        <div class="rln"><span>Changing the default</span><span class="mono d">moves nothing &mdash; files already written stay where they are</span></div>
+        <div class="rln"><span>Adding a target</span><span class="mono d">name, kind, credentials, and what was bought &middot; the installation&rsquo;s own configuration</span></div>
+        <div class="use" style="margin-bottom:0">What a module stores is the module&rsquo;s to declare; Source modules is where the organisation reads that declaration and the word the hub prints for it.</div>
+    </div>
+{% endblock %}
