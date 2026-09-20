@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Registry;
 
 use Symfony\Component\Security\Core\User\UserInterface;
+use Uhifadhi\Contracts\Storage\FileSourceInterface as DeclaresFiles;
 use Uhifadhi\Storage\Model\FileEntry;
 use Uhifadhi\Storage\Model\FileGuard;
 
@@ -42,15 +43,16 @@ use Uhifadhi\Storage\Model\FileGuard;
  * A module that ships no source simply does not appear on the hub. That is the
  * intended reading: the hub grows by MODULES, never by folders.
  */
-interface FileSourceInterface
+interface FileSourceInterface extends DeclaresFiles
 {
-    public const string TAG = 'storage.file_source';
-
     /**
-     * The module this source speaks for, e.g. "patrols". One source per module:
-     * the hub counts modules by their sources.
+     * THE TAG IS THE CORE'S, NOT THIS BUNDLE'S. A module declaring that it
+     * stores files is a fact the whole platform reads — the core publishes the
+     * declaration as {@see DeclaresFiles} and the tag with it, so one tagged
+     * service answers both "does this module store files, and what does it call
+     * them" and "here they are". A second tag would let the two disagree.
      */
-    public function moduleSlug(): string;
+    public const string TAG = DeclaresFiles::TAG;
 
     /**
      * The same module in the words a warden reads, e.g. "Patrols".

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Registry;
 
 use Symfony\Component\Security\Core\User\UserInterface;
+use Uhifadhi\Contracts\Storage\FileSourceInterface as DeclaresFiles;
 use Uhifadhi\Storage\Enum\FileKindEnum;
 use Uhifadhi\Storage\Enum\ThumbStateEnum;
 use Uhifadhi\Storage\Model\FileEntry;
@@ -40,11 +41,67 @@ final class FileRegistry
     private ?array $files = null;
 
     /**
-     * @param iterable<FileSourceInterface> $sources services tagged "storage.file_source"
+     * @param iterable<DeclaresFiles> $sources every service tagged
+     *                                         {@see DeclaresFiles::TAG} — which is a
+     *                                         MODULE SAYING IT STORES FILES, and not
+     *                                         necessarily one that hands any over. The
+     *                                         two are deliberately one tag and one
+     *                                         declaration: a module that declares itself
+     *                                         and holds nothing yet is a different fact
+     *                                         from a module that declares nothing, and
+     *                                         the Sources tab exists to tell them apart.
+     *                                         Only a source that also implements this
+     *                                         bundle's {@see FileSourceInterface}
+     *                                         supplies rows.
      */
     public function __construct(
         private readonly iterable $sources,
     ) {
+    }
+
+    /**
+     * WHAT EVERY INSTALLED MODULE SAYS ABOUT ITS FILES — its slug, its word for
+     * one, and whether it hands any over to the hub.
+     *
+     * Read off the declarations rather than off the file rows, because a module
+     * with nothing stored yet still has to appear: "we have that module and it
+     * is empty" and "that module keeps no files" are different answers, and the
+     * register cannot tell them apart.
+     *
+     * @return list<array{slug: string, fileWord: string, supplies: bool}>
+     */
+    public function declarations(): array
+    {
+        $rows = [];
+        foreach ($this->sources as $source) {
+            try {
+                $rows[$source->moduleSlug()] = [
+                    'slug' => $source->moduleSlug(),
+                    'fileWord' => $source->fileWord(),
+                    'supplies' => $source instanceof FileSourceInterface,
+                ];
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return array_values($rows);
+    }
+
+    /**
+     * The declarations that also hand files over. A declaration that does not
+     * is skipped here and listed by {@see declarations()} instead, which is the
+     * whole reason the two are separate readings of one tag.
+     *
+     * @return iterable<FileSourceInterface>
+     */
+    private function hubSources(): iterable
+    {
+        foreach ($this->sources as $source) {
+            if ($source instanceof FileSourceInterface) {
+                yield $source;
+            }
+        }
     }
 
     /**
@@ -59,7 +116,7 @@ final class FileRegistry
         }
 
         $files = [];
-        foreach ($this->sources as $source) {
+        foreach ($this->hubSources() as $source) {
             try {
                 foreach ($source->files() as $file) {
                     $files[] = $file;
@@ -133,7 +190,7 @@ final class FileRegistry
         }
 
         $files = [];
-        foreach ($this->sources as $candidate) {
+        foreach ($this->hubSources() as $candidate) {
             try {
                 if (!self::names($candidate->moduleSlug(), $source)) {
                     continue;
@@ -172,7 +229,7 @@ final class FileRegistry
      */
     public function sourceFor(string $key): ?FileSourceInterface
     {
-        foreach ($this->sources as $source) {
+        foreach ($this->hubSources() as $source) {
             try {
                 if ($source->claimsKey($key)) {
                     return $source;
@@ -242,7 +299,7 @@ final class FileRegistry
     public function modules(): array
     {
         $named = [];
-        foreach ($this->sources as $source) {
+        foreach ($this->hubSources() as $source) {
             try {
                 $named[$source->moduleSlug()] = [$source->moduleLabel(), $source->attachesTo()];
             } catch (\Throwable) {
