@@ -27,6 +27,7 @@ use Uhifadhi\Storage\Service\FilesSectionOverview;
 use Uhifadhi\Storage\Service\FilesSurface;
 use Uhifadhi\Storage\Service\SourcesBoard;
 use Uhifadhi\Storage\Service\StorageBoard;
+use Uhifadhi\Storage\Service\StorageHoldings;
 use Uhifadhi\Storage\Service\StoragePlaces;
 use Uhifadhi\Storage\Service\StorageSettings;
 use Uhifadhi\Storage\Service\StorageTargetService;
@@ -140,8 +141,17 @@ return static function (ContainerConfigurator $container): void {
      * five side by side so they can be reviewed at once; a screen is in
      * exactly one of them, and this is what says which.
      */
+    /*
+     * HOW MUCH EACH PLACE HOLDS, asked once. Every surface that prints a
+     * count asks this and no other, so two screens cannot disagree about
+     * where a file is.
+     */
+    $services->set('storage.holdings', StorageHoldings::class)
+        ->args([service('storage.file_registry'), service('storage.places'), service('storage.target_service')]);
+    $services->alias(StorageHoldings::class, 'storage.holdings');
+
     $services->set('storage.target_board', TargetBoard::class)
-        ->args([service('storage.target_service'), service('storage.places')]);
+        ->args([service('storage.target_service'), service('storage.places'), service('storage.holdings')]);
     $services->alias(TargetBoard::class, 'storage.target_board');
 
     /*
@@ -241,7 +251,7 @@ return static function (ContainerConfigurator $container): void {
             service('storage.settings'),
             param('storage.files.storage_quota_bytes'),
             param('storage.files.quota_warning_percent'),
-            service('storage.target_service'),
+            service('storage.holdings'),
         ]);
     $services->alias(StorageBoard::class, 'storage.storage_board');
 

@@ -42,7 +42,7 @@ final readonly class StorageBoard
         private StorageSettings $settings,
         private ?int $quotaBytes,
         private int $quotaWarningPercent,
-        private ?StorageTargetService $targets = null,
+        private ?StorageHoldings $holdings = null,
     ) {
     }
 
@@ -56,39 +56,14 @@ final readonly class StorageBoard
         $places = $this->settings->places();
         $counts = $this->registry->counts();
 
-        /*
-         * A FILE WITH NO LOCATION ROW IS IN THE CURRENT PLACE, which is the
-         * same answer {@see StorageLocator} gives when it reads one — and the
-         * two must not disagree, or the page would say a file is somewhere
-         * the app would not look for it.
-         *
-         * Those files are everything written before this bundle recorded
-         * locations at all. Nothing backfills them (a migration walking every
-         * module's records would be a migration reaching into schemas it does
-         * not own), so they are attributed here, once, to the place they are
-         * actually in.
-         */
-        $located = ['files' => 0, 'bytes' => 0];
-        $tallies = [];
-        foreach ($places as $place) {
-            $tallies[$place->id] = null === $this->targets
-                ? ['files' => 0, 'bytes' => 0]
-                : $this->targets->remaining($place->id);
-            $located['files'] += $tallies[$place->id]['files'];
-            $located['bytes'] += $tallies[$place->id]['bytes'];
-        }
-
-        $unlocatedFiles = max(0, $counts['files'] - $located['files']);
-        $unlocatedBytes = max(0, $counts['bytes'] - $located['bytes']);
+        // ONE ANSWER EVERYWHERE. What a place holds is {@see StorageHoldings}'
+        // answer, which is the locator's: a file with no location row is in
+        // the current place, because that is where the app would look for it.
+        $held = $this->holdings?->all() ?? [];
 
         $rows = [];
         foreach ($places as $place) {
-            $tally = $tallies[$place->id];
-            if ($place->current) {
-                $tally['files'] += $unlocatedFiles;
-                $tally['bytes'] += $unlocatedBytes;
-            }
-
+            $tally = $held[$place->id] ?? ['files' => $counts['files'], 'bytes' => $counts['bytes']];
             $quota = $place->quotaBytes ?? $this->quotaBytes;
 
             $rows[] = [

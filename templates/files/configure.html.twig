@@ -76,12 +76,18 @@
             <span class="a"><a class="tgl" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesSectionController::STORAGE')) }}">The Storage tab</a><a class="cta" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesConfigureController::SOURCES')) }}">Open Source modules</a></span>
         </div>
         {% for target in targets %}
-            <div class="rln"><span>{{ target.place.current ? 'Default target' : 'Target' }}</span><span class="mono d">{{ target.place.label }} &middot; {{ target.quotaBytes is null ? 'no quota typed' : target.quotaBytes|storage_bytes ~ ' bought' }}</span></div>
+            <div class="rln"><span>{{ target.place.current ? 'Current target' : 'Target' }}</span><span class="mono d">{{ target.place.label }} &middot; {{ target.quotaBytes is null ? 'no quota typed' : target.quotaBytes|storage_bytes ~ ' bought' }}</span></div>
         {% else %}
             <div class="rln"><span class="d">No storage is configured, so nothing can be written.</span></div>
         {% endfor %}
-        <div class="rln"><span>Changing the default</span><span class="mono d">moves nothing &mdash; files already written stay where they are</span></div>
+        {# RULED: an installation writes to ONE place, and switching ASKS what
+           happens to what is already kept. The row used to say the switch
+           moved nothing, full stop — true only of step one, and the opposite
+           of the answer most administrators give. #}
+        <div class="rln"><span>Switching the target</span><span class="mono d">asks whether to move what is already kept &middot; the answer decides</span></div>
+        <div class="rln"><span>Where it is switched</span><span class="mono d"><a href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::SETTINGS')) }}">Where files go</a> &middot; one target at a time</span></div>
         <div class="rln"><span>Adding a target</span><span class="mono d">name, kind, credentials, and what was bought &middot; the installation&rsquo;s own configuration</span></div>
+        <div class="rln"><span>The old place</span><span class="mono d">read-only until it holds nothing, then clearable</span></div>
         <div class="use" style="margin-bottom:0">A module declares what it stores &middot; Source modules names the word the hub shows for its files.</div>
     </div>
 {% endblock %}

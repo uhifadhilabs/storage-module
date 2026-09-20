@@ -50,6 +50,7 @@ final readonly class TargetBoard
     public function __construct(
         private StorageTargetService $targets,
         private StoragePlaces $places,
+        private StorageHoldings $holdings,
     ) {
     }
 
@@ -77,7 +78,7 @@ final readonly class TargetBoard
 
         $current = $this->places->find($currentId);
         $retired = $this->places->find($retiredId);
-        $remaining = $this->targets->remaining($retiredId);
+        $remaining = $this->holdings->of($retiredId);
 
         return [
             'state' => $this->state($move, $retiredId, $remaining['files']),
@@ -85,7 +86,9 @@ final readonly class TargetBoard
             'retired' => null === $retired ? null : $retired->as(false, true),
             'alternatives' => $this->places->alternativesTo($currentId),
             'move' => $move,
-            'held' => $this->targets->remaining($currentId),
+            // THE SAME ANSWER THE STORAGE TAB GIVES. The card used to count
+            // location rows and say "0 files" beside a tab saying eighty.
+            'held' => $this->holdings->of($currentId),
             'remaining' => $remaining,
             'canClear' => $this->targets->canClearRetired(),
             'rate' => null === $move ? null : self::rate($move),

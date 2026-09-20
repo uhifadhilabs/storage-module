@@ -15,6 +15,7 @@ namespace Uhifadhi\Storage\Tests\Functional;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\DomCrawler\Crawler;
 use Uhifadhi\Storage\Entity\FileLocation;
@@ -187,6 +188,90 @@ final class StorageTargetStatesTest extends FilesTestCase
 
         $this->post($client, '/files/settings/target/clear');
         self::assertNull(self::targets($client)->retired(), 'the old place is no longer part of this installation');
+    }
+
+    /**
+     * THE CARD AND THE TAB GIVE ONE ANSWER.
+     *
+     * They did not: the target card counted per-file location rows and said
+     * "0 files" while the Storage tab, attributing files with no row to the
+     * current place, said eighty. Two answers to "how much is in here" is a
+     * bug whichever of them is right — and the one that says nought is the
+     * one that makes an administrator think a switch lost their evidence.
+     *
+     * The attribution both now use is the LOCATOR's, which is what makes it
+     * the right one: a file with no row is in the current place, because
+     * that is where the app would go looking for it.
+     */
+    public function testTheTargetCardAndTheStorageTabAgreeOnWhatIsHeld(): void
+    {
+        $client = $this->warden(static::createClient());
+
+        $card = $client->request('GET', '/files/settings')
+            ->filter('.f-store .rln')->reduce(static fn (Crawler $row): bool => str_starts_with(trim($row->text()), 'Holding'))
+            ->text();
+
+        $tabRow = $client->request('GET', '/files/storage')
+            ->filter('table.tbl tbody tr')->first();
+        $tabFiles = trim($tabRow->filter('td.num')->first()->text());
+
+        self::assertStringContainsString($tabFiles.' files', $card, \sprintf(
+            'the card says "%s" and the tab says "%s" for the same place',
+            $card,
+            $tabFiles,
+        ));
+    }
+
+    /** And they agree once files carry a location row, too. */
+    public function testTheyStillAgreeOnceFilesAreRecordedInAPlace(): void
+    {
+        $client = $this->warden(static::createClient());
+        $this->given(['evidence/a.jpg' => 1_000, 'evidence/b.jpg' => 2_000], 'evidence');
+
+        $card = $client->request('GET', '/files/settings')
+            ->filter('.f-store .rln')->reduce(static fn (Crawler $row): bool => str_starts_with(trim($row->text()), 'Holding'))
+            ->text();
+
+        $tabFiles = trim($client->request('GET', '/files/storage')
+            ->filter('table.tbl tbody tr')->first()->filter('td.num')->first()->text());
+
+        self::assertStringContainsString($tabFiles.' files', $card);
+    }
+
+    /**
+     * NO SCREEN SAYS THE SWITCH MOVES NOTHING.
+     *
+     * It did, in two places, and it was the opposite of the ruling: naming a
+     * new place moves nothing only until the question is answered, and the
+     * answer most administrators give is "move them". A sentence that told
+     * them otherwise was a promise the product does not keep.
+     *
+     * Module removal is a different sentence and still true — removing a
+     * module does leave its bytes where they are — so it is left alone.
+     */
+    #[DataProvider('targetScreens')]
+    public function testNoScreenPromisesThatSwitchingMovesNothing(string $path): void
+    {
+        $text = $this->warden(static::createClient())->request('GET', $path)->filter('.pgbody')->text();
+
+        self::assertStringNotContainsString('moves nothing', $text, $path);
+        self::assertStringNotContainsString('files already written stay where they are', $text, $path);
+    }
+
+    /** And both of them say what the ruling says instead. */
+    #[DataProvider('targetScreens')]
+    public function testBothScreensSayTheSwitchAsks(string $path): void
+    {
+        $text = $this->warden(static::createClient())->request('GET', $path)->filter('.pgbody')->text();
+
+        self::assertStringContainsString('asks whether to move what is already kept', $text, $path);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function targetScreens(): iterable
+    {
+        yield 'storage tab' => ['/files/storage'];
+        yield 'files settings' => ['/files/configure'];
     }
 
     /** Switching somewhere that is not configured is refused, in words. */
