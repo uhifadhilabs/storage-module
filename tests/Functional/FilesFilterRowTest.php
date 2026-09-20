@@ -157,7 +157,9 @@ final class FilesFilterRowTest extends FilesTestCase
 
         self::assertSame('where the bytes are', trim($panel->filter('.i-ddhead')->text()));
         self::assertSame(
-            ['Anywhere', 'This server'],
+            // BOTH CONFIGURED PLACES, because the filter is "where the bytes
+            // are" and an installation that has switched has files in two.
+            ['Anywhere', 'This server', 'The archive'],
             $panel->filter('[data-dd-opt] .i-ddopt-l')->each(static fn (Crawler $n): string => trim($n->text())),
         );
 

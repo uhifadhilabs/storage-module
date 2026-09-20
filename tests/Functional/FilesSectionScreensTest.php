@@ -195,19 +195,32 @@ final class FilesSectionScreensTest extends FilesTestCase
         $crawler = $this->open('/files/storage');
 
         $rows = $crawler->filter('table.tbl tbody tr');
-        self::assertCount(1, $rows, 'this installation declares one named storage');
-        self::assertStringContainsString('5', trim($rows->filter('td.num')->first()->text()));
+        self::assertCount(2, $rows, 'one row per place the installation configured');
+
+        $named = implode(' ', $rows->each(static fn (Crawler $row): string => $row->text()));
+        self::assertStringContainsString('This server', $named);
+        self::assertStringContainsString('The archive', $named);
+
+        // AND THE FILES ARE ON THE PLACE THAT HOLDS THEM. Nothing this
+        // installation keeps has a location row yet, and the page attributes
+        // those to the current place rather than losing them between two.
+        self::assertStringContainsString('5', $rows->first()->text());
     }
 
     /**
      * A TARGET WITH NO QUOTA TYPED DRAWS NO BAR. An unmeasured share and a
      * full one are different facts, and an empty bar reads as the second.
+     *
+     * The stand-in installation types a quota on one of its two places and
+     * not on the other, so the page has to do both things at once — which is
+     * the only arrangement that proves it is reading the PLACE's quota and
+     * not one figure for the lot.
      */
-    public function testATargetWithNoQuotaTypedDrawsNoBar(): void
+    public function testATargetWithNoQuotaTypedDrawsNoBarAndOneWithAQuotaDoes(): void
     {
         $crawler = $this->open('/files/storage');
 
-        self::assertCount(0, $crawler->filter('table.tbl .sxbar'));
+        self::assertCount(1, $crawler->filter('table.tbl .sxbar'), 'one bar, for the one place with a quota typed');
         self::assertStringContainsString('not measured', $crawler->filter('table.tbl tbody')->text());
     }
 

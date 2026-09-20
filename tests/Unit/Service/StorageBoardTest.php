@@ -22,6 +22,7 @@ use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Registry\HoldsNoRecordFilesTrait;
 use Uhifadhi\Storage\Service\StorageBoard;
+use Uhifadhi\Storage\Service\StoragePlaces;
 use Uhifadhi\Storage\Service\StorageSettings;
 
 /**
@@ -127,7 +128,13 @@ final class StorageBoardTest extends TestCase
             }
         }]);
 
-        $settings = new StorageSettings($registry, 'local', 'This server', null, ['image/jpeg'], 64_000_000, 400);
+        $places = new StoragePlaces(['evidence' => [
+            'adapter' => 'local',
+            'label' => 'This server',
+            'location' => null,
+            'quota_bytes' => $quotaBytes,
+        ]]);
+        $settings = new StorageSettings($registry, $places, ['image/jpeg'], 64_000_000, 400);
 
         return new StorageBoard($registry, $settings, $quotaBytes, $warningPercent);
     }

@@ -42,6 +42,7 @@ final readonly class StorageBoard
         private StorageSettings $settings,
         private ?int $quotaBytes,
         private int $quotaWarningPercent,
+        private ?StorageTargetService $targets = null,
     ) {
     }
 
@@ -52,21 +53,52 @@ final readonly class StorageBoard
      */
     public function rows(): array
     {
+        $places = $this->settings->places();
         $counts = $this->registry->counts();
 
+        /*
+         * A FILE WITH NO LOCATION ROW IS IN THE CURRENT PLACE, which is the
+         * same answer {@see StorageLocator} gives when it reads one — and the
+         * two must not disagree, or the page would say a file is somewhere
+         * the app would not look for it.
+         *
+         * Those files are everything written before this bundle recorded
+         * locations at all. Nothing backfills them (a migration walking every
+         * module's records would be a migration reaching into schemas it does
+         * not own), so they are attributed here, once, to the place they are
+         * actually in.
+         */
+        $located = ['files' => 0, 'bytes' => 0];
+        $tallies = [];
+        foreach ($places as $place) {
+            $tallies[$place->id] = null === $this->targets
+                ? ['files' => 0, 'bytes' => 0]
+                : $this->targets->remaining($place->id);
+            $located['files'] += $tallies[$place->id]['files'];
+            $located['bytes'] += $tallies[$place->id]['bytes'];
+        }
+
+        $unlocatedFiles = max(0, $counts['files'] - $located['files']);
+        $unlocatedBytes = max(0, $counts['bytes'] - $located['bytes']);
+
         $rows = [];
-        foreach ($this->settings->places() as $place) {
-            // ONE NAMED STORAGE, SO EVERY FILE IS IN IT. The moment a second
-            // target exists a file will carry which one it went to, and the
-            // count comes off the file rather than off the total.
+        foreach ($places as $place) {
+            $tally = $tallies[$place->id];
+            if ($place->current) {
+                $tally['files'] += $unlocatedFiles;
+                $tally['bytes'] += $unlocatedBytes;
+            }
+
+            $quota = $place->quotaBytes ?? $this->quotaBytes;
+
             $rows[] = [
                 'place' => $place,
-                'files' => $counts['files'],
-                'bytes' => $counts['bytes'],
-                'quotaBytes' => $this->quotaBytes,
-                'filled' => null === $this->quotaBytes || $this->quotaBytes <= 0
+                'files' => $tally['files'],
+                'bytes' => $tally['bytes'],
+                'quotaBytes' => $quota,
+                'filled' => null === $quota || $quota <= 0
                     ? null
-                    : round($counts['bytes'] / $this->quotaBytes * 100, 1),
+                    : round($tally['bytes'] / $quota * 100, 1),
             ];
         }
 
@@ -83,7 +115,12 @@ final readonly class StorageBoard
         $rows = $this->rows();
         $counts = $this->registry->counts();
 
-        $bought = null === $this->quotaBytes ? null : $this->quotaBytes * \count($rows);
+        $bought = null;
+        foreach ($rows as $row) {
+            if (null !== $row['quotaBytes']) {
+                $bought = ($bought ?? 0) + $row['quotaBytes'];
+            }
+        }
         // LEFT AND ITS SHARE ARE ONE FACT OR NEITHER: both are read off what
         // was bought, so a target with no quota typed has no answer to either
         // rather than a nought for one of them.

@@ -205,12 +205,11 @@ return static function (ContainerConfigurator $container): void {
     $services->set('storage.settings', StorageSettings::class)
         ->args([
             service('storage.file_registry'),
-            param('storage.evidence.adapter'),
-            param('storage.files.storage_label'),
-            param('storage.files.storage_location'),
+            service('storage.places'),
             param('storage.evidence.allowed_mime_types'),
             param('storage.evidence.max_bytes'),
             param('storage.evidence.thumbnail_long_edge'),
+            service('storage.target_service'),
         ]);
     $services->alias(StorageSettings::class, 'storage.settings');
 
@@ -242,6 +241,7 @@ return static function (ContainerConfigurator $container): void {
             service('storage.settings'),
             param('storage.files.storage_quota_bytes'),
             param('storage.files.quota_warning_percent'),
+            service('storage.target_service'),
         ]);
     $services->alias(StorageBoard::class, 'storage.storage_board');
 

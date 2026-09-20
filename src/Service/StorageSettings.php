@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Uhifadhi\Storage\Service;
 
-use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 use Uhifadhi\Storage\Model\StoragePlace;
 use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
@@ -53,35 +52,37 @@ final readonly class StorageSettings
      */
     public function __construct(
         private FileRegistry $registry,
-        private string $adapter,
-        private string $label,
-        private ?string $location,
+        private StoragePlaces $places,
         private array $allowedMimeTypes,
         private int $maxBytes,
         private int $thumbnailLongEdge,
+        private ?StorageTargetService $targets = null,
     ) {
     }
 
     /**
-     * The places files are kept.
+     * THE PLACES FILES ARE KEPT — every one the installation configured, each
+     * told what it is to the installation TODAY.
      *
-     * One, today: this bundle declares exactly one named storage,
-     * "storage.evidence", and saying so plainly is more honest than drawing an
-     * empty second card for a place nobody configured.
+     * IT USED TO SYNTHESISE ONE PLACE FROM THE ADAPTER and mark it current
+     * unconditionally, which is the shape that could only ever draw a single
+     * always-writable target. An installation now configures up to two, and
+     * WHICH of them is written to is a dated decision rather than a property
+     * of the configuration — so the catalogue comes from {@see StoragePlaces}
+     * and the roles from {@see StorageTargetService}. Exactly one place comes
+     * back current; the other, if there is one, comes back retired.
      *
      * @return list<StoragePlace>
      */
     public function places(): array
     {
-        $s3 = StorageConfiguration::ADAPTER_S3 === $this->adapter;
+        $currentId = $this->targets?->currentPlaceId() ?? $this->places->defaultId();
+        $retiredId = $this->targets?->retired()?->getPlaceId();
 
-        return [new StoragePlace(
-            'evidence',
-            $this->label,
-            $s3 ? 's3' : 'local',
-            $s3 ? 'Object storage' : 'The application’s own disk',
-            $this->location,
-        )];
+        return array_map(
+            static fn (StoragePlace $place): StoragePlace => $place->as($place->id === $currentId, $place->id === $retiredId),
+            $this->places->all(),
+        );
     }
 
     /**
@@ -96,7 +97,7 @@ final readonly class StorageSettings
      */
     public function map(): array
     {
-        $place = $this->places()[0];
+        $place = $this->places()[0] ?? null;
 
         $rows = [];
         foreach ($this->registry->modules() as $module) {
