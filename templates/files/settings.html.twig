@@ -32,21 +32,32 @@
 <div class="f-say"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div><b>Only an administrator opens this page.</b> Seeing where files are kept is
 seeing something about every file at once, so it rides on the same permission as installing a module.</div></div>
 
-<h2 class="zone">The places files are kept</h2>
-<div class="grid g2">
-    {% for place in places %}
-        <div class="f-store{{ place.current ? ' on' : '' }}">
-            <div class="hd"><span class="f-be {{ place.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ place.label }}</span><b>{{ place.what }}</b>{% if place.where %}<span class="where">{{ place.where }}</span>{% endif %}</div>
-            <div class="rln"><span>Holding</span><span class="mono" style="font-size:11px">{{ counts.files|number_format(0, '.', ' ') }} files &middot; {{ counts.bytes|storage_bytes }}</span></div>
-            <div class="rln"><span>What is on it</span><span class="mono" style="font-size:11px">{{ place.current ? 'everything this platform keeps' : 'nothing new goes here' }}</span></div>
-            <div class="rln"><span>Reachable without the app</span><span><span class="chip fail">never</span></span></div>
-            {# Private by CONSTRUCTION: there is no visibility setting and no public-URL
-               setting to get wrong, because there is no public URL. The app hands each
-               file over itself, after asking the owning module about the record. #}
-            <div class="use" style="margin-bottom:0"><b>Nothing here is public.</b> Originals live outside the web root &mdash; no address anybody can guess.</div>
-        </div>
-    {% endfor %}
-</div>
+{% import '@UhifadhiStorage/files/_target.html.twig' as tgt %}
+
+<h2 class="zone">The target</h2>
+{# ONE TARGET, AND THIS IS IT. An installation writes to exactly one named
+   place; the others it configured are where a switch can GO, and the one it
+   is emptying is read-only until the count reaches zero. #}
+{% if current %}
+    <div class="f-store on">
+        <div class="hd"><span class="f-be {{ current.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ current.label }}</span><b>{{ current.what }}</b>{% if current.where %}<span class="where">{{ current.where }}</span>{% endif %}</div>
+        {% if current.quotaBytes %}
+            {% set filled = (held.bytes / current.quotaBytes * 100)|round(1) %}
+            <div class="f-userow"><div class="top"><span class="sub">{{ held.bytes|storage_bytes }} of the {{ current.quotaBytes|storage_bytes }} bought</span><span class="n">{{ filled }}%</span></div>
+                <div class="f-bar"><i style="width:{{ min(filled, 100) }}%"></i></div></div>
+        {% endif %}
+        <div class="rln"><span>Holding</span><span class="mono" style="font-size:11px">{{ held.files|number_format(0, '.', ' ') }} files &middot; {{ held.bytes|storage_bytes }}</span></div>
+        <div class="rln"><span>Reachable without the app</span><span><span class="chip fail">never</span></span></div>
+        {# Private by CONSTRUCTION: there is no visibility setting and no
+           public-URL setting to get wrong, because there is no public URL. #}
+        {# Private by CONSTRUCTION: there is no visibility setting and no
+           public-URL setting to get wrong, because there is no public URL. #}
+        <div class="use"><b>Nothing here is public.</b> Originals live outside the web root &middot; every module writes here, nothing chooses for itself.</div>
+        {{ tgt.state(state, current, retired, alternatives, move, remaining, canClear, rate, secondsLeft, targetToken) }}
+    </div>
+{% else %}
+    <div class="c"><div class="rln"><span class="d">No storage is configured, so nothing can be written.</span></div></div>
+{% endif %}
 
 <h2 class="zone">Which module&rsquo;s files go where</h2>
 <div class="c">

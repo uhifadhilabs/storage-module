@@ -69,7 +69,7 @@ final readonly class MoveStoredFileHandler
         }
 
         $move = $this->moves->findOpen();
-        if (null === $move || !$move->getState()->isMoving()) {
+        if (null === $move || !$move->getState()->isCarrying()) {
             // Paused or declined while this message sat in the queue. The row
             // stays where it is and the file is asked for again on resume.
             return;

@@ -32,6 +32,7 @@ use Uhifadhi\Storage\Controller\EvidenceController;
 use Uhifadhi\Storage\Controller\FilesConfigureController;
 use Uhifadhi\Storage\Controller\FilesController;
 use Uhifadhi\Storage\Controller\FilesSectionController;
+use Uhifadhi\Storage\Controller\StorageTargetController;
 use Uhifadhi\Storage\Controller\UploadController;
 use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
@@ -266,7 +267,11 @@ final class UhifadhiStorageBundle extends AbstractBundle
          * StoragePlaces presents on screen, and the locator is how a key is
          * turned into the filesystem that actually holds it.
          */
-        $targets = $this->targetsConfig($builder);
+        // THE PROCESSED TREE IS ALREADY IN HAND. AbstractBundle hands
+        // loadExtension the merged, defaulted config; re-processing
+        // getExtensionConfig() here read a DIFFERENT view of it and quietly
+        // lost every target the installation declared.
+        $targets = StorageConfiguration::normaliseTargets($config);
         $presented = [];
         $filesystems = [];
         foreach ($targets as $id => $target) {
@@ -539,6 +544,22 @@ final class UhifadhiStorageBundle extends AbstractBundle
                 ])
                 ->public();
 
+            /*
+             * SWITCHING WHERE FILES GO. Behind the screens guard with
+             * everything else, and behind the administrator permission in the
+             * controller itself: an installation that turned the hub off has
+             * no page to switch from.
+             */
+            $services->set(StorageTargetController::class)
+                ->args([
+                    service('storage.target_service'),
+                    service('router'),
+                    service('security.authorization_checker'),
+                    service('security.csrf.token_manager'),
+                    \is_string($permission) && '' !== $permission ? $permission : 'ROLE_ADMIN',
+                ])
+                ->public();
+
             $services->set(FilesController::class)
                 ->args([
                     service('twig'),
@@ -551,6 +572,7 @@ final class UhifadhiStorageBundle extends AbstractBundle
                     service('security.token_storage'),
                     service('security.authorization_checker'),
                     service('security.csrf.token_manager'),
+                    service('storage.target_board'),
                     \is_string($permission) && '' !== $permission ? $permission : 'ROLE_ADMIN',
                 ])
                 ->public();

@@ -1,0 +1,126 @@
+{# SWITCHING WHERE FILES GO — the one state the page is actually in.
+
+   THE DESIGN DRAWS FIVE STATES SIDE BY SIDE; THIS DRAWS ONE. A states gallery
+   is how a design is reviewed: five frames, one glance, every case argued at
+   once. A screen is not reviewed, it is used — an administrator is in exactly
+   one of these situations and the other four are noise on the page they are
+   trying to act on. TargetBoard says which; this writes it.
+
+   EVERY CONTROL IS A POST BEHIND A TOKEN. Moving four thousand files is not
+   something a link somebody can be sent should be able to start. #}
+
+{% macro state(state, current, retired, alternatives, move, remaining, canClear, rate, secondsLeft, token) %}
+    {% import _self as tgt %}
+    {% if state == 'one' %}
+        {{ tgt.one(current, alternatives, token) }}
+    {% elseif state == 'asking' %}
+        {{ tgt.asking(current, retired, remaining, token) }}
+    {% elseif state == 'moving' %}
+        {{ tgt.moving(current, retired, move, remaining, rate, secondsLeft, token) }}
+    {% elseif state == 'moved' %}
+        {{ tgt.moved(current, retired, canClear, token) }}
+    {% elseif state == 'declined' %}
+        {{ tgt.declined(current, retired, remaining, token) }}
+    {% endif %}
+{% endmacro %}
+
+{# FL·T1 — the ordinary day. Everything lives in one place. #}
+{% macro one(current, alternatives, token) %}
+    <div class="rln"><span>Other places holding files</span><span class="mono d">none</span></div>
+    {% if alternatives is not empty %}
+        <form class="staddrow" method="post" action="{{ path(constant('Uhifadhi\\Storage\\Controller\\StorageTargetController::SWITCH')) }}">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <select class="fld" name="place" aria-label="The place to switch to">
+                {% for place in alternatives %}<option value="{{ place.id }}">{{ place.label }}</option>{% endfor %}
+            </select>
+            <span class="sp"></span>
+            <button class="btn" type="submit">Switch target {{ ux_icon('shell:arrow-right', {width: 14, height: 14}) }}</button>
+        </form>
+    {% endif %}
+    {# Naming a new target moves nothing by itself — the next step asks. #}
+    <div class="f-tfoot">{% if alternatives is empty %}Everything lives in one place &middot; no second place is configured to switch to.{% else %}Everything lives in one place.{% endif %}</div>
+{% endmacro %}
+
+{# FL·T2 — the question, and it is the only thing on the card to answer. #}
+{% macro asking(current, retired, remaining, token) %}
+    <div class="f-swap">
+        {% if retired %}<span class="f-be {{ retired.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ retired.label }}</span>{% endif %}
+        {{ ux_icon('shell:arrow-right', {width: 14, height: 14}) }}
+        <span class="f-be {{ current.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ current.label }}</span>
+    </div>
+    <div class="f-ask">
+        <b>Move the existing {{ remaining.files|number_format(0, '.', ' ') }} files ({{ remaining.bytes|storage_bytes }}) to {{ current.label }} so everything lives in one place?</b>
+        <div class="f-acts">
+            <form method="post" action="{{ path(constant('Uhifadhi\\Storage\\Controller\\StorageTargetController::MOVE')) }}">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <button class="cta" type="submit">Move them</button>
+            </form>
+            <form method="post" action="{{ path(constant('Uhifadhi\\Storage\\Controller\\StorageTargetController::LEAVE')) }}">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <button class="btn" type="submit">Leave them on {{ retired ? retired.label : 'the old place' }}</button>
+            </form>
+        </div>
+    </div>
+    <div class="rln"><span>Move them</span><span class="mono d">copy &middot; verify &middot; delete, one file at a time</span></div>
+    <div class="rln"><span>Leave them</span><span class="mono d">two places, both named on this page</span></div>
+    <div class="f-tfoot">New files go to {{ current.label }} either way.</div>
+{% endmacro %}
+
+{# FL·T3 — progress, and the old place still serving everything it holds. #}
+{% macro moving(current, retired, move, remaining, rate, secondsLeft, token) %}
+    <div class="f-swap">
+        {% if retired %}<span class="f-be {{ retired.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ retired.label }}</span>{% endif %}
+        {{ ux_icon('shell:arrow-right', {width: 14, height: 14}) }}
+        <span class="f-be {{ current.kind == 's3' ? 's3' : 'local' }}"><i></i>{{ current.label }}</span>
+        <span class="chip acc">{{ move.state.value == 'paused' ? 'paused' : 'moving' }}</span>
+    </div>
+    {% set share = move.share() %}
+    {% if share is not null %}
+        <div class="f-userow"><div class="top"><span class="sub">{{ move.movedFiles|number_format(0, '.', ' ') }} of {{ move.totalFiles|number_format(0, '.', ' ') }} moved &middot; {{ move.movedBytes|storage_bytes }}</span><span class="n">{{ share|round }}%</span></div>
+            <div class="f-bar"><i style="width:{{ min(share, 100) }}%"></i></div></div>
+    {% endif %}
+    {# A RATE ON ONE FILE IS A NUMBER WITH NO INFORMATION IN IT, so the row
+       says nothing rather than guessing at a finish time. #}
+    <div class="rln"><span>Rate</span><span class="mono d">{% if rate %}~{{ rate }} files a second{% if secondsLeft %} &middot; about {{ (secondsLeft / 60)|round }} minutes left{% endif %}{% else %}not measured yet{% endif %}</span></div>
+    {% if retired %}
+        <div class="rln"><span>{{ retired.label }}</span><span><span class="chip">read-only</span> <span class="f-note">still serving every file it holds</span></span></div>
+    {% endif %}
+    <form class="staddrow" method="post" action="{{ path(constant('Uhifadhi\\Storage\\Controller\\StorageTargetController::' ~ (move.state.value == 'paused' ? 'RESUME' : 'PAUSE'))) }}">
+        <input type="hidden" name="_token" value="{{ token }}">
+        <span class="sp"></span>
+        <button class="btn" type="submit">{{ move.state.value == 'paused' ? 'Resume' : 'Pause' }}</button>
+    </form>
+    <div class="f-tfoot"><b>Left to move:</b> {{ remaining.files|number_format(0, '.', ' ') }} files &middot; {{ remaining.bytes|storage_bytes }}.</div>
+{% endmacro %}
+
+{# FL·T4 — the count reached zero, and only now is the clear offered. #}
+{% macro moved(current, retired, canClear, token) %}
+    {% if retired %}
+        <div class="rln"><span>{{ retired.label }}</span><span class="mono d">0 files &middot; read-only</span></div>
+        {% if canClear %}
+            <form class="staddrow" method="post" action="{{ path(constant('Uhifadhi\\Storage\\Controller\\StorageTargetController::CLEAR')) }}">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <span class="sp"></span>
+                <button class="btn danger" type="submit">Clear the old target</button>
+            </form>
+        {% endif %}
+        <div class="f-tfoot">Available because the count reached zero, and not before.</div>
+    {% else %}
+        <div class="f-tfoot">Everything lives in one place.</div>
+    {% endif %}
+{% endmacro %}
+
+{# FL·T5 — two places, both named. Nothing is wrong here, and nothing on this
+   card is drawn as a warning. #}
+{% macro declined(current, retired, remaining, token) %}
+    <div class="rln"><span>{{ current.label }}</span><span class="mono d">everything filed since the switch</span></div>
+    {% if retired %}
+        <div class="rln"><span>{{ retired.label }}</span><span class="mono d">{{ remaining.files|number_format(0, '.', ' ') }} files &middot; {{ remaining.bytes|storage_bytes }} &middot; <span class="chip">read-only</span></span></div>
+        <form class="staddrow" method="post" action="{{ path(constant('Uhifadhi\\Storage\\Controller\\StorageTargetController::RESUME')) }}">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <span class="sp"></span>
+            <button class="btn" type="submit">Move the {{ remaining.files|number_format(0, '.', ' ') }} after all</button>
+        </form>
+    {% endif %}
+    <div class="f-tfoot">Two places, and the page says so.</div>
+{% endmacro %}

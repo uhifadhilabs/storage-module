@@ -344,3 +344,22 @@
   color:var(--tx);font-family:inherit;font-size:12px;padding:7px 9px;resize:vertical;outline:none}
 .f-removeform textarea:focus{border-color:var(--acc)}
 .f-removeform .f-acts{margin-top:2px}
+
+/* ── STORAGE TARGETS — the switch, and the one state the page is in ───────
+   RULED: an installation writes to ONE target; switching asks whether to
+   bring the existing files along, and the old place is read-only until its
+   count reaches zero. The card itself is an ordinary house card, so nothing
+   here restates one: only the three marks the states need — the target line,
+   the question, and the foot that names what is left. */
+.f-tgt,.f-swap{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:2px 0 10px}
+.f-tgt b{font-family:var(--font-display);font-size:13.5px;font-weight:700}
+.f-swap svg{color:var(--dim);flex:none}
+/* The question is the one raised thing on the card, because it is the only
+   thing on it a person has to answer. */
+.f-ask{border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);border-radius:10px;padding:11px 12px 9px;
+  background:color-mix(in srgb,var(--acc) 7%,transparent);margin-bottom:10px}
+.f-ask b{display:block;font-size:12.5px;font-weight:600;color:var(--tx);line-height:1.5}
+.f-ask .f-acts{margin-top:9px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+/* What is left, on the foot of the card — a fragment, never a paragraph. */
+.f-tfoot{margin-top:10px;padding-top:9px;border-top:1px solid var(--ln);font-size:11.5px;color:var(--fog)}
+.f-tfoot b{color:var(--tx);font-weight:600}

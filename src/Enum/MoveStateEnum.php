@@ -42,9 +42,24 @@ enum MoveStateEnum: string
      */
     case Declined = 'declined';
 
+    /**
+     * WHETHER THE PAGE DRAWS THE PROGRESS CARD. Paused counts: a paused move
+     * is still a move, and the card that shows how far it got is the card
+     * that offers to resume it.
+     */
     public function isMoving(): bool
     {
         return self::Running === $this || self::Paused === $this;
+    }
+
+    /**
+     * WHETHER A FILE SHOULD BE CARRIED RIGHT NOW — and this is NOT the same
+     * question as {@see isMoving()}. A pause that still carried files would
+     * be a button that did nothing, so only Running carries.
+     */
+    public function isCarrying(): bool
+    {
+        return self::Running === $this;
     }
 
     /** Whether the move question is still the thing the page is asking. */

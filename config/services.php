@@ -30,6 +30,7 @@ use Uhifadhi\Storage\Service\StorageBoard;
 use Uhifadhi\Storage\Service\StoragePlaces;
 use Uhifadhi\Storage\Service\StorageSettings;
 use Uhifadhi\Storage\Service\StorageTargetService;
+use Uhifadhi\Storage\Service\TargetBoard;
 use Uhifadhi\Storage\Thumbnail\GdThumbnailer;
 use Uhifadhi\Storage\Thumbnail\ImagickThumbnailer;
 use Uhifadhi\Storage\Thumbnail\ThumbnailGenerator;
@@ -133,6 +134,15 @@ return static function (ContainerConfigurator $container): void {
             service('messenger.default_bus')->nullOnInvalid(),
         ]);
     $services->alias(StorageTargetService::class, 'storage.target_service');
+
+    /*
+     * WHICH OF THE FIVE STATES THE STORAGE PAGE IS IN. The design draws all
+     * five side by side so they can be reviewed at once; a screen is in
+     * exactly one of them, and this is what says which.
+     */
+    $services->set('storage.target_board', TargetBoard::class)
+        ->args([service('storage.target_service'), service('storage.places')]);
+    $services->alias(TargetBoard::class, 'storage.target_board');
 
     /*
      * WHICH FILESYSTEM HOLDS A GIVEN FILE is defined in loadExtension(), not

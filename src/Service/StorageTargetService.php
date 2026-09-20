@@ -137,6 +137,14 @@ final readonly class StorageTargetService
 
         $left = null === $fromId ? ['files' => 0, 'bytes' => 0] : $this->locations->tally($fromId);
         $move = new StorageMove($fromId ?? $placeId, $placeId, $left['files'], $left['bytes'], $at);
+
+        // NOBODY IS ASKED TO MOVE NOTHING. An old place that already holds
+        // nothing has no question to answer, so the switch is complete the
+        // moment it is made and the page goes straight to offering the clear.
+        if (0 === $left['files']) {
+            $move->finish($at);
+        }
+
         $this->entityManager->persist($move);
         $this->entityManager->flush();
 
@@ -217,7 +225,7 @@ final readonly class StorageTargetService
      */
     public function dispatchNext(StorageMove $move): bool
     {
-        if (null === $this->bus || !$move->getState()->isMoving()) {
+        if (null === $this->bus || !$move->getState()->isCarrying()) {
             return false;
         }
 

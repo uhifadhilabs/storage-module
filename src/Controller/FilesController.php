@@ -36,6 +36,7 @@ use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Removal\FileRemovalInterface;
 use Uhifadhi\Storage\Service\FilesSurface;
 use Uhifadhi\Storage\Service\StorageSettings;
+use Uhifadhi\Storage\Service\TargetBoard;
 use Uhifadhi\Storage\Shell\FilesSectionTabs;
 use Uhifadhi\Storage\Widget\FilesWidgets;
 
@@ -92,6 +93,7 @@ final class FilesController
         private readonly TokenStorageInterface $tokens,
         private readonly AuthorizationCheckerInterface $authorization,
         private readonly CsrfTokenManagerInterface $csrf,
+        private readonly TargetBoard $targetBoard,
         private readonly string $settingsPermission,
     ) {
     }
@@ -208,6 +210,8 @@ final class FilesController
         }
 
         return $this->render('@UhifadhiStorage/files/settings.html.twig', [
+            ...$this->targetBoard->read(),
+            'targetToken' => $this->csrf->getToken(StorageTargetController::TOKEN)->getValue(),
             'places' => $this->settings->places(),
             'map' => $this->settings->map(),
             'allowed' => $this->settings->allowed(),

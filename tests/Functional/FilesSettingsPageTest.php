@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Uhifadhi\Storage\Tests\Functional;
 
+use Symfony\Component\DomCrawler\Crawler;
+
 /**
  * Where files go — /files/settings.
  *
@@ -99,12 +101,30 @@ final class FilesSettingsPageTest extends FilesTestCase
         self::assertStringContainsString('outside the web root', $crawler->filter('.f-store .use')->text().$text);
     }
 
-    public function testItOffersNoWayToChangeAnything(): void
+    /**
+     * THE ONE THING THIS PAGE CHANGES IS WHERE FILES GO.
+     *
+     * It used to change nothing at all, and the assertion here was that it
+     * carried no form: where the bytes live was a deployment decision, made
+     * in configuration. The one-target ruling moved half of that decision
+     * onto this page — which of the configured places is CURRENT, and what
+     * happens to what is already kept — so the page now carries exactly the
+     * controls that switch, and still nothing else. The credentials, the
+     * bucket and the directory remain configuration and remain unwritable
+     * here.
+     */
+    public function testTheOnlyThingItChangesIsWhichPlaceFilesGoTo(): void
     {
         $client = $this->warden(static::createClient());
         $crawler = $client->request('GET', '/files/settings');
 
-        self::assertCount(0, $crawler->filter('form'), 'where the bytes live is a deployment decision, not a form');
-        self::assertCount(0, $crawler->filter('input'));
+        foreach ($crawler->filter('form')->each(static fn (Crawler $form): string => (string) $form->attr('action')) as $action) {
+            self::assertStringStartsWith('/files/settings/target', $action, 'the only writes on this page are the switch and its answers');
+        }
+
+        // Nothing here edits a place: no directory, no bucket, no key.
+        self::assertCount(0, $crawler->filter('input[type=text]'));
+        self::assertCount(0, $crawler->filter('input[type=password]'));
+        self::assertCount(0, $crawler->filter('textarea'));
     }
 }
