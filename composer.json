@@ -26,9 +26,13 @@
         }
     ],
     "require": {
-        "php": ">=8.4",
+        "doctrine/dbal": "^4.0",
+        "doctrine/doctrine-bundle": "^3.0",
+        "doctrine/doctrine-migrations-bundle": "^4.0",
+        "doctrine/orm": "^3.5",
         "league/flysystem": "^3.0",
         "league/flysystem-bundle": "^3.4",
+        "php": ">=8.4",
         "psr/log": "^3.0",
         "symfony/asset": "^7.3 || ^8.0",
         "symfony/config": "^7.3 || ^8.0",
@@ -36,6 +40,7 @@
         "symfony/framework-bundle": "^7.3 || ^8.0",
         "symfony/http-foundation": "^7.3 || ^8.0",
         "symfony/http-kernel": "^7.3 || ^8.0",
+        "symfony/messenger": "^7.3 || ^8.0",
         "symfony/mime": "^7.3 || ^8.0",
         "symfony/routing": "^7.3 || ^8.0",
         "symfony/security-core": "^7.3 || ^8.0",
@@ -46,7 +51,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Uhifadhi\\Storage\\": "src/"
+            "Uhifadhi\\Storage\\": "src/",
+            "Uhifadhi\\Storage\\Migrations\\": "migrations/"
         }
     },
     "autoload-dev": {
@@ -55,7 +61,6 @@
         }
     },
     "require-dev": {
-        "doctrine/doctrine-bundle": "^3.0",
         "friendsofphp/php-cs-fixer": "^3.95",
         "league/flysystem-async-aws-s3": "^3.0",
         "phpstan/phpstan": "^2.2",

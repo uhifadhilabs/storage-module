@@ -51,6 +51,15 @@ final class StorageConfiguration
     public const string ADAPTER_LOCAL = 'local';
     public const string ADAPTER_S3 = 's3';
 
+    /**
+     * THE PLACE EVERY INSTALLATION ALREADY HAS. The `evidence` block has
+     * always described one storage; that storage is now a TARGET with an id,
+     * and this is the id it keeps. Nothing in a shipped installation has to
+     * change for it to carry on working, and the flysystem storage it
+     * declares keeps the name `storage.evidence` it has always had.
+     */
+    public const string DEFAULT_TARGET = 'evidence';
+
     public static function define(NodeDefinition|ArrayNodeDefinition $root): void
     {
         if (!$root instanceof ArrayNodeDefinition) {
@@ -92,6 +101,69 @@ final class StorageConfiguration
                             ->min(1)
                             ->max(100)
                         ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('targets')
+                    ->info('THE NAMED PLACES THIS INSTALLATION MAY KEEP FILES IN — at most two, and it WRITES TO EXACTLY ONE of them at a time. Which one is current is not configuration: it is a decision somebody made at a moment, so it is recorded in the database and changed through the Storage targets screen. What lives here is the part that must never be in a database — the credentials, the bucket, the directory — plus what the organisation calls the place and what it bought. Leave this empty and the `evidence` block below is read as the one target, which is what every installation shipped so far has.')
+                    ->useAttributeAsKey('id')
+                    ->normalizeKeys(false)
+                    ->arrayPrototype()
+                        ->children()
+                            ->enumNode('adapter')
+                                ->values([self::ADAPTER_LOCAL, self::ADAPTER_S3])
+                                ->defaultValue(self::ADAPTER_LOCAL)
+                            ->end()
+                            ->scalarNode('directory')
+                                ->info('Local adapter only. Outside the document root, always.')
+                                ->defaultValue('%kernel.project_dir%/var/storage/evidence')
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->scalarNode('label')
+                                ->info('What an administrator calls this place. The one place a proper noun belongs.')
+                                ->defaultNull()
+                            ->end()
+                            ->scalarNode('location')
+                                ->info('Where it physically is, as far as configuration knows.')
+                                ->defaultNull()
+                            ->end()
+                            ->integerNode('quota_bytes')
+                                ->info('What was BOUGHT. Not a model field and never can be: no file knows what the organisation pays for. Left null, the Storage tab draws no bar for this place rather than an empty one.')
+                                ->defaultNull()
+                                ->min(1)
+                            ->end()
+                            ->arrayNode('s3')
+                                ->addDefaultsIfNotSet()
+                                ->children()
+                                    ->scalarNode('endpoint')->defaultNull()->end()
+                                    ->scalarNode('bucket')->defaultNull()->end()
+                                    ->scalarNode('region')->defaultValue('us-east-1')->end()
+                                    ->scalarNode('key')->defaultNull()->end()
+                                    ->scalarNode('secret')->defaultNull()->end()
+                                    ->scalarNode('prefix')->defaultValue('')->end()
+                                    ->booleanNode('path_style_endpoint')->defaultTrue()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->validate()
+                        ->ifTrue(static fn (array $targets): bool => \count($targets) > 2)
+                        ->thenInvalid('An installation keeps at most two named places: the one it writes to and the one it is emptying. storage.targets has more.')
+                    ->end()
+                    ->validate()
+                        ->ifTrue(static function (array $targets): bool {
+                            foreach ($targets as $target) {
+                                if (!\is_array($target) || self::ADAPTER_S3 !== ($target['adapter'] ?? self::ADAPTER_LOCAL)) {
+                                    continue;
+                                }
+                                $s3 = $target['s3'] ?? null;
+                                if (!\is_array($s3) || null === ($s3['bucket'] ?? null) || null === ($s3['endpoint'] ?? null)) {
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        })
+                        ->thenInvalid('A target on the "s3" adapter needs both s3.endpoint and s3.bucket.')
                     ->end()
                 ->end()
                 ->arrayNode('evidence')
@@ -165,5 +237,50 @@ final class StorageConfiguration
                 ->end()
             ->end()
         ;
+    }
+
+    /**
+     * THE NAMED PLACES, WHICHEVER SHAPE THE INSTALLATION WROTE THEM IN.
+     *
+     * AN INSTALLATION THAT PREDATES THE SWITCH MUST KEEP BOOTING. Every
+     * installation shipped so far describes one storage in the `evidence`
+     * block and names it in `files.storage_label`; none of them has a
+     * `targets` map, and none of them should have to gain one to keep working
+     * or to be upgraded. So the older shape is READ AS one target — the same
+     * adapter, the same label, the same quota, under the id it has always
+     * effectively had — and the recipe can catch up on its own schedule.
+     *
+     * Pure and static so the compatibility is a unit test rather than a thing
+     * somebody discovers when a container fails to compile.
+     *
+     * @param array<string, mixed> $processed the whole processed `storage` tree
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function normaliseTargets(array $processed): array
+    {
+        $declared = $processed['targets'] ?? null;
+        if (\is_array($declared) && [] !== $declared) {
+            $targets = [];
+            foreach ($declared as $id => $target) {
+                /** @var array<string, mixed> $one */
+                $one = \is_array($target) ? $target : [];
+                $targets[(string) $id] = $one;
+            }
+
+            return $targets;
+        }
+
+        $evidence = \is_array($processed['evidence'] ?? null) ? $processed['evidence'] : [];
+        $files = \is_array($processed['files'] ?? null) ? $processed['files'] : [];
+
+        return [self::DEFAULT_TARGET => [
+            'adapter' => $evidence['adapter'] ?? self::ADAPTER_LOCAL,
+            'directory' => $evidence['directory'] ?? null,
+            's3' => $evidence['s3'] ?? [],
+            'label' => $files['storage_label'] ?? null,
+            'location' => $files['storage_location'] ?? null,
+            'quota_bytes' => $files['storage_quota_bytes'] ?? null,
+        ]];
     }
 }

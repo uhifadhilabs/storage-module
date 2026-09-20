@@ -81,6 +81,12 @@ final class TestKernel extends Kernel
         return sys_get_temp_dir().'/storage-module-tests/evidence';
     }
 
+    /** The second named place — where a switch can go. */
+    public static function archiveDirectory(): string
+    {
+        return sys_get_temp_dir().'/storage-module-tests/archive';
+    }
+
     public function registerBundles(): iterable
     {
         yield new FrameworkBundle();
@@ -198,9 +204,23 @@ final class TestKernel extends Kernel
         ]);
 
         $container->extension('storage', [
-            'evidence' => [
-                'adapter' => 'local',
-                'directory' => self::evidenceDirectory(),
+            // TWO NAMED PLACES, because the ruling this suite exercises is
+            // about switching between them: one is where files go today, the
+            // other is where they may go tomorrow. Both are local directories
+            // here — what matters to every rule is that they are two places,
+            // not what kind of place each one is.
+            'targets' => [
+                'evidence' => [
+                    'adapter' => 'local',
+                    'directory' => self::evidenceDirectory(),
+                    'label' => 'This server',
+                    'quota_bytes' => 10_000_000,
+                ],
+                'archive' => [
+                    'adapter' => 'local',
+                    'directory' => self::archiveDirectory(),
+                    'label' => 'The archive',
+                ],
             ],
         ]);
 
@@ -257,6 +277,9 @@ final class TestKernel extends Kernel
         foreach ([
             EvidenceStorage::class => 'storage.evidence_storage',
             FileRegistry::class => 'storage.file_registry',
+            \Uhifadhi\Storage\Service\StorageTargetService::class => 'storage.target_service',
+            \Uhifadhi\Storage\Service\StorageLocator::class => 'storage.locator',
+            \Uhifadhi\Storage\Service\StoragePlaces::class => 'storage.places',
             StubFileSource::class => StubFileSource::class,
             \Uhifadhi\Storage\Service\SourcesBoard::class => 'storage.sources_board',
             \Uhifadhi\Storage\Service\StorageBoard::class => 'storage.storage_board',

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Uhifadhi\Storage\Service;
 
 use League\Flysystem\FilesystemException;
-use League\Flysystem\FilesystemOperator;
 use League\Flysystem\UnableToReadFile;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -41,10 +40,21 @@ use Uhifadhi\Storage\Thumbnail\ThumbnailGenerator;
  */
 final class EvidenceStorage
 {
+    /**
+     * THE FILESYSTEM IS RESOLVED PER KEY, NOT INJECTED ONCE.
+     *
+     * An installation writes to one place, but it may have written to another
+     * one before it switched — and a photograph filed in June is in the place
+     * that was current in June. A single injected operator would read the
+     * wrong bucket for every file older than the last switch, which is a
+     * record losing its evidence. {@see StorageLocator} answers per key;
+     * writes always go to the current place.
+     */
     public function __construct(
-        private readonly FilesystemOperator $filesystem,
+        private readonly StorageLocator $locator,
         private readonly EvidenceConstraints $constraints,
         private readonly ThumbnailGenerator $thumbnails,
+        private readonly ?StorageTargetService $targets = null,
     ) {
     }
 
@@ -79,7 +89,7 @@ final class EvidenceStorage
         try {
             // writeStream, not write: a 12MB photograph should not be held in
             // memory in one piece, and on S3 this becomes a streaming PUT.
-            $this->filesystem->writeStream($key, $handle);
+            $this->locator->current()->writeStream($key, $handle);
         } catch (FilesystemException $exception) {
             throw EvidenceStorageFailedException::whileWriting($key, $exception);
         } finally {
@@ -91,11 +101,17 @@ final class EvidenceStorage
         }
 
         $size = $file->getSize();
+        $bytes = false === $size ? 0 : $size;
+
+        // WHERE IT WENT, WRITTEN DOWN AS IT GOES. Without this row a later
+        // switch cannot tell which place holds the file, and a move cannot be
+        // resumed: the rows ARE the progress.
+        $this->targets?->recordStored($key, $bytes);
 
         return new StoredFile(
             $key,
             $mimeType ?? 'application/octet-stream',
-            false === $size ? 0 : $size,
+            $bytes,
             $this->writeThumbnail($key, $sourcePath, $mimeType),
             self::clientNameOf($file),
         );
@@ -131,7 +147,7 @@ final class EvidenceStorage
         EvidenceKey::assertValid($key);
 
         try {
-            return $this->filesystem->readStream($key);
+            return $this->locator->for($key)->readStream($key);
         } catch (UnableToReadFile $exception) {
             // Distinguished from a genuine storage failure so the serving route
             // can answer 404 here and 500 there — two very different signals.
@@ -161,8 +177,12 @@ final class EvidenceStorage
         EvidenceKey::assertValid($key);
 
         try {
-            $this->filesystem->delete($key);
-            $this->filesystem->delete(EvidenceKey::thumb($key));
+            $this->locator->for($key)->delete($key);
+            $this->locator->for($key)->delete(EvidenceKey::thumb($key));
+            // The row goes with the bytes: a key nothing holds must not keep
+            // pointing at a place, or a later move would ask for a file that
+            // is not there.
+            $this->targets?->forget($key);
         } catch (FilesystemException $exception) {
             throw EvidenceStorageFailedException::whileWriting($key, $exception);
         }
@@ -176,7 +196,7 @@ final class EvidenceStorage
         }
 
         try {
-            return $this->filesystem->fileExists($key);
+            return $this->locator->for($key)->fileExists($key);
         } catch (FilesystemException) {
             return false;
         }
@@ -192,7 +212,7 @@ final class EvidenceStorage
         EvidenceKey::assertValid($key);
 
         try {
-            return $this->filesystem->mimeType($key);
+            return $this->locator->for($key)->mimeType($key);
         } catch (FilesystemException) {
             // Never guessed from the key: an unknown type is served as an
             // opaque download, which is the safe reading of "we are not sure".
@@ -208,7 +228,7 @@ final class EvidenceStorage
         EvidenceKey::assertValid($key);
 
         try {
-            return $this->filesystem->fileSize($key);
+            return $this->locator->for($key)->fileSize($key);
         } catch (FilesystemException $exception) {
             throw EvidenceStorageFailedException::whileReading($key, $exception);
         }
@@ -236,7 +256,7 @@ final class EvidenceStorage
         $thumbKey = EvidenceKey::thumb($key);
 
         try {
-            $this->filesystem->write($thumbKey, $bytes);
+            $this->locator->current()->write($thumbKey, $bytes);
         } catch (FilesystemException) {
             // The original is already safely stored. Report no preview rather
             // than a key that points at nothing.

@@ -13,17 +13,23 @@ declare(strict_types=1);
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
+use Uhifadhi\Storage\MessageHandler\MoveStoredFileHandler;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
 use Uhifadhi\Storage\Registry\FileRegistry;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Registry\UploadTargetRegistry;
+use Uhifadhi\Storage\Repository\FileLocationRepository;
+use Uhifadhi\Storage\Repository\StorageMoveRepository;
+use Uhifadhi\Storage\Repository\StorageTargetRepository;
 use Uhifadhi\Storage\Security\EvidenceAccessDecider;
 use Uhifadhi\Storage\Service\EvidenceStorage;
 use Uhifadhi\Storage\Service\FilesSectionOverview;
 use Uhifadhi\Storage\Service\FilesSurface;
 use Uhifadhi\Storage\Service\SourcesBoard;
 use Uhifadhi\Storage\Service\StorageBoard;
+use Uhifadhi\Storage\Service\StoragePlaces;
 use Uhifadhi\Storage\Service\StorageSettings;
+use Uhifadhi\Storage\Service\StorageTargetService;
 use Uhifadhi\Storage\Thumbnail\GdThumbnailer;
 use Uhifadhi\Storage\Thumbnail\ImagickThumbnailer;
 use Uhifadhi\Storage\Thumbnail\ThumbnailGenerator;
@@ -86,13 +92,78 @@ return static function (ContainerConfigurator $container): void {
      * storage is named with the bundle alias in front, as the reusable-bundle
      * rule above requires of every id.
      */
+    /*
+     * THE NAMED PLACES AN INSTALLATION CONFIGURED, and which of them it is
+     * writing to today. The two are deliberately different services and
+     * different homes: a place's credentials are configuration, and the
+     * decision to write to one of them is a dated fact in the database.
+     */
+    $services->set('storage.places', StoragePlaces::class)
+        ->args([param('storage.targets')]);
+    $services->alias(StoragePlaces::class, 'storage.places');
+
+    /*
+     * THE REPOSITORIES KEEP FQCN IDS — the one place the bundle-alias prefix
+     * cannot be used. ServiceRepositoryCompilerPass keys its locator by
+     * SERVICE ID while ContainerRepositoryFactory looks a repository up by
+     * CLASS NAME, so a prefixed id is a repository Doctrine cannot find.
+     */
+    $services->set(StorageTargetRepository::class)->args([service('doctrine')])
+        ->tag('doctrine.repository_service');
+    $services->set(StorageMoveRepository::class)->args([service('doctrine')])
+        ->tag('doctrine.repository_service');
+    $services->set(FileLocationRepository::class)->args([service('doctrine')])
+        ->tag('doctrine.repository_service');
+
+    /*
+     * THE ONE-TARGET RULE, and the switch that keeps it.
+     *
+     * The bus is nullOnInvalid(): an installation may run this bundle for its
+     * storage machinery without Messenger, and it then gets every rule except
+     * the moving — switching, declining and the read-only old place all still
+     * work, and the question simply has one answer that cannot be carried out.
+     */
+    $services->set('storage.target_service', StorageTargetService::class)
+        ->args([
+            service('doctrine.orm.entity_manager'),
+            service(StorageTargetRepository::class),
+            service(StorageMoveRepository::class),
+            service(FileLocationRepository::class),
+            service('storage.places'),
+            service('messenger.default_bus')->nullOnInvalid(),
+        ]);
+    $services->alias(StorageTargetService::class, 'storage.target_service');
+
+    /*
+     * WHICH FILESYSTEM HOLDS A GIVEN FILE is defined in loadExtension(), not
+     * here: the map of place id => flysystem storage is built from the
+     * installation's own `storage.targets`, and only the extension has read
+     * them. See UhifadhiStorageBundle::loadExtension().
+     */
+
     $services->set('storage.evidence_storage', EvidenceStorage::class)
         ->args([
-            service('storage.evidence'),
+            service('storage.locator'),
             service('storage.evidence_constraints'),
             service('storage.thumbnail_generator'),
+            service('storage.target_service'),
         ]);
     $services->alias(EvidenceStorage::class, 'storage.evidence_storage');
+
+    /*
+     * THE MOVE, ONE FILE AT A TIME. Tagged by hand: a reusable bundle is not
+     * autoconfigured, so `messenger.message_handler` never arrives by itself
+     * and a forgotten tag would be a switch whose Yes does nothing.
+     */
+    $services->set('storage.move_handler', MoveStoredFileHandler::class)
+        ->args([
+            service('storage.locator'),
+            service(FileLocationRepository::class),
+            service(StorageMoveRepository::class),
+            service('storage.target_service'),
+            service('logger')->nullOnInvalid(),
+        ])
+        ->tag('messenger.message_handler');
 
     /*
      * The permission contribution point. The iterator is EMPTY on a host that has installed

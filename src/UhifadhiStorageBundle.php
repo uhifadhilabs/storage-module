@@ -36,8 +36,10 @@ use Uhifadhi\Storage\Controller\UploadController;
 use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
+use Uhifadhi\Storage\Repository\FileLocationRepository;
 use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
 use Uhifadhi\Storage\Service\ServerUploadLimitService;
+use Uhifadhi\Storage\Service\StorageLocator;
 use Uhifadhi\Storage\Service\UploadService;
 use Uhifadhi\Storage\Shell\FilesNavigation;
 use Uhifadhi\Storage\Shell\FilesSectionConfiguration;
@@ -50,6 +52,7 @@ use Uhifadhi\Storage\Widget\FilesWidgets;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service_locator;
 
 /**
  * Storage — the platform's file-storage machinery.
@@ -130,7 +133,34 @@ final class UhifadhiStorageBundle extends AbstractBundle
             ]);
         }
 
-        $evidence = $this->evidenceConfig($builder);
+        /*
+         * THIS BUNDLE OWNS TABLES NOW, and it ships their schema.
+         *
+         * It owned none for most of its life and said so: the photo records
+         * stay in the modules that own them. What changed is that ONE WRITABLE
+         * TARGET is a decision somebody makes at a moment rather than a line in
+         * a config file, and a move that survives a restart has to know which
+         * files it has already carried. Neither is configuration and neither
+         * can be recomputed, so three small tables hold them.
+         *
+         * Zero-config on both counts: an installation writes no doctrine
+         * mapping block and authors no SQL for tables it does not own — it runs
+         * doctrine:migrations:migrate and nothing else.
+         */
+        if ($builder->hasExtension('doctrine')) {
+            $container->extension('doctrine', ['orm' => ['mappings' => ['UhifadhiStorage' => [
+                'type' => 'attribute',
+                'dir' => __DIR__.'/Entity',
+                'prefix' => 'Uhifadhi\\Storage\\Entity',
+                'is_bundle' => false,
+            ]]]], prepend: true);
+        }
+
+        if ($builder->hasExtension('doctrine_migrations')) {
+            $container->extension('doctrine_migrations', ['migrations_paths' => [
+                'Uhifadhi\\Storage\\Migrations' => \dirname(__DIR__).'/migrations',
+            ]], prepend: true);
+        }
 
         /*
          * The evidence storage, declared FOR the installation.
@@ -150,15 +180,16 @@ final class UhifadhiStorageBundle extends AbstractBundle
          * would therefore change the meaning of "evidence" the day a deployment
          * switched from local to S3, in the direction nobody wants.
          */
-        $container->extension('flysystem', [
-            'storages' => [
-                'storage.evidence' => [
-                    ...$this->adapterConfig($evidence),
-                    'visibility' => Visibility::PRIVATE,
-                    'directory_visibility' => Visibility::PRIVATE,
-                ],
-            ],
-        ]);
+        $storages = [];
+        foreach ($this->targetsConfig($builder) as $id => $target) {
+            $storages[self::storageIdFor((string) $id)] = [
+                ...$this->adapterConfig($target),
+                'visibility' => Visibility::PRIVATE,
+                'directory_visibility' => Visibility::PRIVATE,
+            ];
+        }
+
+        $container->extension('flysystem', ['storages' => $storages]);
     }
 
     /**
@@ -226,6 +257,42 @@ final class UhifadhiStorageBundle extends AbstractBundle
         $container->import('../config/services.php');
 
         $services = $container->services();
+
+        /*
+         * THE NAMED PLACES, AS A PARAMETER AND AS A MAP OF FILESYSTEMS.
+         *
+         * Both are built here because only the extension has read the
+         * installation's `storage.targets`: the parameter is what
+         * StoragePlaces presents on screen, and the locator is how a key is
+         * turned into the filesystem that actually holds it.
+         */
+        $targets = $this->targetsConfig($builder);
+        $presented = [];
+        $filesystems = [];
+        foreach ($targets as $id => $target) {
+            $id = (string) $id;
+            $label = $target['label'] ?? null;
+            $location = $target['location'] ?? null;
+            $quota = $target['quota_bytes'] ?? null;
+            $presented[$id] = [
+                'adapter' => StorageConfiguration::ADAPTER_S3 === ($target['adapter'] ?? null)
+                    ? StorageConfiguration::ADAPTER_S3
+                    : StorageConfiguration::ADAPTER_LOCAL,
+                'label' => \is_string($label) && '' !== $label ? $label : null,
+                'location' => \is_string($location) && '' !== $location ? $location : null,
+                'quota_bytes' => \is_int($quota) && $quota > 0 ? $quota : null,
+            ];
+            $filesystems[$id] = service(self::storageIdFor($id));
+        }
+        $builder->setParameter('storage.targets', $presented);
+
+        $services->set('storage.locator', StorageLocator::class)
+            ->args([
+                service_locator($filesystems),
+                service(FileLocationRepository::class),
+                service('storage.target_service'),
+            ]);
+        $services->alias(StorageLocator::class, 'storage.locator');
 
         /*
          * The S3 client the asyncaws adapter references BY SERVICE ID (its
@@ -520,16 +587,18 @@ final class UhifadhiStorageBundle extends AbstractBundle
     }
 
     /**
-     * The bundle's own configuration, read back during prepend().
+     * THE NAMED PLACES, NORMALISED — the `targets` map where an installation
+     * wrote one, and the `evidence` block read as the single default target
+     * where it did not.
      *
-     * prependExtension() runs before load(), so the processed config is not
-     * handed over — getExtensionConfig() returns the raw, unmerged arrays and
-     * the tree is applied here to get defaults. This is the documented way for
-     * a bundle to act on its own configuration while prepending.
+     * Reading the older shape as a target rather than requiring the new one is
+     * what lets a shipped installation gain the switch without editing a
+     * config file: `storage.evidence` keeps its flysystem name, its adapter
+     * and its label, and simply acquires an id.
      *
-     * @return array<string, mixed>
+     * @return array<string, array<string, mixed>>
      */
-    private function evidenceConfig(ContainerBuilder $builder): array
+    private function targetsConfig(ContainerBuilder $builder): array
     {
         $tree = new TreeBuilder($this->extensionAlias);
         StorageConfiguration::define($tree->getRootNode());
@@ -537,7 +606,18 @@ final class UhifadhiStorageBundle extends AbstractBundle
         /** @var array<string, mixed> $processed */
         $processed = new Processor()->process($tree->buildTree(), $builder->getExtensionConfig($this->extensionAlias));
 
-        return self::stringKeyed($processed['evidence'] ?? null);
+        return StorageConfiguration::normaliseTargets($processed);
+    }
+
+    /**
+     * The flysystem storage name a target's bytes are written through. The
+     * default target keeps the name every installation already has.
+     */
+    public static function storageIdFor(string $targetId): string
+    {
+        return StorageConfiguration::DEFAULT_TARGET === $targetId
+            ? 'storage.evidence'
+            : 'storage.'.$targetId;
     }
 
     /**
