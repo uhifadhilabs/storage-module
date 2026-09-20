@@ -26,6 +26,7 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Symfony\UX\Icons\UXIconsBundle;
 use Symfony\UX\StimulusBundle\StimulusBundle;
+use Uhifadhi\Bundle\AtlasBundle\AtlasBundle;
 use Uhifadhi\Bundle\RegistryBundle\RegistryBundle;
 use Uhifadhi\Bundle\ShellBundle\ShellBundle;
 use Uhifadhi\Bundle\TeamBundle\Entity\User;
@@ -101,6 +102,11 @@ final class TestKernel extends Kernel
         // The catalogue and the per-area ledger the team's own screens read, and
         // the bundle TeamBundle requires.
         yield new RegistryBundle();
+        // THE COMPONENT LIBRARY THE TEAM'S OWN NAVIGATION READS. Team's
+        // Performance row asks Atlas for the periods it offers, so a kernel
+        // with Team and without Atlas no longer compiles — installing one
+        // battery has always meant installing what it requires.
+        yield new AtlasBundle();
         // The page frame the screens extend, and the widget machinery the hub is:
         // the hub is a widget surface, not a page with widgets on it.
         yield new ShellBundle();
