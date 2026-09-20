@@ -25,7 +25,7 @@
 
 {% block storage_page %}
     <div class="sxlead">
-        <span class="t">{{ ux_icon('shell:file-text') }}<span><b>What a module stores, and what it calls it.</b> A module declares that it keeps files and the word the hub shows for them; that declaration arrives with the package and leaves with it. It never decides who may see a file &mdash; the owning record does.</span></span>
+        <span class="t">{{ ux_icon('shell:file-text') }}<span><b>What a module stores, and what it calls it.</b> The declaration arrives with the package and leaves with it &middot; who may see a file is the record&rsquo;s answer.</span></span>
     </div>
 
     <div class="c" style="margin-bottom:20px">
@@ -47,7 +47,7 @@
             {% endfor %}
             </tbody>
         </table>
-        <div class="sxfoot"><span>Removing a module removes its source: its files stop being listed and its bytes stay where they are until somebody removes them deliberately.</span></div>
+        <div class="sxfoot"><span>Removing a module removes its source &middot; its bytes stay where they are</span></div>
     </div>
 
     <div class="c" style="margin-bottom:20px">
@@ -64,7 +64,7 @@
             {% endfor %}
             </tbody>
         </table>
-        <div class="sxfoot"><span>Without all four the hub would have to know each module by name, which is the one thing it must not do.</span></div>
+        <div class="sxfoot"><span>{{ seam|filter(l => l.exists)|length }} of the {{ seam|length }} exist &middot; without them the hub must know each module by name</span></div>
     </div>
 
     <div class="c" style="margin-bottom:20px">
@@ -86,6 +86,6 @@
             </tr>
             </tbody>
         </table>
-        <div class="sxfoot"><span>Drawn with no figure because there is nothing to count.</span></div>
+        <div class="sxfoot"><span>No figure &mdash; nothing to count &middot; the one place a future import would show</span></div>
     </div>
 {% endblock %}

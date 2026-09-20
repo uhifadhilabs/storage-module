@@ -11,5 +11,5 @@
     <table class="f-list" data-f-list>{{ ui.listhead() }}<tbody>{%- for file in files -%}{{ ui.row(file, places) }}{%- endfor -%}</tbody></table>
     {% if files is empty %}{{ ui.empty(true) }}{% endif %}
     {# The only shape that answers all three storage questions in one look. #}
-    <div class="use">No small picture, kept where, costing what &mdash; click any row for the picture.</div>
+    <div class="use"><b>No small picture</b> &middot; <b>still on our own disk</b> &middot; <b>what a record costs</b> &middot; click a row for the picture.</div>
 </div>

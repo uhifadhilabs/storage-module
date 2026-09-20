@@ -26,10 +26,9 @@
 
 {% block shell_page_title %}{{ file.name }}{% endblock %}
 
-{% block shell_page_subtitle %}
-    A file&rsquo;s own page. It shows exactly what the overlay on the hub shows; the overlay is for
-    browsing, this is for pointing at.
-{% endblock %}
+{# It shows exactly what the overlay on the hub shows; the overlay is for
+   browsing, and this address is for pointing at. #}
+{% block shell_page_subtitle %}A file&rsquo;s own page &mdash; linkable, for pointing at.{% endblock %}
 
 {% block shell_page_actions %}
     <a class="tgl w-act" href="{{ hubUrl }}">{{ ux_icon('shell:chevron-left') }} Back to files</a>
@@ -57,7 +56,7 @@
             {% endif %}
         </div>
         {% if file.caption %}
-            <div class="use"><b>{{ file.caption }}</b> &mdash; written on {{ file.ownerLabel }}, not on the file.</div>
+            <div class="use"><b>{{ file.caption }}</b> &mdash; the caption is written on {{ file.ownerLabel }}, not on the file.</div>
         {% else %}
             <div class="use">No caption &mdash; a caption belongs to the record, not to the file, and this one has none.</div>
         {% endif %}
@@ -65,7 +64,7 @@
         {% if siblings is not empty %}
             <h2 class="zone" style="margin-top:26px">The rest of {{ file.ownerLabel }}&rsquo;s files</h2>
             <div class="f-grid">{%- for sibling in siblings -%}{{ ui.tile(sibling) }}{%- endfor -%}</div>
-            <div class="use">These hang off the same record and move with it.</div>
+            <div class="use">{{ siblings|length + 1 }} files hang off this record &middot; they move with it.</div>
         {% endif %}
     </div>
 

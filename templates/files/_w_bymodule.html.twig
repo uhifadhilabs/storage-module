@@ -27,5 +27,9 @@
     {# One ~400px thumbnail costs about a hundred kilobytes; a whole area's worth
        costs less than one day's photographs. That is the whole argument for making
        them eagerly and never on demand. #}
-    <div class="use"><b>The small pictures are a rounding error</b> beside the originals they stand for.</div>
+    {# The design states "~130 KB each · four thousand cost less than one day's
+       photographs". Neither figure is in the model — a thumbnail's bytes are not
+       recorded — so the line keeps the design's point and drops the two numbers
+       rather than printing a guess. #}
+    <div class="use"><b>The small pictures are a rounding error.</b> One ~{{ thumbnailLongEdge }}px picture per photograph, made eagerly and never on demand.</div>
 </div>

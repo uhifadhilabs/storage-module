@@ -94,13 +94,13 @@ final class FileDetailPageTest extends FilesTestCase
         yield 'the record wants a reason' => [
             'fieldwork/rec-0001/a.jpg',
             'reason',
-            'keeps a line saying who removed which one and why',
+            'keeps a line saying who removed what and why',
             true,
         ];
         yield 'the record will not let go' => [
             'fieldwork/rec-0002/report.pdf',
             'locked',
-            'still in progress',
+            'is in progress',
             false,
         ];
         yield 'not yours to remove' => [

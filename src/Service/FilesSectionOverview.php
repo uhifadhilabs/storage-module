@@ -66,6 +66,7 @@ final readonly class FilesSectionOverview
      *     periodTotal: int,
      *     total: int,
      *     kinds: list<SectionBar>,
+     *     kindLead: array{label: string, countShare: float, byteShare: float}|null,
      *     kindLines: list<SectionLine>,
      *     bytes: int,
      *     latest: list<FileEntry>,
@@ -106,6 +107,7 @@ final readonly class FilesSectionOverview
             'periodTotal' => $drawn,
             'total' => $counts['files'],
             'kinds' => $this->kinds($files),
+            'kindLead' => $this->kindLead($files, $counts['bytes']),
             'kindLines' => $this->kindLines($files),
             'bytes' => $counts['bytes'],
             'latest' => $this->registry->recent(self::LATEST, $files),
@@ -294,6 +296,35 @@ final readonly class FilesSectionOverview
         usort($rows, static fn (SectionBar $a, SectionBar $b): int => $b->value <=> $a->value);
 
         return array_map(static fn (SectionBar $bar): SectionBar => $bar->scaledTo($largest), $rows);
+    }
+
+    /**
+     * THE KIND THAT LEADS, and what share of the count and of the bytes it is.
+     *
+     * The design's line reads "Photographs: 86 % of the count and 86 % of the
+     * bytes" — two figures that happen to agree here and will not on an
+     * installation that keeps more documents, which is exactly why both are
+     * read rather than one printed twice.
+     *
+     * @param list<FileEntry> $files
+     *
+     * @return array{label: string, countShare: float, byteShare: float}|null
+     */
+    private function kindLead(array $files, int $bytes): ?array
+    {
+        $rows = $this->registry->byKind($files);
+        if ([] === $rows) {
+            return null;
+        }
+
+        usort($rows, static fn (array $a, array $b): int => $b['files'] <=> $a['files']);
+        $lead = $rows[0];
+
+        return [
+            'label' => $lead['kind']->plural(),
+            'countShare' => $lead['share'],
+            'byteShare' => $bytes > 0 ? round($lead['bytes'] / $bytes * 100) : 0.0,
+        ];
     }
 
     /**

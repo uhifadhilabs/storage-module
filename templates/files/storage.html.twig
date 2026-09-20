@@ -27,7 +27,7 @@
     <div class="c" style="margin-bottom:20px">
         <span class="tab">Where the bytes are<span class="src">&middot; {{ rows|length }} {{ rows|length == 1 ? 'target' : 'targets' }} &middot; read-only here</span></span>
         <div class="sxlead">
-            <span class="t">{{ ux_icon('storage:lock') }}<span><b>Originals live outside the website.</b> There is no address anybody can guess or share by accident; a request is answered only after the app has checked that you may see the record the file belongs to.</span></span>
+            <span class="t">{{ ux_icon('storage:lock') }}<span><b>Originals live outside the website.</b> No address anybody can guess or share &middot; answered only after a permission check.</span></span>
             <span class="a"><a class="tgl" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::SETTINGS')) }}">Configure storage</a></span>
         </div>
         <table class="tbl">
@@ -50,7 +50,7 @@
             </tbody>
         </table>
         <div class="sxfoot">
-            <span>Changing the default target moves nothing: files already written stay where they are and are still served from there.</span>
+            <span>Changing the default target moves nothing &middot; files already written stay where they are</span>
             <span class="sp"></span>
             <a class="tgl" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::SETTINGS')) }}">Where files go</a>
         </div>
@@ -59,11 +59,15 @@
     <div class="grid g2">
         <div class="c">
             <span class="tab">How a file is kept<span class="src">&middot; the same for every module</span></span>
-            {# ONE ROW. This was five stated rows and a closing sentence, which
-               is a paragraph wearing a table: the reader of a Storage tab is
-               here to see how full a target is, and the way a file is kept is
-               one fact they check in passing. #}
-            <div class="rln"><span>Every file, every module</span><span class="mono d">originals outside the site &middot; one ~{{ thumbnailLongEdge }}px picture per file &middot; type by detection &middot; a refusal reads as not found</span></div>
+            {# FIVE STATED ROWS AND A FOOT THAT SUMS THEM, which is what the
+               settled design draws: the rows are the reference a reader checks
+               a fact against, the foot is the whole card in one line. #}
+            <div class="rln"><span>Where an original lives</span><span class="mono d">outside the web root, always</span></div>
+            <div class="rln"><span>How it is reached</span><span class="mono acc">a request the app answers after a permission check</span></div>
+            <div class="rln"><span>Small pictures per file</span><span class="mono d">exactly one &mdash; never a set of sizes</span></div>
+            <div class="rln"><span>Small picture size</span><span class="mono d">~{{ thumbnailLongEdge }} px on the long side</span></div>
+            <div class="rln"><span>What decides the type</span><span class="mono d">detection, never the file&rsquo;s name</span></div>
+            <div class="sxfoot"><span>originals outside the site &middot; one ~{{ thumbnailLongEdge }}px picture per file &middot; type by detection &middot; a refusal reads as not found</span></div>
         </div>
 
         <div class="c">
@@ -72,6 +76,8 @@
             <div class="rln"><span>Retention</span><span class="mono d">none &mdash; a file lives as long as its record</span></div>
             <div class="rln"><span>Quota warning</span><span class="mono {{ nearQuota ? 'r' : 'w' }}">at {{ warningPercent }} % of what was bought &middot; {{ nearQuota ? 'a target has passed it' : 'no target is near it' }}</span></div>
             <div class="rln"><span>What happens at the quota</span><span class="mono r">the attach fails on the record&rsquo;s own page, with the reason</span></div>
+            {# Quota is not in the model: it is what was bought, typed here so the bar
+               above can be drawn. #}
             <p class="use">A target with no quota typed draws no bar, never a full one.</p>
             <div class="sxfoot">
                 <span>Editing any of these is the configure page</span>

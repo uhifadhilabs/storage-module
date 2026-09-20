@@ -72,7 +72,7 @@
     <div class="c" style="margin-bottom:20px">
         <span class="tab">Storage targets<span class="src">&middot; its own section</span></span>
         <div class="sxlead">
-            <span class="t">{{ ux_icon('shell:file-text') }}<span><b>Where the bytes go.</b> {{ targets|length }} {{ targets|length == 1 ? 'target is' : 'targets are' }} configured and every one of them is outside the web root. The read view of the same ones &mdash; how full each is &mdash; is the <b>Storage</b> tab.</span></span>
+            <span class="t">{{ ux_icon('shell:file-text') }}<span><b>Where the bytes go.</b> {{ targets|length }} {{ targets|length == 1 ? 'target' : 'targets' }}, {{ targets|length == 1 ? 'it is' : 'both' }} outside the web root &middot; how full each is, is the Storage tab.</span></span>
             <span class="a"><a class="tgl" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesSectionController::STORAGE')) }}">The Storage tab</a><a class="cta" href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesConfigureController::SOURCES')) }}">Open Source modules</a></span>
         </div>
         {% for target in targets %}
@@ -82,6 +82,6 @@
         {% endfor %}
         <div class="rln"><span>Changing the default</span><span class="mono d">moves nothing &mdash; files already written stay where they are</span></div>
         <div class="rln"><span>Adding a target</span><span class="mono d">name, kind, credentials, and what was bought &middot; the installation&rsquo;s own configuration</span></div>
-        <div class="use" style="margin-bottom:0">What a module stores is the module&rsquo;s to declare &mdash; Source modules reads it.</div>
+        <div class="use" style="margin-bottom:0">A module declares what it stores &middot; Source modules names the word the hub shows for its files.</div>
     </div>
 {% endblock %}

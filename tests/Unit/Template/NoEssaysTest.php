@@ -45,10 +45,21 @@ use PHPUnit\Framework\TestCase;
 final class NoEssaysTest extends TestCase
 {
     /**
-     * One line at 1440px, in characters. The workspace's body copy is 12–13px
-     * in a card that is roughly half the page, which is where this lands.
+     * ONE LINE AT 1440px, IN CHARACTERS, AND THE NUMBER IS CALIBRATED RATHER
+     * THAN CHOSEN.
+     *
+     * It was 110 on a first estimate of a half-page card at 12.5px. Three
+     * fragments of the SETTLED design (workspace 49b65a0) then measured 111,
+     * 120 and 126 — a full-width widget foot is wider than half a page, and
+     * the estimate was tight rather than the design wrong. The bar is what
+     * separates a fragment from an essay, so it is set above the longest
+     * fragment the design ships and well below the shortest essay this
+     * section ever grew: the twelve it replaced ran 136 to 334.
+     *
+     * RAISE IT ONLY AGAINST A SETTLED DESIGN, never to let a new sentence
+     * through. A node that does not fit is a node to split.
      */
-    public const int LIMIT = 110;
+    public const int LIMIT = 130;
 
     /** The prose class the bar is on. */
     private const string PROSE = 'use';

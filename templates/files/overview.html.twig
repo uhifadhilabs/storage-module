@@ -63,9 +63,9 @@
                     <span>No module declares a file store yet.</span>
                 {% endfor %}
             </div>
-            {# AN ABSENT SERIES IS A MODULE THAT DECLARES NO FILE STORE, not a
-               module with no files, and the two must never look the same. #}
-            <p class="use" style="margin-bottom:0">No file store, no bar &mdash; which is not the same as a bar at nought.</p>
+            {# An absent series is a module that declares no file store, not a
+             module with no files, and the two must never look the same. #}
+            <p class="use" style="margin-bottom:0">{{ periods|last.label|capitalize }} in progress &middot; an absent series is a module that declares no file store.</p>
             <div class="sxmore"><span>{{ periodTotal|number_format }} of {{ total|number_format }} &middot; the rest is older than {{ periods|length }} periods</span><span class="sp"></span><a href="{{ path(constant('Uhifadhi\\Storage\\Controller\\FilesController::REGISTER')) }}">The register &rarr;</a></div>
         </div>
 
@@ -85,7 +85,7 @@
             {% for line in kindLines %}
                 <div class="rln"><span>{{ line.label }}</span><span class="mono {{ line.tone }}">{{ line.note }}</span></div>
             {% endfor %}
-            <p class="use" style="margin-bottom:0">What decides the kind is <b>detection</b>, never the file&rsquo;s name.</p>
+            <p class="use" style="margin-bottom:0">{% if kindLead %}{{ kindLead.label }}: {{ kindLead.countShare|round }} % of the count and {{ kindLead.byteShare|round }} % of the bytes &middot; {% endif %}kind by <b>detection</b>, never the name.</p>
         </div>
     </div>
 
@@ -118,7 +118,7 @@
         {% for line in outstanding %}
             <div class="rln"><span>{{ line.label }}</span><span class="mono {{ line.tone }}">{{ line.note }}</span></div>
         {% endfor %}
-        <p class="use">One ~{{ thumbnailLongEdge }}px picture per photograph, and it is all browsing fetches.</p>
+        <p class="use">One ~{{ thumbnailLongEdge }}px picture per photograph &middot; the only thing browsing fetches.</p>
         <div class="sxfoot">
             <span>{% if failed > 0 %}{{ failed }} {{ failed == 1 ? 'failure is' : 'failures are' }} a file problem, not a queue problem{% else %}No picture has failed to be made{% endif %}</span>
             <span class="sp"></span>

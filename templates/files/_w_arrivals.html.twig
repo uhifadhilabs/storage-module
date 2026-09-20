@@ -12,6 +12,11 @@
         {% endfor %}
     </div>
     <div class="f-sparkx">{% for week in arrivals %}<span><time datetime="{{ week.week|date('Y-m-d') }}">{{ week.week|date('j M')|lower }}</time></span>{% endfor %}</div>
-    {# Where files go turns this rate into a sentence about when the disk runs out. #}
-    <div class="use">Counted by the week a file <b>reached us</b> &mdash; the week it started costing space.</div>
+    {# THE RATE, NOT A SAMPLE OF ONE. The design states "about 3.4 GB a week"
+       and names the week that stands out; both are read off the drawn weeks
+       here, so the sentence cannot go stale. Where files go turns the same
+       rate into a sentence about when the disk runs out. #}
+    {% set weekly = arrivals|length > 0 ? (arrivals|reduce((carry, week) => carry + week.bytes, 0) / arrivals|length)|round : 0 %}
+    {% set tallest = arrivals|length > 0 ? (arrivals|sort((a, b) => b.files <=> a.files)|first) : null %}
+    <div class="use">About <b>{{ weekly|storage_bytes }} a week</b>{% if tallest and tallest.files > 0 %} &middot; the tall week is <time datetime="{{ tallest.week|date('Y-m-d') }}">{{ tallest.week|date('j M')|lower }}</time>{% endif %}.</div>
 </div>

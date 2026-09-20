@@ -165,22 +165,22 @@ final class StubFileSource implements FileSourceInterface, FileRemovalInterface
             str_contains($key, 'rec-0001') => new FileGuard(
                 GuardStateEnum::Reason,
                 'You may remove this file, with a reason',
-                'REC-0001 is filed. Its photographs may be removed by anyone who can edit the record, and the record keeps a line saying who removed which one and why.',
+                'REC-0001 is filed · the record keeps a line saying who removed what and why.',
             ),
             str_contains($key, 'rec-0002') => new FileGuard(
                 GuardStateEnum::Locked,
                 'The record will not let go of this file',
-                'REC-0002 is still in progress and its claim rests on this evidence. That is the fieldwork module’s rule, not a storage rule — the hub only repeats it.',
+                'REC-0002 is in progress · its claim rests on this evidence · the fieldwork module’s rule, repeated here.',
             ),
             str_contains($key, 'rec-0003') => new FileGuard(
                 GuardStateEnum::Denied,
                 'Not yours to remove',
-                'This track was filed by another department. You can see it because you can see REC-0003; removing it belongs to them.',
+                'Filed by another department · removing it belongs to them or an administrator.',
             ),
             default => new FileGuard(
                 GuardStateEnum::Allowed,
                 'You may remove this file',
-                'REC-0004 is resolved and filed away, so the fieldwork module allows its evidence to be removed.',
+                'REC-0004 is resolved and filed away · the record keeps a line saying it was removed, by whom and why.',
             ),
         };
     }
