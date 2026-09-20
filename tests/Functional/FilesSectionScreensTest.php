@@ -59,19 +59,40 @@ final class FilesSectionScreensTest extends FilesTestCase
     }
 
     /**
-     * FIVE CARDS, FIVE OR NONE. A strip that dropped one because its figure is
-     * hard to get would teach a reader to stop looking for it.
+     * FOUR CARDS, FOUR OR NONE. A KPI row is four across, and the fifth this
+     * strip used to carry — `Small pictures` — is stated twice elsewhere on
+     * the same screen, in the identity band and in the outstanding card.
+     *
+     * A strip that dropped one because its figure was hard to get would teach
+     * a reader to stop looking for it, which is why `Awaiting sync` is still
+     * here and says it is unmeasured.
      */
-    public function testTheOverviewDrawsFiveKpiCards(): void
+    public function testTheOverviewDrawsFourKpiCards(): void
     {
         $crawler = $this->open('/files/overview');
 
         $cards = $crawler->filter('.kstrip .c.kpi');
-        self::assertCount(5, $cards);
+        self::assertCount(4, $cards);
         self::assertSame(
-            ['Files kept', 'Space used', 'Small pictures', 'Arrived', 'Awaiting sync'],
+            ['Files kept', 'Space used', 'Arrived', 'Awaiting sync'],
             $cards->each(static fn (Crawler $c): string => trim($c->filter('.tab')->text())),
         );
+    }
+
+    /**
+     * SMALL PICTURES LEFT THE STRIP AND STAYED ON THE SCREEN. Dropping the
+     * card must not drop the figure: the band still counts it and the
+     * outstanding card is still about it.
+     */
+    public function testSmallPicturesIsStillStatedTwiceOffTheStrip(): void
+    {
+        $crawler = $this->open('/files/overview');
+
+        self::assertCount(0, $crawler->filter('.kstrip .c.kpi')->reduce(
+            static fn (Crawler $c): bool => 'Small pictures' === trim($c->filter('.tab')->text()),
+        ));
+        self::assertStringContainsString('Small pictures', $crawler->filter('.factband')->text());
+        self::assertStringContainsString('Small pictures outstanding', $crawler->filter('.pgbody')->text());
     }
 
     /**

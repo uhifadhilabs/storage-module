@@ -145,8 +145,15 @@ final readonly class FilesSectionOverview
     }
 
     /**
-     * THE FIVE CARDS. Five or none — a strip that drops one because its figure
-     * is hard to get would teach a reader to stop looking for it.
+     * THE FOUR CARDS. A KPI row is four, never five — ruled, and the design
+     * says which four: `Small pictures` goes, because this surface already
+     * states it twice over (the identity band counts it, and the outstanding
+     * card is about nothing else). A figure said three times on one screen is
+     * not emphasis, it is noise.
+     *
+     * FOUR OR NONE. A strip that dropped one because its figure was hard to
+     * get would teach a reader to stop looking for it, which is why
+     * `Awaiting sync` stays and says it is unmeasured instead.
      *
      * @param array{files: int, bytes: int, made: int, waiting: int, failed: int, arrived: int} $counts
      * @param list<FileEntry>                                                                   $files
@@ -160,11 +167,6 @@ final readonly class FilesSectionOverview
         $bytesThisPeriod = 0;
         foreach ($thisPeriod as $file) {
             $bytesThisPeriod += $file->byteSize;
-        }
-
-        $madeThisPeriod = 0;
-        foreach ($thisPeriod as $file) {
-            $madeThisPeriod += ThumbStateEnum::Made === $file->thumbState ? 1 : 0;
         }
 
         [$size, $unit] = Bytes::split($counts['bytes']);
@@ -186,13 +188,6 @@ final readonly class FilesSectionOverview
                 // costs, so the movement is drawn against it.
                 delta: 0.0 === (float) $grown ? null : -(float) $grown,
                 hot: true,
-            ),
-            new SectionKpi(
-                'Small pictures',
-                number_format($counts['made']),
-                qualifier: \sprintf('%d could not be made', $counts['failed']),
-                delta: (float) $madeThisPeriod,
-                warn: $counts['waiting'] > 0 ? \sprintf('%d waiting', $counts['waiting']) : null,
             ),
             new SectionKpi(
                 'Arrived',
