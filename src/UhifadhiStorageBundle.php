@@ -23,6 +23,7 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
+use Uhifadhi\Bundle\AreaBundle\Overview\OrgOverviewContributorInterface;
 use Uhifadhi\Bundle\ShellBundle\Contract\NavigationSourceInterface;
 use Uhifadhi\Bundle\ShellBundle\ShellBundle;
 use Uhifadhi\Bundle\ShellBundle\Widget\Registry\WidgetSurfaceInterface;
@@ -36,6 +37,8 @@ use Uhifadhi\Storage\Controller\StorageTargetController;
 use Uhifadhi\Storage\Controller\UploadController;
 use Uhifadhi\Storage\DependencyInjection\StorageConfiguration;
 use Uhifadhi\Storage\Model\EvidenceConstraints;
+use Uhifadhi\Storage\Org\FilesOrgOverview;
+use Uhifadhi\Storage\Org\FilesOrgWidgets;
 use Uhifadhi\Storage\Registry\FileSourceInterface;
 use Uhifadhi\Storage\Repository\FileLocationRepository;
 use Uhifadhi\Storage\Security\EvidenceAccessVoterInterface;
@@ -70,6 +73,18 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service_l
  */
 final class UhifadhiStorageBundle extends AbstractBundle
 {
+    /**
+     * THE ONE NAME FOR THIS MODULE'S SHEET.
+     *
+     * AssetMapper serves `public/` as `bundles/uhifadhistorage/…` with a
+     * digest, so this is the logical path and not a URL. It is a constant
+     * rather than a literal because the sheet is now named in two places that
+     * must not drift: this module's own pages link it, and a cell contributed
+     * to a page this module does not own names it for the host's head to
+     * carry.
+     */
+    public const string STYLESHEET = 'bundles/uhifadhistorage/files.css';
+
     /** Config lives under "storage:", not the class-derived "uhifadhi_labs_storage:". */
     protected string $extensionAlias = 'storage';
 
@@ -550,6 +565,29 @@ final class UhifadhiStorageBundle extends AbstractBundle
              * controller itself: an installation that turned the hub off has
              * no page to switch from.
              */
+            /*
+             * WHAT THIS MODULE PUTS ON THE ORGANISATION DASHBOARD — one
+             * figure on the strip and one cell in preset E.
+             *
+             * Tagged by hand at this end, as every seam is: a reusable
+             * bundle is not autoconfigured, so the tag never arrives by
+             * itself and a forgotten one is a cell that silently never
+             * appears. Inside the `$screens` guard with everything else —
+             * the cell's door opens the Files register, and an installation
+             * that turned the hub off has none.
+             */
+            $services->set('storage.org_overview', FilesOrgOverview::class)
+                ->args([
+                    service('storage.file_registry'),
+                    service('storage.places'),
+                    service('storage.target_service'),
+                    service('router'),
+                ]);
+
+            $services->set('storage.org_widgets', FilesOrgWidgets::class)
+                ->args([service('storage.org_overview')])
+                ->tag(OrgOverviewContributorInterface::TAG);
+
             $services->set(StorageTargetController::class)
                 ->args([
                     service('storage.target_service'),

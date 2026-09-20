@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Uhifadhi\Storage\Tests\Unit;
 
+use Uhifadhi\Bundle\AreaBundle\AreaBundle;
 use Uhifadhi\Bundle\ShellBundle\ShellBundle;
 use Uhifadhi\Bundle\ShellBundle\Test\VocabularyConformanceTestCase;
 
@@ -51,12 +52,27 @@ final class VocabularyConformanceTest extends VocabularyConformanceTestCase
         return ['files.css', 'preview.css'];
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     protected static function linkedStylesheets(): array
     {
         return [
             ...parent::linkedStylesheets(),
             self::shellPublicDir().'/widget.css',
+            /*
+             * THE AREA BUNDLE'S SHEET, because this module CONTRIBUTES A CELL
+             * TO ITS SURFACE. `templates/org/_w_files.html.twig` renders on
+             * the organisation dashboard, which the area bundle owns and
+             * whose page links `area.css` — so `.ao-by`, the contributor tag
+             * every cell on that surface wears, and `.zeb`, its empty-state
+             * line, are shipped and this module must not restate either.
+             *
+             * It is in the CHAIN and not in this module's own sheets: the
+             * distinction is the whole point of the check. A class from here
+             * may be spent and may not be redefined.
+             */
+            self::areaPublicDir().'/area.css',
         ];
     }
 
@@ -119,5 +135,10 @@ final class VocabularyConformanceTest extends VocabularyConformanceTestCase
     private static function shellPublicDir(): string
     {
         return \dirname(new \ReflectionClass(ShellBundle::class)->getFileName() ?: '').'/public';
+    }
+
+    private static function areaPublicDir(): string
+    {
+        return \dirname(new \ReflectionClass(AreaBundle::class)->getFileName() ?: '').'/public';
     }
 }

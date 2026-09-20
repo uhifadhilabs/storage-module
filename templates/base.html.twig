@@ -33,7 +33,7 @@
        to the hub, and another module's page loads exactly this one file without
        files.css. The hub is one of its consumers, so it loads it the same way. #}
     <link rel="stylesheet" href="{{ asset('bundles/uhifadhistorage/preview.css') }}">
-    <link rel="stylesheet" href="{{ asset('bundles/uhifadhistorage/files.css') }}">
+    <link rel="stylesheet" href="{{ asset(constant('Uhifadhi\\Storage\\UhifadhiStorageBundle::STYLESHEET')) }}">
 {% endblock %}
 
 {% block javascripts %}
