@@ -21,6 +21,7 @@ use Uhifadhi\Bundle\ShellBundle\Contract\NavigationSourceInterface;
 use Uhifadhi\Bundle\ShellBundle\Frame\Service\ModuleFrameService;
 use Uhifadhi\Bundle\ShellBundle\Model\NavItem;
 use Uhifadhi\Bundle\ShellBundle\Model\NavSection;
+use Uhifadhi\Contracts\Shell\NavGroup;
 use Uhifadhi\Storage\Controller\FilesController;
 use Uhifadhi\Storage\Controller\FilesSectionController;
 
@@ -58,13 +59,20 @@ final readonly class FilesNavigation implements NavigationSourceInterface
     /**
      * The heading the row files under.
      *
-     * SYSTEM RATHER THAN OBSERVATORY, and the design left it open: the hub is
-     * org-wide, it is not an area tab, and it administers at least as much as it
-     * observes — you come here to check that thumbnails were made and to see
-     * where the bytes went. Moving it is one constant if the ruling goes the
-     * other way.
+     * ORGANIZATION — RULED. This sat under System while the question was open,
+     * on the reading that the hub administers at least as much as it observes.
+     * The ruling settled what the groups MEAN rather than where this one row
+     * felt at home: Organization is what the organisation is and holds, and
+     * files are held. System is what the installation RAISES to you — alerts,
+     * telemetry, rows that exist because something needs telling — and nobody
+     * is told anything by a register of photographs.
+     *
+     * JOINED BY CONSTANT, NEVER BY THE LITERAL. A near-miss string
+     * ("Organisation", with the s) makes a fifth heading rather than an
+     * error, and a sidebar with two of anything answers "where am I" with a
+     * lie.
      */
-    public const string SECTION = 'System';
+    public const string SECTION = NavGroup::ORGANIZATION;
 
     /**
      * Below an installation's own Observatory rows and below Organization.
